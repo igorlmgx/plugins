@@ -140,7 +140,7 @@ class Marker implements MapsObject<Marker> {
   /// * reports [onDragEnd] events
   const Marker({
     required this.markerId,
-    this.icon = BitmapDescriptor.defaultMarker,
+    this.icon,
     this.alpha = 1.0,
     this.anchor = const Offset(0.5, 1.0),
     this.consumeTapEvents = false,
