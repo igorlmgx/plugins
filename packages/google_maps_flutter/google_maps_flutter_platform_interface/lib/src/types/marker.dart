@@ -140,25 +140,37 @@ class Marker implements MapsObject<Marker> {
   /// * reports [onDragEnd] events
   const Marker({
     required this.markerId,
+    this.icon = BitmapDescriptor.defaultMarker,
     this.alpha = 1.0,
     this.anchor = const Offset(0.5, 1.0),
     this.consumeTapEvents = false,
     this.draggable = false,
     this.flat = false,
-    this.icon = BitmapDescriptor.defaultMarker,
     this.infoWindow = InfoWindow.noText,
     this.position = const LatLng(0.0, 0.0),
     this.rotation = 0.0,
     this.visible = true,
     this.zIndex = 0.0,
     this.onTap,
+    this.count,
+    this.price,
     this.onDrag,
     this.onDragStart,
     this.onDragEnd,
-  }) : assert(alpha == null || (0.0 <= alpha && alpha <= 1.0));
+  }) : assert(0.0 <= alpha && alpha <= 1.0 && (price != null || count != null));
 
   /// Uniquely identifies a [Marker].
   final MarkerId markerId;
+
+  /// The number that will be placed at the cluster marker, the number of
+  /// houses in the region.
+  final int? count;
+
+  /// The price of the house represented by the price marker.
+  final String? price;
+
+  /// A description of the bitmap used to draw the marker icon.
+  final BitmapDescriptor? icon;
 
   @override
   MarkerId get mapsId => markerId;
@@ -188,7 +200,6 @@ class Marker implements MapsObject<Marker> {
   final bool flat;
 
   /// A description of the bitmap used to draw the marker icon.
-  final BitmapDescriptor icon;
 
   /// A Google Maps InfoWindow.
   ///
@@ -238,6 +249,8 @@ class Marker implements MapsObject<Marker> {
     bool? visibleParam,
     double? zIndexParam,
     VoidCallback? onTapParam,
+    int? countParam,
+    String? priceParam,
     ValueChanged<LatLng>? onDragStartParam,
     ValueChanged<LatLng>? onDragParam,
     ValueChanged<LatLng>? onDragEndParam,
@@ -249,10 +262,12 @@ class Marker implements MapsObject<Marker> {
       consumeTapEvents: consumeTapEventsParam ?? consumeTapEvents,
       draggable: draggableParam ?? draggable,
       flat: flatParam ?? flat,
-      icon: iconParam ?? icon,
       infoWindow: infoWindowParam ?? infoWindow,
       position: positionParam ?? position,
       rotation: rotationParam ?? rotation,
+      count: countParam ?? count,
+      icon: iconParam ?? icon,
+      price: priceParam ?? price,
       visible: visibleParam ?? visible,
       zIndex: zIndexParam ?? zIndex,
       onTap: onTapParam ?? onTap,
@@ -279,11 +294,15 @@ class Marker implements MapsObject<Marker> {
 
     addIfPresent('markerId', markerId.value);
     addIfPresent('alpha', alpha);
+    addIfPresent('count', count);
+    addIfPresent('price', price);
     addIfPresent('anchor', _offsetToJson(anchor));
     addIfPresent('consumeTapEvents', consumeTapEvents);
     addIfPresent('draggable', draggable);
+    if (icon != null) {
+      addIfPresent('icon', icon!.toJson());
+    }
     addIfPresent('flat', flat);
-    addIfPresent('icon', icon.toJson());
     addIfPresent('infoWindow', infoWindow._toJson());
     addIfPresent('position', position.toJson());
     addIfPresent('rotation', rotation);
@@ -304,15 +323,17 @@ class Marker implements MapsObject<Marker> {
         markerId == other.markerId &&
         alpha == other.alpha &&
         anchor == other.anchor &&
+        icon == other.icon &&
         consumeTapEvents == other.consumeTapEvents &&
         draggable == other.draggable &&
         flat == other.flat &&
-        icon == other.icon &&
         infoWindow == other.infoWindow &&
         position == other.position &&
         rotation == other.rotation &&
         visible == other.visible &&
-        zIndex == other.zIndex;
+        zIndex == other.zIndex &&
+        price == other.price &&
+        count == other.count;
   }
 
   @override
@@ -321,9 +342,9 @@ class Marker implements MapsObject<Marker> {
   @override
   String toString() {
     return 'Marker{markerId: $markerId, alpha: $alpha, anchor: $anchor, '
-        'consumeTapEvents: $consumeTapEvents, draggable: $draggable, flat: $flat, '
-        'icon: $icon, infoWindow: $infoWindow, position: $position, rotation: $rotation, '
+        'consumeTapEvents: $consumeTapEvents, count: $count, price: $price, draggable: $draggable, flat: $flat, '
+        'infoWindow: $infoWindow, position: $position, rotation: $rotation, '
         'visible: $visible, zIndex: $zIndex, onTap: $onTap, onDragStart: $onDragStart, '
-        'onDrag: $onDrag, onDragEnd: $onDragEnd}';
+        'onDrag: $onDrag, onDragEnd: $onDragEnd, icon: $icon}';
   }
 }
