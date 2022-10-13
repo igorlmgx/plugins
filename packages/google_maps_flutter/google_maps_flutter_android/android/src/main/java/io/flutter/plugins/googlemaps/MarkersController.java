@@ -4,14 +4,19 @@
 
 package io.flutter.plugins.googlemaps;
 
+import android.graphics.Bitmap;
+
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import io.flutter.plugin.common.MethodChannel;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 class MarkersController {
 
@@ -19,11 +24,27 @@ class MarkersController {
   private final Map<String, String> googleMapsMarkerIdToDartMarkerId;
   private final MethodChannel methodChannel;
   private GoogleMap googleMap;
+  private final CozyMarkerBuilder cozyMarkerBuilder;
 
-  MarkersController(MethodChannel methodChannel) {
+  MarkersController(MethodChannel methodChannel, CozyMarkerBuilder cozyMarkerBuilder) {
     this.markerIdToController = new HashMap<>();
     this.googleMapsMarkerIdToDartMarkerId = new HashMap<>();
     this.methodChannel = methodChannel;
+    this.cozyMarkerBuilder = cozyMarkerBuilder;
+  }
+
+
+  private Bitmap createBitmapFromMarker(Object marker) {
+    final Map<?, ?> data = (Map<?, ?>) marker;
+    if(data.get("count") != null) {
+      String count = Objects.requireNonNull(data.get("count")).toString();
+      return cozyMarkerBuilder.addClusterMarkerText(count);
+    };
+    if(data.get("price") != null) {
+      String price = Objects.requireNonNull(data.get("price")).toString();
+      return cozyMarkerBuilder.addBubbleMarkerText(price);
+    };
+    return null;
   }
 
   void setGoogleMap(GoogleMap googleMap) {
@@ -146,18 +167,23 @@ class MarkersController {
     methodChannel.invokeMethod("infoWindow#onTap", Convert.markerIdToJson(markerId));
   }
 
+
   private void addMarker(Object marker) {
     if (marker == null) {
       return;
     }
+    Bitmap bitmap = createBitmapFromMarker(marker);
     MarkerBuilder markerBuilder = new MarkerBuilder();
     String markerId = Convert.interpretMarkerOptions(marker, markerBuilder);
     MarkerOptions options = markerBuilder.build();
+    options.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
     addMarker(markerId, options, markerBuilder.consumeTapEvents());
+    bitmap.recycle();
   }
 
   private void addMarker(String markerId, MarkerOptions markerOptions, boolean consumeTapEvents) {
-    final Marker marker = googleMap.addMarker(markerOptions);
+    final Marker marker = googleMap
+        .addMarker(markerOptions);
     MarkerController controller = new MarkerController(marker, consumeTapEvents);
     markerIdToController.put(markerId, controller);
     googleMapsMarkerIdToDartMarkerId.put(marker.getId(), markerId);
