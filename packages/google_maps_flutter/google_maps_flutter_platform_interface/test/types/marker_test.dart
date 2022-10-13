@@ -11,7 +11,7 @@ void main() {
 
   group('$Marker', () {
     test('constructor defaults', () {
-      const Marker marker = Marker(markerId: MarkerId('ABC123'));
+      const Marker marker = Marker(markerId: MarkerId('ABC123'), count: 1);
 
       expect(marker.alpha, equals(1.0));
       expect(marker.anchor, equals(const Offset(0.5, 1.0)));
@@ -89,14 +89,14 @@ void main() {
       });
     });
     test('clone', () {
-      const Marker marker = Marker(markerId: MarkerId('ABC123'));
+      const Marker marker = Marker(markerId: MarkerId('ABC123'), count: 1);
       final Marker clone = marker.clone();
 
       expect(identical(clone, marker), isFalse);
       expect(clone, equals(marker));
     });
     test('copyWith', () {
-      const Marker marker = Marker(markerId: MarkerId('ABC123'));
+      const Marker marker = Marker(markerId: MarkerId('ABC123'), count: 1);
 
       final BitmapDescriptor testDescriptor =
           BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan);
