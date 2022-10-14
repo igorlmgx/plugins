@@ -12,7 +12,7 @@ void main() {
   group('$Marker', () {
     test('constructor defaults', () {
       final Marker marker = Marker(
-        markerId: MarkerId('ABC123'),
+        markerId: const MarkerId('ABC123'),
         alpha: 0.5,
         markerType: MarkerType.icon,
         icon: BitmapDescriptor.defaultMarker,
@@ -100,7 +100,7 @@ void main() {
     });
     test('clone', () {
       final Marker marker = Marker(
-          markerId: MarkerId('ABC123'),
+          markerId: const MarkerId('ABC123'),
           markerType: MarkerType.icon,
           icon: BitmapDescriptor.defaultMarker);
       final Marker clone = marker.clone();

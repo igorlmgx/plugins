@@ -160,6 +160,8 @@ class FakePlatformGoogleMap {
       }
 
       result.add(Marker(
+        markerType: MarkerType.count,
+        label: '1',
         markerId: MarkerId(markerId),
         draggable: draggable,
         visible: visible,
