@@ -379,7 +379,7 @@ class Convert {
   }
 
   /** Returns the dartMarkerId of the interpreted marker. */
-  static String interpretMarkerOptions(Object o, MarkerOptionsSink sink) {
+  static String interpretMarkerOptions(Object o, MarkerOptionsSink sink, CozyMarkerBuilder cozy) {
     final Map<?, ?> data = toMap(o);
     final Object alpha = data.get("alpha");
     if (alpha != null) {
@@ -402,9 +402,31 @@ class Convert {
     if (flat != null) {
       sink.setFlat(toBoolean(flat));
     }
-    final Object icon = data.get("icon");
-    if (icon != null) {
-      sink.setIcon(toBitmapDescriptor(icon));
+
+    final Object markerType = data.get("markerType");
+    if(markerType == null) {
+      throw new IllegalArgumentException("markerType was null");
+    }
+
+    switch (markerType.toString()) {
+      case "icon":
+        final Object icon = data.get("icon");
+        if (icon == null) {
+          throw new IllegalArgumentException("markerType was icon but icon was not provided.");
+        }
+        sink.setIcon(toBitmapDescriptor(icon));
+        break;
+      case "price":
+      case "count":
+        final Object label = data.get("label");
+        if(label == null) {
+          throw new IllegalArgumentException("markerType was label but label was not provided.");
+        }
+        final Bitmap bitmap = cozy.buildMarker(markerType.toString(), label.toString());
+        sink.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
+        break;
+      default:
+        throw new IllegalArgumentException("markerType must be a pre-selected one.");
     }
 
     final Object infoWindow = data.get("infoWindow");

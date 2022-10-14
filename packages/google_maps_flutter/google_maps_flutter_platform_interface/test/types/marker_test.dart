@@ -11,7 +11,12 @@ void main() {
 
   group('$Marker', () {
     test('constructor defaults', () {
-      const Marker marker = Marker(markerId: MarkerId('ABC123'), count: 1);
+      final Marker marker = Marker(
+        markerId: MarkerId('ABC123'),
+        alpha: 0.5,
+        markerType: MarkerType.icon,
+        icon: BitmapDescriptor.defaultMarker,
+      );
 
       expect(marker.alpha, equals(1.0));
       expect(marker.anchor, equals(const Offset(0.5, 1.0)));
@@ -31,7 +36,11 @@ void main() {
     });
     test('constructor alpha is >= 0.0 and <= 1.0', () {
       void initWithAlpha(double alpha) {
-        Marker(markerId: const MarkerId('ABC123'), alpha: alpha);
+        Marker(
+            markerId: const MarkerId('ABC123'),
+            alpha: alpha,
+            markerType: MarkerType.count,
+            label: '1');
       }
 
       expect(() => initWithAlpha(-0.5), throwsAssertionError);
@@ -51,6 +60,7 @@ void main() {
         consumeTapEvents: true,
         draggable: true,
         flat: true,
+        markerType: MarkerType.count,
         icon: testDescriptor,
         infoWindow: const InfoWindow(
           title: 'Test title',
@@ -89,27 +99,33 @@ void main() {
       });
     });
     test('clone', () {
-      const Marker marker = Marker(markerId: MarkerId('ABC123'), count: 1);
+      final Marker marker = Marker(
+          markerId: MarkerId('ABC123'),
+          markerType: MarkerType.icon,
+          icon: BitmapDescriptor.defaultMarker);
       final Marker clone = marker.clone();
 
       expect(identical(clone, marker), isFalse);
       expect(clone, equals(marker));
     });
     test('copyWith', () {
-      const Marker marker = Marker(markerId: MarkerId('ABC123'), count: 1);
+      final Marker marker = Marker(
+          markerId: const MarkerId('ABC123'),
+          label: '1',
+          markerType: MarkerType.count);
 
       final BitmapDescriptor testDescriptor =
           BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan);
       const double testAlphaParam = 0.12345;
       const Offset testAnchorParam = Offset(100, 100);
-      final bool testConsumeTapEventsParam = !marker.consumeTapEvents;
+      final bool testConsumeTapEventsParam = marker.consumeTapEvents;
       final bool testDraggableParam = !marker.draggable;
       final bool testFlatParam = !marker.flat;
       final BitmapDescriptor testIconParam = testDescriptor;
       const InfoWindow testInfoWindowParam = InfoWindow(title: 'Test');
       const LatLng testPositionParam = LatLng(100, 100);
       const double testRotationParam = 100;
-      final bool testVisibleParam = !marker.visible;
+      final bool testVisibleParam = marker.visible;
       const double testZIndexParam = 100;
       final List<String> log = <String>[];
 

@@ -2,6 +2,7 @@ package io.flutter.plugins.googlemaps;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -67,7 +68,7 @@ public class CozyMarkerBuilder {
         return marker;
     }
 
-    public Bitmap addClusterMarkerText(String text) {
+    private Bitmap addClusterMarkerText(String text) {
         Bitmap marker = Bitmap.createBitmap(this.defaultClusterMarker);
         Canvas canvas = new Canvas(marker);
         clusterTextPaint.getTextBounds(text, 0, text.length(), clusterRect);
@@ -92,27 +93,38 @@ public class CozyMarkerBuilder {
         return pointer;
     }
 
-    public Bitmap addBubbleMarkerText(String text) {
+    private Bitmap addBubbleMarkerText(String text) {
         Rect rect = new Rect();
         bubbleTextPaint.getTextBounds(text, 0, text.length(), rect);
-        
+
         int padding = 32 * 2;
         int width = rect.width() + padding;
         int height = rect.height() + padding + bubblePointSize;
-        
+
         Bitmap marker = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(marker);
         RectF bubble = new RectF(0, 0, width, rect.height() + padding);
-        
+
         canvas.drawRoundRect(bubble, 10, 10, getShadowPaint());
         canvas.drawRoundRect(bubble, 10, 10, getBackgroundColor());
         canvas.drawPath(getBubblePoint(marker), getBackgroundColor());
-        
+
         float dx = (width / 2f) - (rect.width() / 2f) - rect.left;
         float dy = ((rect.height() + padding) / 2f) + (rect.height() / 2f) - rect.bottom;
 
         canvas.drawText(text, dx, dy, bubbleTextPaint);
         return marker;
+    }
+
+    public Bitmap buildMarker(String type, String text) {
+        switch (type) {
+            case "count":
+                return addClusterMarkerText(text);
+            case "price":
+                return addBubbleMarkerText(text);
+            default:
+                return null;
+        }
     }
 
 }

@@ -11,12 +11,13 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import io.flutter.plugin.common.MethodChannel;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import io.flutter.plugin.common.MethodChannel;
 
 class MarkersController {
 
@@ -33,19 +34,6 @@ class MarkersController {
     this.cozyMarkerBuilder = cozyMarkerBuilder;
   }
 
-
-  private Bitmap createBitmapFromMarker(Object marker) {
-    final Map<?, ?> data = (Map<?, ?>) marker;
-    if(data.get("count") != null) {
-      String count = Objects.requireNonNull(data.get("count")).toString();
-      return cozyMarkerBuilder.addClusterMarkerText(count);
-    };
-    if(data.get("price") != null) {
-      String price = Objects.requireNonNull(data.get("price")).toString();
-      return cozyMarkerBuilder.addBubbleMarkerText(price);
-    };
-    return null;
-  }
 
   void setGoogleMap(GoogleMap googleMap) {
     this.googleMap = googleMap;
@@ -172,18 +160,15 @@ class MarkersController {
     if (marker == null) {
       return;
     }
-    Bitmap bitmap = createBitmapFromMarker(marker);
     MarkerBuilder markerBuilder = new MarkerBuilder();
-    String markerId = Convert.interpretMarkerOptions(marker, markerBuilder);
+    String markerId = Convert.interpretMarkerOptions(marker, markerBuilder, cozyMarkerBuilder);
     MarkerOptions options = markerBuilder.build();
-    options.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
     addMarker(markerId, options, markerBuilder.consumeTapEvents());
-    bitmap.recycle();
   }
 
   private void addMarker(String markerId, MarkerOptions markerOptions, boolean consumeTapEvents) {
     final Marker marker = googleMap
-        .addMarker(markerOptions);
+            .addMarker(markerOptions);
     MarkerController controller = new MarkerController(marker, consumeTapEvents);
     markerIdToController.put(markerId, controller);
     googleMapsMarkerIdToDartMarkerId.put(marker.getId(), markerId);
@@ -196,7 +181,7 @@ class MarkersController {
     String markerId = getMarkerId(marker);
     MarkerController markerController = markerIdToController.get(markerId);
     if (markerController != null) {
-      Convert.interpretMarkerOptions(marker, markerController);
+      Convert.interpretMarkerOptions(marker, markerController, cozyMarkerBuilder);
     }
   }
 
