@@ -13,7 +13,6 @@ void main() {
     test('constructor defaults', () {
       final Marker marker = Marker(
         markerId: const MarkerId('ABC123'),
-        alpha: 0.5,
         markerType: MarkerType.icon,
         icon: BitmapDescriptor.defaultMarker,
       );
@@ -60,7 +59,7 @@ void main() {
         consumeTapEvents: true,
         draggable: true,
         flat: true,
-        markerType: MarkerType.count,
+        markerType: MarkerType.icon,
         icon: testDescriptor,
         infoWindow: const InfoWindow(
           title: 'Test title',
@@ -86,6 +85,7 @@ void main() {
         'consumeTapEvents': true,
         'draggable': true,
         'flat': true,
+        'markerType': MarkerType.icon.name,
         'icon': testDescriptor.toJson(),
         'infoWindow': <String, Object>{
           'title': 'Test title',

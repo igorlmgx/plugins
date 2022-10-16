@@ -26,7 +26,7 @@ public class CozyMarkerBuilder {
         clusterRect = new Rect();
         defaultClusterMarker = getClusterBitmap(size);
         clusterTextPaint = setTextPaint(size / 3f, context);
-        bubbleTextPaint = setTextPaint(size / 4f, context);
+        bubbleTextPaint = setTextPaint(size / 4.5f, context);
     }
 
     @NonNull
@@ -97,7 +97,7 @@ public class CozyMarkerBuilder {
         Rect rect = new Rect();
         bubbleTextPaint.getTextBounds(text, 0, text.length(), rect);
 
-        int padding = 32 * 2;
+        int padding = 24 * 2;
         int width = rect.width() + padding;
         int height = rect.height() + padding + bubblePointSize;
 
