@@ -91,6 +91,7 @@ final class GoogleMapController
       BinaryMessenger binaryMessenger,
       LifecycleProvider lifecycleProvider,
       GoogleMapOptions options) {
+
     this.id = id;
     this.context = context;
     this.options = options;
@@ -100,7 +101,7 @@ final class GoogleMapController
         new MethodChannel(binaryMessenger, "plugins.flutter.dev/google_maps_android_" + id);
     methodChannel.setMethodCallHandler(this);
     this.lifecycleProvider = lifecycleProvider;
-    this.markersController = new MarkersController(methodChannel);
+    this.markersController = new MarkersController(methodChannel, new CozyMarkerBuilder(174, 20, context));
     this.polygonsController = new PolygonsController(methodChannel, density);
     this.polylinesController = new PolylinesController(methodChannel, density);
     this.circlesController = new CirclesController(methodChannel, density);

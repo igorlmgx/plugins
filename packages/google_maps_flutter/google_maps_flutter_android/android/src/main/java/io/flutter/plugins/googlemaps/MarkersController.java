@@ -4,14 +4,20 @@
 
 package io.flutter.plugins.googlemaps;
 
+import android.graphics.Bitmap;
+
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import io.flutter.plugin.common.MethodChannel;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import io.flutter.plugin.common.MethodChannel;
 
 class MarkersController {
 
@@ -19,12 +25,15 @@ class MarkersController {
   private final Map<String, String> googleMapsMarkerIdToDartMarkerId;
   private final MethodChannel methodChannel;
   private GoogleMap googleMap;
+  private final CozyMarkerBuilder cozyMarkerBuilder;
 
-  MarkersController(MethodChannel methodChannel) {
+  MarkersController(MethodChannel methodChannel, CozyMarkerBuilder cozyMarkerBuilder) {
     this.markerIdToController = new HashMap<>();
     this.googleMapsMarkerIdToDartMarkerId = new HashMap<>();
     this.methodChannel = methodChannel;
+    this.cozyMarkerBuilder = cozyMarkerBuilder;
   }
+
 
   void setGoogleMap(GoogleMap googleMap) {
     this.googleMap = googleMap;
@@ -146,18 +155,20 @@ class MarkersController {
     methodChannel.invokeMethod("infoWindow#onTap", Convert.markerIdToJson(markerId));
   }
 
+
   private void addMarker(Object marker) {
     if (marker == null) {
       return;
     }
     MarkerBuilder markerBuilder = new MarkerBuilder();
-    String markerId = Convert.interpretMarkerOptions(marker, markerBuilder);
+    String markerId = Convert.interpretMarkerOptions(marker, markerBuilder, cozyMarkerBuilder);
     MarkerOptions options = markerBuilder.build();
     addMarker(markerId, options, markerBuilder.consumeTapEvents());
   }
 
   private void addMarker(String markerId, MarkerOptions markerOptions, boolean consumeTapEvents) {
-    final Marker marker = googleMap.addMarker(markerOptions);
+    final Marker marker = googleMap
+            .addMarker(markerOptions);
     MarkerController controller = new MarkerController(marker, consumeTapEvents);
     markerIdToController.put(markerId, controller);
     googleMapsMarkerIdToDartMarkerId.put(marker.getId(), markerId);
@@ -170,7 +181,7 @@ class MarkersController {
     String markerId = getMarkerId(marker);
     MarkerController markerController = markerIdToController.get(markerId);
     if (markerController != null) {
-      Convert.interpretMarkerOptions(marker, markerController);
+      Convert.interpretMarkerOptions(marker, markerController, cozyMarkerBuilder);
     }
   }
 
