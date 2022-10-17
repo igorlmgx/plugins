@@ -34,8 +34,10 @@ import java.util.Map;
 /** Conversions between JSON-like values and GoogleMaps data types. */
 class Convert {
 
-  // TODO(hamdikahloun): FlutterMain has been deprecated and should be replaced with FlutterLoader
-  //  when it's available in Stable channel: https://github.com/flutter/flutter/issues/70923.
+  // TODO(hamdikahloun): FlutterMain has been deprecated and should be replaced
+  // with FlutterLoader
+  // when it's available in Stable channel:
+  // https://github.com/flutter/flutter/issues/70923.
   @SuppressWarnings("deprecation")
   private static BitmapDescriptor toBitmapDescriptor(Object o) {
     final List<?> data = toList(o);
@@ -404,7 +406,7 @@ class Convert {
     }
 
     final Object markerType = data.get("markerType");
-    if(markerType == null) {
+    if (markerType == null) {
       throw new IllegalArgumentException("markerType was null");
     }
 
@@ -419,11 +421,12 @@ class Convert {
       case "price":
       case "count":
         final Object label = data.get("label");
-        if(label == null) {
+        if (label == null) {
           throw new IllegalArgumentException("markerType was label but label was not provided.");
         }
         final Bitmap bitmap = cozy.buildMarker(markerType.toString(), label.toString());
         sink.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
+        bitmap.recycle();
         break;
       default:
         throw new IllegalArgumentException("markerType must be a pre-selected one.");

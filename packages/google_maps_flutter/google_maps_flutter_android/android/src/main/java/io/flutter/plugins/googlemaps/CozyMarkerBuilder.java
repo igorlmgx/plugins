@@ -19,11 +19,9 @@ public class CozyMarkerBuilder {
     private final Bitmap defaultClusterMarker;
     private final Paint clusterTextPaint;
     private final Paint bubbleTextPaint;
-    private final Rect clusterRect;
 
     CozyMarkerBuilder(int size, int bubblePointSize, Context context) {
         this.bubblePointSize = bubblePointSize;
-        clusterRect = new Rect();
         defaultClusterMarker = getClusterBitmap(size);
         clusterTextPaint = setTextPaint(size / 3f, context);
         bubbleTextPaint = setTextPaint(size / 4.5f, context);
@@ -70,13 +68,11 @@ public class CozyMarkerBuilder {
 
     private Bitmap addClusterMarkerText(String text) {
         Bitmap marker = Bitmap.createBitmap(this.defaultClusterMarker);
-        Canvas canvas = new Canvas(marker);
+        Rect clusterRect = new Rect();
         clusterTextPaint.getTextBounds(text, 0, text.length(), clusterRect);
-        float width = marker.getWidth();
-        float height = marker.getHeight();
-        float dx = (width / 2f) - (clusterRect.width() / 2f) - clusterRect.left;
-        float dy = (height / 2f) + (clusterRect.height() / 2f) - clusterRect.bottom;
-        canvas.drawText(text, dx, dy, clusterTextPaint);
+        float dx = (marker.getWidth() / 2f) - (clusterRect.width() / 2f) - clusterRect.left;
+        float dy = (marker.getHeight() / 2f) + (clusterRect.height() / 2f) - clusterRect.bottom;
+        new Canvas(marker).drawText(text, dx, dy, clusterTextPaint);
         return marker;
     }
 
@@ -99,12 +95,12 @@ public class CozyMarkerBuilder {
 
         int padding = 24 * 2;
         int width = rect.width() + padding;
-        int height = rect.height() + padding + bubblePointSize;
 
-        Bitmap marker = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(marker);
         RectF bubble = new RectF(0, 0, width, rect.height() + padding);
 
+        int height = rect.height() + padding + bubblePointSize;
+        Bitmap marker = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(marker);
         canvas.drawRoundRect(bubble, 10, 10, getShadowPaint());
         canvas.drawRoundRect(bubble, 10, 10, getBackgroundColor());
         canvas.drawPath(getBubblePoint(marker), getBackgroundColor());
