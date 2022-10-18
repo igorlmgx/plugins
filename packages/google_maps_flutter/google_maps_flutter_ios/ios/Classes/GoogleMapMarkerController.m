@@ -4,6 +4,8 @@
 
 #import "GoogleMapMarkerController.h"
 #import "FLTGoogleMapJSONConversions.h"
+#import "UIKit/UIGraphics.h"
+#import <CoreGraphics/CoreGraphics.h>
 
 @interface FLTGoogleMapMarkerController ()
 
@@ -90,6 +92,26 @@
   self.marker.zIndex = zIndex;
 }
 
+- (UIImage *)clusterImage{
+    CGSize canvas = CGSizeMake(172, 172);
+    UIGraphicsBeginImageContext(canvas);
+    // let renderer = UIGraphicsImageRenderer(size: CGSize(width: 512, height: 512))
+    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
+    [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
+        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.redColor.CGColor);
+        CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor. redColor.CGColor);
+        
+        CGRect rect = CGRectMake(0, 0, 172, 172);
+        CGContextAddEllipseInRect(rendererContext.CGContext, rect);
+        CGContextDrawPath(rendererContext.CGContext, 3);
+        // TODO: use enum up here!
+    }];
+
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return image;
+}
+
 - (void)interpretMarkerOptions:(NSDictionary *)data
                      registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
   NSNumber *alpha = data[@"alpha"];
@@ -106,7 +128,8 @@
   }
   NSArray *icon = data[@"icon"];
   if (icon && icon != (id)[NSNull null]) {
-    UIImage *image = [self extractIconFromData:icon registrar:registrar];
+      UIImage *image = [self clusterImage];
+    //UIImage *image = [self extractIconFromData:icon registrar:registrar];
     [self setIcon:image];
   }
   NSNumber *flat = data[@"flat"];
