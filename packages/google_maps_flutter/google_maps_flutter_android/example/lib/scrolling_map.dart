@@ -84,6 +84,8 @@ class ScrollingMapBody extends StatelessWidget {
                       ),
                       markers: <Marker>{
                         Marker(
+                          markerType: MarkerType.count,
+                          label: '1',
                           markerId: const MarkerId('test_marker_id'),
                           position: LatLng(
                             _center.latitude,
