@@ -12,6 +12,7 @@
 @property(strong, nonatomic) GMSMarker *marker;
 @property(weak, nonatomic) GMSMapView *mapView;
 @property(assign, nonatomic, readwrite) BOOL consumeTapEvents;
+@property(strong, nonatomic) UIImage *iconImage;
 
 @end
 
@@ -19,12 +20,14 @@
 
 - (instancetype)initMarkerWithPosition:(CLLocationCoordinate2D)position
                             identifier:(NSString *)identifier
-                               mapView:(GMSMapView *)mapView {
+                               mapView:(GMSMapView *)mapView
+                                 iconImage:(UIImage *)iconImage {
   self = [super init];
   if (self) {
     _marker = [GMSMarker markerWithPosition:position];
     _mapView = mapView;
     _marker.userData = @[ identifier ];
+    _iconImage = iconImage;
   }
   return self;
 }
@@ -92,26 +95,6 @@
   self.marker.zIndex = zIndex;
 }
 
-- (UIImage *)clusterImage{
-    CGSize canvas = CGSizeMake(172, 172);
-    UIGraphicsBeginImageContext(canvas);
-    // let renderer = UIGraphicsImageRenderer(size: CGSize(width: 512, height: 512))
-    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
-    [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
-        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.redColor.CGColor);
-        CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor. redColor.CGColor);
-        
-        CGRect rect = CGRectMake(0, 0, 172, 172);
-        CGContextAddEllipseInRect(rendererContext.CGContext, rect);
-        CGContextDrawPath(rendererContext.CGContext, 3);
-        // TODO: use enum up here!
-    }];
-
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return image;
-}
-
 - (void)interpretMarkerOptions:(NSDictionary *)data
                      registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
   NSNumber *alpha = data[@"alpha"];
@@ -126,12 +109,10 @@
   if (draggable && draggable != (id)[NSNull null]) {
     [self setDraggable:[draggable boolValue]];
   }
-  NSArray *icon = data[@"icon"];
-  if (icon && icon != (id)[NSNull null]) {
-      UIImage *image = [self clusterImage];
-    //UIImage *image = [self extractIconFromData:icon registrar:registrar];
-    [self setIcon:image];
-  }
+//  NSArray *icon = data[@"icon"];
+//  if (icon && icon != (id)[NSNull null]) {
+  [self setIcon:_iconImage];
+//  }
   NSNumber *flat = data[@"flat"];
   if (flat && flat != (id)[NSNull null]) {
     [self setFlat:[flat boolValue]];
@@ -269,16 +250,39 @@
 }
 
 - (void)addMarkers:(NSArray *)markersToAdd {
+  UIImage *clusterImage = [self clusterImage];
   for (NSDictionary *marker in markersToAdd) {
     CLLocationCoordinate2D position = [FLTMarkersController getPosition:marker];
     NSString *identifier = marker[@"markerId"];
     FLTGoogleMapMarkerController *controller =
         [[FLTGoogleMapMarkerController alloc] initMarkerWithPosition:position
                                                           identifier:identifier
-                                                             mapView:self.mapView];
+                                                             mapView:self.mapView iconImage:clusterImage];
     [controller interpretMarkerOptions:marker registrar:self.registrar];
     self.markerIdentifierToController[identifier] = controller;
   }
+}
+
+- (UIImage *)clusterImage {
+    CGSize canvas = CGSizeMake(172, 172);
+    UIGraphicsBeginImageContext(canvas);
+    // let renderer = UIGraphicsImageRenderer(size: CGSize(width: 512, height: 512))
+    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
+    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
+        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.redColor.CGColor);
+        CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor. redColor.CGColor);
+        CGContextSetLineWidth(rendererContext.CGContext, 10);
+        
+        CGRect rect = CGRectMake(0, 0, 172, 172);
+        CGContextAddEllipseInRect(rendererContext.CGContext, rect);
+        CGContextDrawPath(rendererContext.CGContext, 3);
+        // TODO: use enum up here!
+    }];
+
+    NSLog(@"Hello from Xcode!");
+    UIGraphicsEndImageContext();
+
+    return image;
 }
 
 - (void)changeMarkers:(NSArray *)markersToChange {

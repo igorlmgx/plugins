@@ -13,7 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(assign, nonatomic, readonly) BOOL consumeTapEvents;
 - (instancetype)initMarkerWithPosition:(CLLocationCoordinate2D)position
                             identifier:(NSString *)identifier
-                               mapView:(GMSMapView *)mapView;
+                               mapView:(GMSMapView *)mapView
+                             iconImage:(UIImage *)iconImage;
 - (void)showInfoWindow;
 - (void)hideInfoWindow;
 - (BOOL)isInfoWindowShown;
