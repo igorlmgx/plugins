@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)hideInfoWindow;
 - (BOOL)isInfoWindowShown;
 - (void)removeMarker;
+- (UIImage *)addClusterMarkerText:(NSString *)label;
 @end
 
 @interface FLTMarkersController : NSObject
@@ -40,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)hideMarkerInfoWindowWithIdentifier:(NSString *)identifier result:(FlutterResult)result;
 - (void)isInfoWindowShownForMarkerWithIdentifier:(NSString *)identifier
                                           result:(FlutterResult)result;
+-(UIImage *)baseClusterMarker;
 @end
 
 NS_ASSUME_NONNULL_END
