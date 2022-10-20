@@ -101,7 +101,7 @@
     textStyle.alignment = NSTextAlignmentCenter;
     UIFont *textFont = [UIFont systemFontOfSize:24];
     CGSize stringSize = [label sizeWithAttributes:@{NSFontAttributeName:textFont}];
-    CGFloat y = (image.size.height / 2) - stringSize.height;
+    CGFloat y = (image.size.height / 2) - (stringSize.height / 2);
     UIGraphicsBeginImageContext(image.size);
     CGRect rect = CGRectMake(0, 0, image.size.width, image.size.height);
     [image drawInRect:CGRectIntegral(rect)];
