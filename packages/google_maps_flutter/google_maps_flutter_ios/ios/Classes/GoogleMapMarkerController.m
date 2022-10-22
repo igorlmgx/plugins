@@ -96,23 +96,62 @@
 }
 
 - (UIImage *)addClusterMarkerText:(NSString *)label {
-    UIImage *image = [self iconImage];
-    NSMutableParagraphStyle *textStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
-    textStyle.alignment = NSTextAlignmentCenter;
-    UIFont *textFont = [UIFont systemFontOfSize:24];
-    CGSize stringSize = [label sizeWithAttributes:@{NSFontAttributeName:textFont}];
-    CGFloat y = (image.size.height / 2) - (stringSize.height / 2);
-    UIGraphicsBeginImageContext(image.size);
-    CGRect rect = CGRectMake(0, 0, image.size.width, image.size.height);
-    [image drawInRect:CGRectIntegral(rect)];
-    CGRect textRect = CGRectMake(0, y, image.size.width, image.size.height);
-    [label drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont, NSParagraphStyleAttributeName:textStyle}];
-    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return newImage;
-    
+    @try {
+        UIImageView *image = [[UIImageView alloc] initWithImage:[self iconImage]];
+        UIFont *textFont = [UIFont systemFontOfSize:20];
+        CGSize stringSize = [label sizeWithAttributes:@{NSFontAttributeName:textFont}];
+        CGFloat y = (image.image.size.height / 2) - (stringSize.height / 2);
+        CGFloat x = (image.image.size.width / 2) - (stringSize.width / 2);
+        UIGraphicsBeginImageContext(image.image.size);
+        CGRect rect = CGRectMake(0, 0, image.image.size.width, image.image.size.height);
+        [[image image] drawInRect:CGRectIntegral(rect)];
+        CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
+        [label drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
+        UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        return newImage;
+    } @catch(NSException *exception) {
+        @throw exception;
+    }
 }
+
+- (UIImage *)addPriceMarkerText:(NSString *)label {
+    UIFont *textFont = [UIFont systemFontOfSize:12];
+    CGSize stringSize = [label sizeWithAttributes:@{NSFontAttributeName:textFont}];
+    CGSize canvas = CGSizeMake(stringSize.width * 1.25, 42);
+    CGFloat y = ((canvas.height - 10) / 2) - (stringSize.height / 2);
+    CGFloat x = (canvas.width / 2) - (stringSize.width / 2);
+    CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
+    UIGraphicsBeginImageContext(canvas);
+    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
+    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
+        
+        CGRect rect = CGRectMake(0, 0, stringSize.width * 1.25, 32);
+
+        CGMutablePathRef path = CGPathCreateMutable();
+        CGPathMoveToPoint(path, nil, canvas.width / 2 - 10, 32);
+        CGPathAddLineToPoint(path, nil, canvas.width / 2, 42);
+        CGPathAddLineToPoint(path, nil, canvas.width / 2 + 10, 32);
+        CGPathAddLineToPoint(path, nil, canvas.width / 2 - 10, 32);
+      
+        
+        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.whiteColor.CGColor);
+        CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
+        CGContextSetLineWidth(rendererContext.CGContext, 5);
+        CGContextSetLineJoin(rendererContext.CGContext, 0);
+        CGContextAddPath(rendererContext.CGContext, path);
+        CGContextDrawPath(rendererContext.CGContext, 3);
+        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:5];
+        [bezier fill];
+        [bezier stroke];
+        [label drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
+        // TODO: use enum up here!
+        CGPathRelease(path);
+    }];
+    UIGraphicsEndImageContext();
+    return image;
+}
+
 
 - (void)interpretMarkerOptions:(NSDictionary *)data
                      registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
@@ -128,42 +167,56 @@
     if (draggable && draggable != (id)[NSNull null]) {
         [self setDraggable:[draggable boolValue]];
     }
-    NSString *markerType = data[@"markerType"];
-    if(markerType && markerType != (id)[NSNull null]) {
-        if([markerType isEqualToString:@"icon"]) {
-            NSArray *icon = data[@"icon"];
-            if (icon && icon != (id)[NSNull null]) {
-                UIImage *image = [self extractIconFromData:icon registrar:registrar];
-                [self setIcon:image];
+    @try {
+        NSString *markerType = data[@"markerType"];
+        if(markerType && markerType != (id)[NSNull null]) {
+            if([markerType isEqualToString:@"icon"]) {
+                NSArray *icon = data[@"icon"];
+                if (icon && icon != (id)[NSNull null]) {
+                    UIImage *image = [self extractIconFromData:icon registrar:registrar];
+                    [self setIcon:image];
+                }
+            } else if([markerType isEqualToString:@"count"]) {
+                NSString *label = data[@"label"];
+                if(label && label != (id)[NSNull null]) {
+                    UIImage *img = [self addClusterMarkerText:label];
+                    [self setIcon:img];
+                } else {
+                    NSString *error =
+                    [NSString stringWithFormat:@"label was not provided."];
+                    NSException *exception = [NSException exceptionWithName:@"InvalidBitmapDescriptor"
+                                                                     reason:error
+                                                                   userInfo:nil];
+                    @throw exception;
+                }
             }
-        } else if([markerType isEqualToString:@"count"]) {
-            NSString *label = data[@"label"];
-            if(label && label != (id)[NSNull null]) {
-                UIImage *img = [self addClusterMarkerText:label];
-                [self setIcon:img];
-            } else {
+            else if([markerType isEqualToString:@"price"]) {
+                NSString *label = data[@"label"];
+                if(label && label != (id)[NSNull null]) {
+                    UIImage *img = [self addPriceMarkerText:label];
+                    [self setIcon:img];
+                } else {
+                    NSString *error =
+                    [NSString stringWithFormat:@"label was not provided."];
+                    NSException *exception = [NSException exceptionWithName:@"InvalidBitmapDescriptor"
+                                                                     reason:error
+                                                                   userInfo:nil];
+                    @throw exception;
+                }            }
+            else {
                 NSString *error =
-                [NSString stringWithFormat:@"label was not provided."];
+                [NSString stringWithFormat:@"MarkerType was not provided."];
                 NSException *exception = [NSException exceptionWithName:@"InvalidBitmapDescriptor"
                                                                  reason:error
                                                                userInfo:nil];
                 @throw exception;
             }
+            
         }
-        else if([markerType isEqualToString:@"price"]) {
-            [self setIcon:_iconImage];
-        }
-        else {
-            NSString *error =
-            [NSString stringWithFormat:@"MarkerType was not provided."];
-            NSException *exception = [NSException exceptionWithName:@"InvalidBitmapDescriptor"
-                                                             reason:error
-                                                           userInfo:nil];
-            @throw exception;
-        }
-        
+    } @catch(NSException *exception) {
+        NSLog(@"%@ ",exception.name);
+        NSLog(@"Reason: %@ ",exception.reason);
     }
-    
     NSNumber *flat = data[@"flat"];
     if (flat && flat != (id)[NSNull null]) {
         [self setFlat:[flat boolValue]];
