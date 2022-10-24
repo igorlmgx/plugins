@@ -6,6 +6,7 @@
 #import "FLTGoogleMapJSONConversions.h"
 #import "UIKit/UIGraphics.h"
 #import <CoreGraphics/CoreGraphics.h>
+#import <CoreText/CoreText.h>
 
 @interface FLTGoogleMapMarkerController ()
 
@@ -13,6 +14,7 @@
 @property(weak, nonatomic) GMSMapView *mapView;
 @property(assign, nonatomic, readwrite) BOOL consumeTapEvents;
 @property(strong, nonatomic) UIImage *iconImage;
+@property(strong, nonatomic) NSString *path;
 
 @end
 
@@ -21,13 +23,15 @@
 - (instancetype)initMarkerWithPosition:(CLLocationCoordinate2D)position
                             identifier:(NSString *)identifier
                                mapView:(GMSMapView *)mapView
-                             iconImage:(UIImage *)iconImage {
+                             iconImage:(UIImage *)iconImage
+                              fontPath:(nonnull NSString *)path {
     self = [super init];
     if (self) {
         _marker = [GMSMarker markerWithPosition:position];
         _mapView = mapView;
         _marker.userData = @[ identifier ];
         _iconImage = iconImage;
+        _path = path;
     }
     return self;
 }
@@ -95,18 +99,18 @@
     self.marker.zIndex = zIndex;
 }
 
-- (UIImage *)addClusterMarkerText:(NSString *)label {
+- (UIImage *)addClusterMarkerText:(NSString *)string {
     @try {
         UIImageView *image = [[UIImageView alloc] initWithImage:[self iconImage]];
-        UIFont *textFont = [UIFont systemFontOfSize:20];
-        CGSize stringSize = [label sizeWithAttributes:@{NSFontAttributeName:textFont}];
+        UIFont *textFont = [UIFont fontWithName:[self path] size:24];
+        CGSize stringSize = [string sizeWithAttributes:@{NSFontAttributeName:textFont}];
         CGFloat y = (image.image.size.height / 2) - (stringSize.height / 2);
         CGFloat x = (image.image.size.width / 2) - (stringSize.width / 2);
         UIGraphicsBeginImageContext(image.image.size);
         CGRect rect = CGRectMake(0, 0, image.image.size.width, image.image.size.height);
         [[image image] drawInRect:CGRectIntegral(rect)];
         CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
-        [label drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
+        [string drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
         UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         return newImage;
@@ -116,7 +120,7 @@
 }
 
 - (UIImage *)addPriceMarkerText:(NSString *)label {
-    UIFont *textFont = [UIFont systemFontOfSize:12];
+    UIFont *textFont =  [UIFont fontWithName:[self path] size:16];
     CGSize stringSize = [label sizeWithAttributes:@{NSFontAttributeName:textFont}];
     CGSize canvas = CGSizeMake(stringSize.width * 1.25, 42);
     CGFloat y = ((canvas.height - 10) / 2) - (stringSize.height / 2);
@@ -127,13 +131,12 @@
     UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
         
         CGRect rect = CGRectMake(0, 0, stringSize.width * 1.25, 32);
-
+        
         CGMutablePathRef path = CGPathCreateMutable();
         CGPathMoveToPoint(path, nil, canvas.width / 2 - 10, 32);
         CGPathAddLineToPoint(path, nil, canvas.width / 2, 42);
         CGPathAddLineToPoint(path, nil, canvas.width / 2 + 10, 32);
         CGPathAddLineToPoint(path, nil, canvas.width / 2 - 10, 32);
-      
         
         CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.whiteColor.CGColor);
         CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
@@ -167,55 +170,50 @@
     if (draggable && draggable != (id)[NSNull null]) {
         [self setDraggable:[draggable boolValue]];
     }
-    @try {
-        NSString *markerType = data[@"markerType"];
-        if(markerType && markerType != (id)[NSNull null]) {
-            if([markerType isEqualToString:@"icon"]) {
-                NSArray *icon = data[@"icon"];
-                if (icon && icon != (id)[NSNull null]) {
-                    UIImage *image = [self extractIconFromData:icon registrar:registrar];
-                    [self setIcon:image];
-                }
-            } else if([markerType isEqualToString:@"count"]) {
-                NSString *label = data[@"label"];
-                if(label && label != (id)[NSNull null]) {
-                    UIImage *img = [self addClusterMarkerText:label];
-                    [self setIcon:img];
-                } else {
-                    NSString *error =
-                    [NSString stringWithFormat:@"label was not provided."];
-                    NSException *exception = [NSException exceptionWithName:@"InvalidBitmapDescriptor"
-                                                                     reason:error
-                                                                   userInfo:nil];
-                    @throw exception;
-                }
+    NSString *markerType = data[@"markerType"];
+    if(markerType && markerType != (id)[NSNull null]) {
+        if([markerType isEqualToString:@"icon"]) {
+            NSArray *icon = data[@"icon"];
+            if (icon && icon != (id)[NSNull null]) {
+                UIImage *image = [self extractIconFromData:icon registrar:registrar];
+                [self setIcon:image];
             }
-            else if([markerType isEqualToString:@"price"]) {
-                NSString *label = data[@"label"];
-                if(label && label != (id)[NSNull null]) {
-                    UIImage *img = [self addPriceMarkerText:label];
-                    [self setIcon:img];
-                } else {
-                    NSString *error =
-                    [NSString stringWithFormat:@"label was not provided."];
-                    NSException *exception = [NSException exceptionWithName:@"InvalidBitmapDescriptor"
-                                                                     reason:error
-                                                                   userInfo:nil];
-                    @throw exception;
-                }            }
-            else {
+        } else if([markerType isEqualToString:@"count"]) {
+            NSString *label = data[@"label"];
+            if(label && label != (id)[NSNull null]) {
+                UIImage *img = [self addClusterMarkerText:label];
+                [self setIcon:img];
+            } else {
                 NSString *error =
-                [NSString stringWithFormat:@"MarkerType was not provided."];
+                [NSString stringWithFormat:@"label was not provided."];
                 NSException *exception = [NSException exceptionWithName:@"InvalidBitmapDescriptor"
                                                                  reason:error
                                                                userInfo:nil];
                 @throw exception;
             }
-            
         }
-    } @catch(NSException *exception) {
-        NSLog(@"%@ ",exception.name);
-        NSLog(@"Reason: %@ ",exception.reason);
+        else if([markerType isEqualToString:@"price"]) {
+            NSString *label = data[@"label"];
+            if(label && label != (id)[NSNull null]) {
+                UIImage *img = [self addPriceMarkerText:label];
+                [self setIcon:img];
+            } else {
+                NSString *error =
+                [NSString stringWithFormat:@"label was not provided."];
+                NSException *exception = [NSException exceptionWithName:@"InvalidBitmapDescriptor"
+                                                                 reason:error
+                                                               userInfo:nil];
+                @throw exception;
+            }            }
+        else {
+            NSString *error =
+            [NSString stringWithFormat:@"MarkerType was not provided."];
+            NSException *exception = [NSException exceptionWithName:@"InvalidBitmapDescriptor"
+                                                             reason:error
+                                                           userInfo:nil];
+            @throw exception;
+        }
+        
     }
     NSNumber *flat = data[@"flat"];
     if (flat && flat != (id)[NSNull null]) {
@@ -334,8 +332,10 @@
 @property(strong, nonatomic) NSMutableDictionary *markerIdentifierToController;
 @property(strong, nonatomic) FlutterMethodChannel *methodChannel;
 @property(strong, nonatomic) UIImage *emptyClusterMarker;
+@property(strong, nonatomic) NSString *fontPath;
 @property(weak, nonatomic) NSObject<FlutterPluginRegistrar> *registrar;
 @property(weak, nonatomic) GMSMapView *mapView;
+
 
 @end
 
@@ -351,9 +351,38 @@
         _markerIdentifierToController = [[NSMutableDictionary alloc] init];
         _registrar = registrar;
         _emptyClusterMarker = [self baseClusterMarker];
+        _fontPath = [self loadFont];
     }
     return self;
 }
+
+
+void CFSafeRelease(CFTypeRef cf) {
+    if (cf != NULL) {
+        CFRelease(cf);
+    }
+}
+
+-(NSString *)loadFont {
+    NSBundle *frameworkBundle = [NSBundle bundleForClass:self.classForCoder];
+    NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"CozyFonts.bundle"];
+    NSBundle *bundle = [NSBundle  bundleWithURL:bundleURL];
+    NSURL *fontURL = [bundle URLForResource:@"oatmealpro2_semibold" withExtension:@"otf"];
+    NSData *inData = [NSData dataWithContentsOfURL:fontURL];
+    CFErrorRef error;
+    CGDataProviderRef provider = CGDataProviderCreateWithCFData((CFDataRef)inData);
+    CGFontRef font = CGFontCreateWithDataProvider(provider);
+    if (!CTFontManagerRegisterGraphicsFont(font, &error)) {
+        CFStringRef errorDescription = CFErrorCopyDescription(error);
+        NSLog(@"Failed to load font: %@", errorDescription);
+        CFRelease(errorDescription);
+    }
+    NSString *fontName = (__bridge NSString *)CGFontCopyFullName(font);
+    CFSafeRelease(font);
+    CFSafeRelease(provider);
+    return fontName;
+}
+
 
 -(UIImage *)baseClusterMarker {
     CGSize canvas = CGSizeMake(64, 64);
@@ -381,7 +410,8 @@
         [[FLTGoogleMapMarkerController alloc] initMarkerWithPosition:position
                                                           identifier:identifier
                                                              mapView:self.mapView
-                                                           iconImage:self.emptyClusterMarker];
+                                                           iconImage:self.emptyClusterMarker
+                                                            fontPath:self.fontPath];
         [controller interpretMarkerOptions:marker registrar:self.registrar];
         self.markerIdentifierToController[identifier] = controller;
     }

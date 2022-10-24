@@ -14,7 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initMarkerWithPosition:(CLLocationCoordinate2D)position
                             identifier:(NSString *)identifier
                                mapView:(GMSMapView *)mapView
-                             iconImage:(UIImage *)iconImage;
+                             iconImage:(UIImage *)iconImage
+                             fontPath:(NSString *)path;
 - (void)showInfoWindow;
 - (void)hideInfoWindow;
 - (BOOL)isInfoWindowShown;
@@ -43,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)isInfoWindowShownForMarkerWithIdentifier:(NSString *)identifier
                                           result:(FlutterResult)result;
 -(UIImage *)baseClusterMarker;
+-(NSString *)loadFont;
 @end
 
 NS_ASSUME_NONNULL_END
