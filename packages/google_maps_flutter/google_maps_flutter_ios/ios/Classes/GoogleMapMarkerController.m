@@ -100,23 +100,21 @@
 }
 
 - (UIImage *)addClusterMarkerText:(NSString *)string {
-    @try {
-        UIImageView *image = [[UIImageView alloc] initWithImage:[self iconImage]];
-        UIFont *textFont = [UIFont fontWithName:[self path] size:24];
-        CGSize stringSize = [string sizeWithAttributes:@{NSFontAttributeName:textFont}];
-        CGFloat y = (image.image.size.height / 2) - (stringSize.height / 2);
-        CGFloat x = (image.image.size.width / 2) - (stringSize.width / 2);
-        UIGraphicsBeginImageContext(image.image.size);
-        CGRect rect = CGRectMake(0, 0, image.image.size.width, image.image.size.height);
-        [[image image] drawInRect:CGRectIntegral(rect)];
+    CGSize size = [_iconImage size];
+    UIFont *textFont = [UIFont fontWithName:[self path] size:24];
+    CGSize stringSize = [string sizeWithAttributes:@{NSFontAttributeName:textFont}];
+    CGFloat y = (size.height / 2) - (stringSize.height / 2);
+    CGFloat x = (size.width / 2) - (stringSize.width / 2);
+    UIGraphicsBeginImageContext(size);
+    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:size];
+    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
+        CGRect rect = CGRectMake(0, 0, size.width, size.height);
+        [self->_iconImage drawInRect:CGRectIntegral(rect)];
         CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
         [string drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
-        UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-        return newImage;
-    } @catch(NSException *exception) {
-        @throw exception;
-    }
+    }];
+    UIGraphicsEndImageContext();
+    return image;
 }
 
 - (UIImage *)addPriceMarkerText:(NSString *)label {
@@ -129,26 +127,29 @@
     UIGraphicsBeginImageContext(canvas);
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
     UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
-        
-        CGRect rect = CGRectMake(0, 0, stringSize.width * 1.25, 32);
-        
+                
         CGMutablePathRef path = CGPathCreateMutable();
         CGPathMoveToPoint(path, nil, canvas.width / 2 - 10, 32);
         CGPathAddLineToPoint(path, nil, canvas.width / 2, 42);
         CGPathAddLineToPoint(path, nil, canvas.width / 2 + 10, 32);
         CGPathAddLineToPoint(path, nil, canvas.width / 2 - 10, 32);
         
+        CGContextSetAlpha(rendererContext.CGContext, 0.05);
+        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
+        UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, stringSize.width * 1.25, 34) cornerRadius:5];
+        [shadow fill];
+        [shadow stroke];
+        CGContextSetAlpha(rendererContext.CGContext, 1.0);
         CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.whiteColor.CGColor);
         CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
         CGContextSetLineWidth(rendererContext.CGContext, 5);
         CGContextSetLineJoin(rendererContext.CGContext, 0);
         CGContextAddPath(rendererContext.CGContext, path);
         CGContextDrawPath(rendererContext.CGContext, 3);
-        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:5];
+        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 1, stringSize.width * 1.25, 32) cornerRadius:5];
         [bezier fill];
         [bezier stroke];
         [label drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
-        // TODO: use enum up here!
         CGPathRelease(path);
     }];
     UIGraphicsEndImageContext();
@@ -377,7 +378,7 @@ void CFSafeRelease(CFTypeRef cf) {
         NSLog(@"Failed to load font: %@", errorDescription);
         CFRelease(errorDescription);
     }
-    NSString *fontName = (__bridge NSString *)CGFontCopyFullName(font);
+    NSString *fontName = (__bridge NSString *)CGFontCopyPostScriptName(font);
     CFSafeRelease(font);
     CFSafeRelease(provider);
     return fontName;
@@ -385,16 +386,20 @@ void CFSafeRelease(CFTypeRef cf) {
 
 
 -(UIImage *)baseClusterMarker {
-    CGSize canvas = CGSizeMake(64, 64);
+    CGFloat size = 66;
+    CGSize canvas = CGSizeMake(size, size);
     UIGraphicsBeginImageContext(canvas);
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
     UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
+        CGContextSetAlpha(rendererContext.CGContext, 0.05);
+        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
+        CGContextAddEllipseInRect(rendererContext.CGContext, CGRectMake(0, 0, size, size));
+        CGContextDrawPath(rendererContext.CGContext, 3);
+        CGContextSetAlpha(rendererContext.CGContext, 1.0);
         CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.whiteColor.CGColor);
         CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
         CGContextSetLineWidth(rendererContext.CGContext, 10);
-        
-        CGRect rect = CGRectMake(0, 0, 64, 64);
-        CGContextAddEllipseInRect(rendererContext.CGContext, rect);
+        CGContextAddEllipseInRect(rendererContext.CGContext, CGRectMake(1, 1, size - 2, size - 2));
         CGContextDrawPath(rendererContext.CGContext, 3);
         // TODO: use enum up here!
     }];
