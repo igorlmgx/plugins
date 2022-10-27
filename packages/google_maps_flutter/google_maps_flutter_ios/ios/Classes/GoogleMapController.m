@@ -569,7 +569,6 @@
 }
 
 
-
 - (void)interpretMapOptions:(NSDictionary *)data {
   NSArray *cameraTargetBounds = data[@"cameraTargetBounds"];
   if (cameraTargetBounds && cameraTargetBounds != (id)[NSNull null]) {
