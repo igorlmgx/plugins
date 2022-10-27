@@ -20,8 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)hideInfoWindow;
 - (BOOL)isInfoWindowShown;
 - (void)removeMarker;
-- (UIImage *)clusterMarkerImageWithText:(NSString *)label;
-- (UIImage *)priceMarkerImageWithText:(NSString *)label;
+- (UIImage *)clusterMarkerImageWithText:(NSString *)text;
+- (UIImage *)priceMarkerImageWithText:(NSString *)text;
 @end
 
 @interface FLTMarkersController : NSObject
