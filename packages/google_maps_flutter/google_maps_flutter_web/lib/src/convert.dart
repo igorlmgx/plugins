@@ -244,7 +244,10 @@ gmaps.Size? _gmSizeFromIconConfig(List<Object?> iconConfig, int sizeIndex) {
 }
 
 // Converts a [BitmapDescriptor] into a [gmaps.Icon] that can be used in Markers.
-gmaps.Icon? _gmIconFromBitmapDescriptor(BitmapDescriptor bitmapDescriptor) {
+gmaps.Icon? _gmIconFromBitmapDescriptor(BitmapDescriptor? bitmapDescriptor) {
+  if (bitmapDescriptor == null) {
+    return null;
+  }
   final List<Object?> iconConfig = bitmapDescriptor.toJson() as List<Object?>;
 
   gmaps.Icon? icon;
@@ -300,7 +303,7 @@ gmaps.MarkerOptions _markerOptionsFromMarker(
     ..visible = marker.visible
     ..opacity = marker.alpha
     ..draggable = marker.draggable
-    ..icon = _gmIconFromBitmapDescriptor(marker.icon!);
+    ..icon = _gmIconFromBitmapDescriptor(marker.icon);
   // TODO(ditman): Compute anchor properly, otherwise infowindows attach to the wrong spot.
   // Flat and Rotation are not supported directly on the web.
 }
