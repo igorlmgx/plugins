@@ -121,7 +121,8 @@
     UIFont *textFont =  [UIFont fontWithName:self.fontPath size:[_iconImage size].width / 3.5];
     CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
     CGFloat markerWidth = stringSize.width * 1.25;
-    CGSize canvas = CGSizeMake(markerWidth + 2, 42);
+    CGFloat markerHeight = stringSize.height * 1.50;
+    CGSize canvas = CGSizeMake(markerWidth + 2, markerHeight + 10);
     CGFloat y = ((canvas.height - 10) / 2) - (stringSize.height / 2);
     CGFloat x = (canvas.width / 2) - (stringSize.width / 2);
     CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
@@ -130,14 +131,14 @@
     UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
                 
         CGMutablePathRef path = CGPathCreateMutable();
-        CGPathMoveToPoint(path, nil, canvas.width / 2 - 10, 32);
-        CGPathAddLineToPoint(path, nil, canvas.width / 2, 42);
-        CGPathAddLineToPoint(path, nil, canvas.width / 2 + 10, 32);
-        CGPathAddLineToPoint(path, nil, canvas.width / 2 - 10, 32);
+        CGPathMoveToPoint(path, nil, canvas.width / 2 - 10, markerHeight);
+        CGPathAddLineToPoint(path, nil, canvas.width / 2, markerHeight + 10);
+        CGPathAddLineToPoint(path, nil, canvas.width / 2 + 10, markerHeight);
+        CGPathAddLineToPoint(path, nil, canvas.width / 2 - 10, markerHeight);
         
         CGContextSetAlpha(rendererContext.CGContext, 0.02);
         CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
-        UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth + 2, 34) cornerRadius:5];
+        UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth + 2, markerHeight + 2) cornerRadius:5];
         [shadow fill];
         [shadow stroke];
         CGContextSetAlpha(rendererContext.CGContext, 1.0);
@@ -147,7 +148,7 @@
         CGContextSetLineJoin(rendererContext.CGContext, 0);
         CGContextAddPath(rendererContext.CGContext, path);
         CGContextDrawPath(rendererContext.CGContext, 3);
-        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(1, 1, markerWidth, 32) cornerRadius:5];
+        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(1, 1, markerWidth, markerHeight) cornerRadius:5];
         [bezier fill];
         [bezier stroke];
         [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
@@ -394,12 +395,24 @@ void CFSafeRelease(CFTypeRef cf) {
     return fontName;
 }
 
-
+- (CGFloat)markerRadius {
+    CGFloat baseScreenHeight = 2220;
+    CGFloat maxMarkerRadius = 155;
+    CGFloat minMarkerRadius = 60;
+    CGFloat devicePixelRatio = [UIScreen mainScreen].bounds.size.height * [UIScreen mainScreen].scale;
+    CGFloat proportionalMarkerRadius = 150 * (devicePixelRatio / baseScreenHeight);
+    if(proportionalMarkerRadius > maxMarkerRadius) {
+        return maxMarkerRadius / [UIScreen mainScreen].scale;
+    } else if (proportionalMarkerRadius < minMarkerRadius) {
+        return minMarkerRadius / [UIScreen mainScreen].scale;
+    }
+    return proportionalMarkerRadius / [UIScreen mainScreen].scale;
+}
 
 
 - (UIImage *)baseClusterMarker {
     CGFloat shadowWidth = 2;
-    CGFloat size = ([UIScreen mainScreen].bounds.size.width > 800 ? 64 : 48) + shadowWidth;
+    CGFloat size = [self markerRadius] + shadowWidth;
     CGSize canvas = CGSizeMake(size, size);
     UIGraphicsBeginImageContext(canvas);
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
