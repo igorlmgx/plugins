@@ -99,10 +99,9 @@
     self.marker.zIndex = zIndex;
 }
 
-
 - (UIImage *)clusterMarkerImageWithText:(NSString *)string {
     CGSize size = [_iconImage size];
-    UIFont *textFont = [UIFont fontWithName:self.fontPath size:24];
+    UIFont *textFont = [UIFont fontWithName:self.fontPath size:size.width / 2.5];
     CGSize stringSize = [string sizeWithAttributes:@{NSFontAttributeName:textFont}];
     CGFloat textY = (size.height / 2) - (stringSize.height / 2);
     CGFloat textX = (size.width / 2) - (stringSize.width / 2);
@@ -119,9 +118,10 @@
 }
 
 - (UIImage *)priceMarkerImageWithText:(NSString *)text {
-    UIFont *textFont =  [UIFont fontWithName:self.fontPath size:16];
+    UIFont *textFont =  [UIFont fontWithName:self.fontPath size:[_iconImage size].width / 3.5];
     CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
-    CGSize canvas = CGSizeMake(stringSize.width * 1.25, 42);
+    CGFloat markerWidth = stringSize.width * 1.25;
+    CGSize canvas = CGSizeMake(markerWidth + 2, 42);
     CGFloat y = ((canvas.height - 10) / 2) - (stringSize.height / 2);
     CGFloat x = (canvas.width / 2) - (stringSize.width / 2);
     CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
@@ -135,9 +135,9 @@
         CGPathAddLineToPoint(path, nil, canvas.width / 2 + 10, 32);
         CGPathAddLineToPoint(path, nil, canvas.width / 2 - 10, 32);
         
-        CGContextSetAlpha(rendererContext.CGContext, 0.05);
+        CGContextSetAlpha(rendererContext.CGContext, 0.02);
         CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
-        UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, stringSize.width * 1.25, 34) cornerRadius:5];
+        UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth + 2, 34) cornerRadius:5];
         [shadow fill];
         [shadow stroke];
         CGContextSetAlpha(rendererContext.CGContext, 1.0);
@@ -147,7 +147,7 @@
         CGContextSetLineJoin(rendererContext.CGContext, 0);
         CGContextAddPath(rendererContext.CGContext, path);
         CGContextDrawPath(rendererContext.CGContext, 3);
-        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 1, stringSize.width * 1.25, 32) cornerRadius:5];
+        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(1, 1, markerWidth, 32) cornerRadius:5];
         [bezier fill];
         [bezier stroke];
         [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
@@ -398,12 +398,13 @@ void CFSafeRelease(CFTypeRef cf) {
 
 
 - (UIImage *)baseClusterMarker {
-    CGFloat size = 66;
+    CGFloat shadowWidth = 2;
+    CGFloat size = ([UIScreen mainScreen].bounds.size.width > 800 ? 64 : 48) + shadowWidth;
     CGSize canvas = CGSizeMake(size, size);
     UIGraphicsBeginImageContext(canvas);
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
     UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
-        CGContextSetAlpha(rendererContext.CGContext, 0.05);
+        CGContextSetAlpha(rendererContext.CGContext, 0.02);
         CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
         CGContextAddEllipseInRect(rendererContext.CGContext, CGRectMake(0, 0, size, size));
         CGContextDrawPath(rendererContext.CGContext, kCGPathFillStroke);
