@@ -1,8 +1,8 @@
 package io.flutter.plugins.googlemaps;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -20,11 +20,13 @@ public class CozyMarkerBuilder {
     private final Paint clusterTextPaint;
     private final Paint bubbleTextPaint;
 
-    CozyMarkerBuilder(int size, int bubblePointSize, Context context) {
-        this.bubblePointSize = bubblePointSize;
+    CozyMarkerBuilder(Context context) {
+        int size = getMarkerSize();
+        this.bubblePointSize = size / 6;
         defaultClusterMarker = getClusterBitmap(size);
-        clusterTextPaint = setTextPaint(size / 3f, context);
-        bubbleTextPaint = setTextPaint(size / 4.5f, context);
+        clusterTextPaint = setTextPaint(size / 2.9f, context);
+        int bubbleFontSize = (int) (size / 3.4);
+        bubbleTextPaint = setTextPaint(bubbleFontSize, context);
     }
 
     @NonNull
@@ -56,6 +58,25 @@ public class CozyMarkerBuilder {
         paint.setMaskFilter(new BlurMaskFilter(8, BlurMaskFilter.Blur.NORMAL));
         paint.setAntiAlias(true);
         return paint;
+    }
+
+    private static int getMarkerSize() {
+        int baseScreenHeight = 2467;
+        int baseMarkerSize = 167;
+        int maxMarkerSize = 172;
+        int minMarkerSize = 67;
+
+        int physicalPixelHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+        double heightRatio = ((double ) (physicalPixelHeight)) / ((double) (baseScreenHeight));
+        int proportionalMarkerSize = (int) (baseMarkerSize * heightRatio);
+
+        if (proportionalMarkerSize > maxMarkerSize) {
+            return maxMarkerSize;
+        } else if (proportionalMarkerSize < minMarkerSize) {
+            return minMarkerSize;
+        } else {
+            return proportionalMarkerSize;
+        }
     }
 
     private static Bitmap getClusterBitmap(int size) {
@@ -93,7 +114,7 @@ public class CozyMarkerBuilder {
         Rect rect = new Rect();
         bubbleTextPaint.getTextBounds(text, 0, text.length(), rect);
 
-        int padding = 24 * 2;
+        int padding = this.bubblePointSize * 2;
         int width = rect.width() + padding;
 
         RectF bubble = new RectF(0, 0, width, rect.height() + padding);
@@ -101,8 +122,11 @@ public class CozyMarkerBuilder {
         int height = rect.height() + padding + bubblePointSize;
         Bitmap marker = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(marker);
-        canvas.drawRoundRect(bubble, 10, 10, getShadowPaint());
-        canvas.drawRoundRect(bubble, 10, 10, getBackgroundColor());
+
+        double density = Resources.getSystem().getDisplayMetrics().density;
+        int borderRadius = (int) (5 * density);
+        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getShadowPaint());
+        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getBackgroundColor());
         canvas.drawPath(getBubblePoint(marker), getBackgroundColor());
 
         float dx = (width / 2f) - (rect.width() / 2f) - rect.left;
