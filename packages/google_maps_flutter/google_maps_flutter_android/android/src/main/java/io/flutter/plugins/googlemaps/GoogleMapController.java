@@ -101,8 +101,7 @@ final class GoogleMapController
         new MethodChannel(binaryMessenger, "plugins.flutter.dev/google_maps_android_" + id);
     methodChannel.setMethodCallHandler(this);
     this.lifecycleProvider = lifecycleProvider;
-    int size = context.getResources().getDisplayMetrics().widthPixels > 800 ? 164 : 112;
-    this.markersController = new MarkersController(methodChannel, new CozyMarkerBuilder(size, 20, context));
+    this.markersController = new MarkersController(methodChannel, new CozyMarkerBuilder(context));
     this.polygonsController = new PolygonsController(methodChannel, density);
     this.polylinesController = new PolylinesController(methodChannel, density);
     this.circlesController = new CirclesController(methodChannel, density);
