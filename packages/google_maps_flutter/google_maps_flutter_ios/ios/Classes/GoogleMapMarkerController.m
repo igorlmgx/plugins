@@ -129,7 +129,7 @@
     UIGraphicsBeginImageContext(canvas);
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
     UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
-                
+        
         CGMutablePathRef path = CGPathCreateMutable();
         CGPathMoveToPoint(path, nil, canvas.width / 2 - 10, markerHeight);
         CGPathAddLineToPoint(path, nil, canvas.width / 2, markerHeight + 10);
@@ -402,17 +402,17 @@ void CFSafeRelease(CFTypeRef cf) {
     CGFloat devicePixelRatio = [UIScreen mainScreen].bounds.size.height * [UIScreen mainScreen].scale;
     CGFloat proportionalMarkerRadius = 150 * (devicePixelRatio / baseScreenHeight);
     if(proportionalMarkerRadius > maxMarkerRadius) {
-        return maxMarkerRadius / [UIScreen mainScreen].scale;
+        return maxMarkerRadius;
     } else if (proportionalMarkerRadius < minMarkerRadius) {
-        return minMarkerRadius / [UIScreen mainScreen].scale;
+        return minMarkerRadius;
     }
-    return proportionalMarkerRadius / [UIScreen mainScreen].scale;
+    return proportionalMarkerRadius;
 }
 
 
 - (UIImage *)baseClusterMarker {
     CGFloat shadowWidth = 2;
-    CGFloat size = [self markerRadius] + shadowWidth;
+    CGFloat size = ([self markerRadius] / [UIScreen mainScreen].scale) + shadowWidth;
     CGSize canvas = CGSizeMake(size, size);
     UIGraphicsBeginImageContext(canvas);
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
