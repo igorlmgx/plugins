@@ -244,7 +244,10 @@ gmaps.Size? _gmSizeFromIconConfig(List<Object?> iconConfig, int sizeIndex) {
 }
 
 // Converts a [BitmapDescriptor] into a [gmaps.Icon] that can be used in Markers.
-gmaps.Icon? _gmIconFromBitmapDescriptor(BitmapDescriptor bitmapDescriptor) {
+gmaps.Icon? _gmIconFromBitmapDescriptor(BitmapDescriptor? bitmapDescriptor) {
+  if (bitmapDescriptor == null) {
+    return null;
+  }
   final List<Object?> iconConfig = bitmapDescriptor.toJson() as List<Object?>;
 
   gmaps.Icon? icon;

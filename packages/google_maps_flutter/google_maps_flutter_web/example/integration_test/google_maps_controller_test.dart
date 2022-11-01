@@ -287,9 +287,11 @@ void main() {
             zIndex: 1234,
           ),
         }, markers: <Marker>{
-          const Marker(
-            markerId: MarkerId('marker-1'),
-            infoWindow: InfoWindow(
+          Marker(
+            markerType: MarkerType.count,
+            label: '1',
+            markerId: const MarkerId('marker-1'),
+            infoWindow: const InfoWindow(
               title: 'title for test',
               snippet: 'snippet for test',
             ),
@@ -362,7 +364,10 @@ void main() {
           (WidgetTester tester) async {
         controller = createController(
             mapObjects: MapObjects(markers: <Marker>{
-          const Marker(markerId: MarkerId('marker-1')),
+          Marker(
+              markerType: MarkerType.count,
+              label: '1',
+              markerId: const MarkerId('marker-1')),
         }));
 
         controller.debugSetOverrides(
@@ -607,13 +612,26 @@ void main() {
         controller.debugSetOverrides(markers: mock);
 
         final Set<Marker> previous = <Marker>{
-          const Marker(markerId: MarkerId('to-be-updated')),
-          const Marker(markerId: MarkerId('to-be-removed')),
+          Marker(
+              markerType: MarkerType.count,
+              label: '1',
+              markerId: const MarkerId('to-be-updated')),
+          Marker(
+              markerType: MarkerType.count,
+              label: '1',
+              markerId: const MarkerId('to-be-removed')),
         };
 
         final Set<Marker> current = <Marker>{
-          const Marker(markerId: MarkerId('to-be-updated'), visible: false),
-          const Marker(markerId: MarkerId('to-be-added')),
+          Marker(
+              markerType: MarkerType.count,
+              label: '1',
+              markerId: const MarkerId('to-be-updated'),
+              visible: false),
+          Marker(
+              markerType: MarkerType.count,
+              label: '1',
+              markerId: const MarkerId('to-be-added')),
         };
 
         controller.updateMarkers(MarkerUpdates.from(previous, current));
@@ -622,10 +640,17 @@ void main() {
           const MarkerId('to-be-removed'),
         }));
         verify(mock.addMarkers(<Marker>{
-          const Marker(markerId: MarkerId('to-be-added')),
+          Marker(
+              markerType: MarkerType.count,
+              label: '1',
+              markerId: const MarkerId('to-be-added')),
         }));
         verify(mock.changeMarkers(<Marker>{
-          const Marker(markerId: MarkerId('to-be-updated'), visible: false),
+          Marker(
+              markerType: MarkerType.count,
+              label: '1',
+              markerId: const MarkerId('to-be-updated'),
+              visible: false),
         }));
       });
 

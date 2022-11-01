@@ -900,8 +900,10 @@ void main() {
   });
 
   testWidgets('testToggleInfoWindow', (WidgetTester tester) async {
-    const Marker marker = Marker(
+    Marker marker = Marker(
         markerId: MarkerId('marker'),
+        markerType: MarkerType.count,
+        label: '1',
         infoWindow: InfoWindow(title: 'InfoWindow'));
     final Set<Marker> markers = <Marker>{marker};
 

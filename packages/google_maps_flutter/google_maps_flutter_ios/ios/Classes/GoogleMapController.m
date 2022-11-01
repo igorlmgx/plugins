@@ -88,7 +88,6 @@
                       registrar:(NSObject<FlutterPluginRegistrar> *_Nonnull)registrar {
   if (self = [super init]) {
     _mapView = mapView;
-
     _mapView.accessibilityElementsHidden = NO;
     // TODO(cyanglaz): avoid sending message to self in the middle of the init method.
     // https://github.com/flutter/flutter/issues/104121
@@ -568,6 +567,7 @@
       invokeMethod:@"map#onLongPress"
          arguments:@{@"position" : [FLTGoogleMapJSONConversions arrayFromLocation:coordinate]}];
 }
+
 
 - (void)interpretMapOptions:(NSDictionary *)data {
   NSArray *cameraTargetBounds = data[@"cameraTargetBounds"];

@@ -770,9 +770,11 @@ void main() {
   });
 
   testWidgets('testToggleInfoWindow', (WidgetTester tester) async {
-    const Marker marker = Marker(
-        markerId: MarkerId('marker'),
-        infoWindow: InfoWindow(title: 'InfoWindow'));
+    final Marker marker = Marker(
+        markerType: MarkerType.count,
+        label: '1',
+        markerId: const MarkerId('marker'),
+        infoWindow: const InfoWindow(title: 'InfoWindow'));
     final Set<Marker> markers = <Marker>{marker};
 
     final Completer<ExampleGoogleMapController> controllerCompleter =

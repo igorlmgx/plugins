@@ -34,8 +34,14 @@ void main() {
 
     testWidgets('addMarkers', (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
-        const Marker(markerId: MarkerId('1')),
-        const Marker(markerId: MarkerId('2')),
+        Marker(
+            markerType: MarkerType.count,
+            label: '1',
+            markerId: const MarkerId('1')),
+        Marker(
+            markerType: MarkerType.count,
+            label: '1',
+            markerId: const MarkerId('2')),
       };
 
       controller.addMarkers(markers);
@@ -48,7 +54,10 @@ void main() {
 
     testWidgets('changeMarkers', (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
-        const Marker(markerId: MarkerId('1')),
+        Marker(
+            markerType: MarkerType.count,
+            label: '1',
+            markerId: const MarkerId('1')),
       };
       controller.addMarkers(markers);
 
@@ -57,7 +66,11 @@ void main() {
 
       // Update the marker with radius 10
       final Set<Marker> updatedMarkers = <Marker>{
-        const Marker(markerId: MarkerId('1'), draggable: true),
+        Marker(
+            markerType: MarkerType.count,
+            label: '1',
+            markerId: const MarkerId('1'),
+            draggable: true),
       };
       controller.changeMarkers(updatedMarkers);
 
@@ -68,9 +81,18 @@ void main() {
 
     testWidgets('removeMarkers', (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
-        const Marker(markerId: MarkerId('1')),
-        const Marker(markerId: MarkerId('2')),
-        const Marker(markerId: MarkerId('3')),
+        Marker(
+            markerType: MarkerType.count,
+            label: '1',
+            markerId: const MarkerId('1')),
+        Marker(
+            markerType: MarkerType.count,
+            label: '1',
+            markerId: const MarkerId('2')),
+        Marker(
+            markerType: MarkerType.count,
+            label: '1',
+            markerId: const MarkerId('3')),
       };
 
       controller.addMarkers(markers);
@@ -93,9 +115,11 @@ void main() {
 
     testWidgets('InfoWindow show/hide', (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
-        const Marker(
-          markerId: MarkerId('1'),
-          infoWindow: InfoWindow(title: 'Title', snippet: 'Snippet'),
+        Marker(
+          markerType: MarkerType.count,
+          label: '1',
+          markerId: const MarkerId('1'),
+          infoWindow: const InfoWindow(title: 'Title', snippet: 'Snippet'),
         ),
       };
 
@@ -116,13 +140,17 @@ void main() {
     testWidgets('only single InfoWindow is visible',
         (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
-        const Marker(
-          markerId: MarkerId('1'),
-          infoWindow: InfoWindow(title: 'Title', snippet: 'Snippet'),
+        Marker(
+          markerType: MarkerType.count,
+          label: '1',
+          markerId: const MarkerId('1'),
+          infoWindow: const InfoWindow(title: 'Title', snippet: 'Snippet'),
         ),
-        const Marker(
-          markerId: MarkerId('2'),
-          infoWindow: InfoWindow(title: 'Title', snippet: 'Snippet'),
+        Marker(
+          markerType: MarkerType.count,
+          label: '1',
+          markerId: const MarkerId('2'),
+          infoWindow: const InfoWindow(title: 'Title', snippet: 'Snippet'),
         ),
       };
       controller.addMarkers(markers);
@@ -147,6 +175,8 @@ void main() {
       final Uint8List bytes = const Base64Decoder().convert(iconImageBase64);
       final Set<Marker> markers = <Marker>{
         Marker(
+          markerType: MarkerType.count,
+          label: '1',
           markerId: const MarkerId('1'),
           icon: BitmapDescriptor.fromBytes(bytes),
         ),
@@ -174,6 +204,8 @@ void main() {
       final Uint8List bytes = const Base64Decoder().convert(iconImageBase64);
       final Set<Marker> markers = <Marker>{
         Marker(
+          markerType: MarkerType.count,
+          label: '1',
           markerId: const MarkerId('1'),
           icon: BitmapDescriptor.fromBytes(bytes, size: const Size(20, 30)),
         ),
@@ -199,9 +231,11 @@ void main() {
     testWidgets('InfoWindow snippet can have links',
         (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
-        const Marker(
-          markerId: MarkerId('1'),
-          infoWindow: InfoWindow(
+        Marker(
+          markerType: MarkerType.count,
+          label: '1',
+          markerId: const MarkerId('1'),
+          infoWindow: const InfoWindow(
             title: 'title for test',
             snippet: '<a href="https://www.google.com">Go to Google >>></a>',
           ),
@@ -224,9 +258,11 @@ void main() {
     // https://github.com/flutter/flutter/issues/67289
     testWidgets('InfoWindow content is clickable', (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
-        const Marker(
-          markerId: MarkerId('1'),
-          infoWindow: InfoWindow(
+        Marker(
+          markerType: MarkerType.count,
+          label: '1',
+          markerId: const MarkerId('1'),
+          infoWindow: const InfoWindow(
             title: 'title for test',
             snippet: 'some snippet',
           ),
