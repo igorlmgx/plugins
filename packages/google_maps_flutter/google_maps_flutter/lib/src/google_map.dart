@@ -119,6 +119,7 @@ class GoogleMap extends StatefulWidget {
     this.circles = const <Circle>{},
     this.onCameraMoveStarted,
     this.tileOverlays = const <TileOverlay>{},
+    this.style,
     this.onCameraMove,
     this.onCameraIdle,
     this.onTap,
@@ -197,6 +198,11 @@ class GoogleMap extends StatefulWidget {
 
   /// Tile overlays to be placed on the map.
   final Set<TileOverlay> tileOverlays;
+
+  /// JSON style to be applied on the map.
+  ///
+  /// See https://medium.com/@matthiasschuyten/google-maps-styling-in-flutter-5c4101806e83 for more details.
+  final String? style;
 
   /// Called when the camera starts moving.
   ///
@@ -412,9 +418,17 @@ class _GoogleMapState extends State<GoogleMap> {
     );
     _controller.complete(controller);
     _updateTileOverlays();
+    _setMapStyle();
     final MapCreatedCallback? onMapCreated = widget.onMapCreated;
     if (onMapCreated != null) {
       onMapCreated(controller);
+    }
+  }
+
+  Future<void> _setMapStyle() async {
+    if (widget.style != null) {
+      final GoogleMapController controller = await _controller.future;
+      controller.setMapStyle(widget.style);
     }
   }
 
