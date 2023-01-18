@@ -16,16 +16,21 @@ import androidx.core.content.res.ResourcesCompat;
 
 public class CozyMarkerBuilder {
     private final int bubblePointSize;
+    private final int shadowSize;
+    private final int padding;
+    private final int size;
     private final Bitmap defaultClusterMarker;
     private final Paint clusterTextPaint;
     private final Paint bubbleTextPaint;
 
     CozyMarkerBuilder(Context context) {
-        int size = getMarkerSize();
+        size = getMarkerSize();
         this.bubblePointSize = size / 6;
         defaultClusterMarker = getClusterBitmap(size);
         clusterTextPaint = setTextPaint(size / 2.9f, context);
         int bubbleFontSize = (int) (size / 3.4);
+        shadowSize = 2;
+        padding = this.bubblePointSize * 2;
         bubbleTextPaint = setTextPaint(bubbleFontSize, context);
     }
 
@@ -54,8 +59,7 @@ public class CozyMarkerBuilder {
         paint.setColor(Color.BLACK);
         paint.setStyle(Paint.Style.STROKE);
         paint.setAlpha(15);
-        paint.setStrokeWidth(6);
-        paint.setMaskFilter(new BlurMaskFilter(8, BlurMaskFilter.Blur.NORMAL));
+        paint.setStrokeWidth(2);
         paint.setAntiAlias(true);
         return paint;
     }
@@ -67,7 +71,7 @@ public class CozyMarkerBuilder {
         int minMarkerSize = 67;
 
         int physicalPixelHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
-        double heightRatio = ((double ) (physicalPixelHeight)) / ((double) (baseScreenHeight));
+        double heightRatio = ((double) (physicalPixelHeight)) / ((double) (baseScreenHeight));
         int proportionalMarkerSize = (int) (baseMarkerSize * heightRatio);
 
         if (proportionalMarkerSize > maxMarkerSize) {
@@ -110,16 +114,15 @@ public class CozyMarkerBuilder {
         return pointer;
     }
 
-    private Bitmap addBubbleMarkerText(String text) {
+    private Bitmap addBubblePinMarkerText(String text) {
         Rect rect = new Rect();
         bubbleTextPaint.getTextBounds(text, 0, text.length(), rect);
 
-        int padding = this.bubblePointSize * 2;
         int width = rect.width() + padding;
+        int height = rect.height() + padding + bubblePointSize;
 
         RectF bubble = new RectF(0, 0, width, rect.height() + padding);
 
-        int height = rect.height() + padding + bubblePointSize;
         Bitmap marker = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(marker);
 
@@ -136,12 +139,41 @@ public class CozyMarkerBuilder {
         return marker;
     }
 
+    private Bitmap addRoundedMarkerText(String text) {
+        Rect rect = new Rect();
+        bubbleTextPaint.getTextBounds(text, 0, text.length(), rect);
+        int ovalMarkerSize = size / 2;
+        int minWidth = rect.width() > ovalMarkerSize ? rect.width() : ovalMarkerSize;
+
+        int width = minWidth + padding + shadowSize;
+        int height = rect.height() + padding + shadowSize;
+
+        RectF shadow = new RectF(0, 0, width, height);
+        RectF shape = new RectF(shadowSize, shadowSize, width - shadowSize, height - shadowSize);
+
+        Bitmap marker = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+        double density = Resources.getSystem().getDisplayMetrics().density;
+        int borderRadius = (int) (15 * density);
+        Canvas canvas = new Canvas(marker);
+        canvas.drawRoundRect(shadow, borderRadius * 5, borderRadius * 5, getShadowPaint());
+        canvas.drawRoundRect(shape, borderRadius, borderRadius, getBackgroundColor());
+
+        float dx = (width / 2f) - (rect.width() / 2f) - rect.left;
+        float dy = (height / 2f) + (rect.height() / 2f) - rect.bottom;
+
+        canvas.drawText(text, dx, dy, bubbleTextPaint);
+        return marker;
+    }
+
     public Bitmap buildMarker(String type, String text) {
         switch (type) {
             case "count":
                 return addClusterMarkerText(text);
             case "price":
-                return addBubbleMarkerText(text);
+                return addBubblePinMarkerText(text);
+            case "rounded":
+                return addRoundedMarkerText(text);
             default:
                 return null;
         }

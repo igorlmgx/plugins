@@ -15,13 +15,15 @@ NS_ASSUME_NONNULL_BEGIN
                             identifier:(NSString *)identifier
                                mapView:(GMSMapView *)mapView
                              iconImage:(UIImage *)iconImage
-                             fontPath:(NSString *)path;
+                              fontPath:(nonnull NSString *)fontPath
+                              markerRadius:(CGFloat)radius;
 - (void)showInfoWindow;
 - (void)hideInfoWindow;
 - (BOOL)isInfoWindowShown;
 - (void)removeMarker;
 - (UIImage *)clusterMarkerImageWithText:(NSString *)text;
 - (UIImage *)priceMarkerImageWithText:(NSString *)text;
+- (UIImage *)roundedMarkerImageWithText:(NSString *)text;
 @end
 
 @interface FLTMarkersController : NSObject

@@ -15,6 +15,7 @@
 @property(assign, nonatomic, readwrite) BOOL consumeTapEvents;
 @property(strong, nonatomic) UIImage *iconImage;
 @property(strong, nonatomic) NSString *fontPath;
+@property(nonatomic, assign) CGFloat markerRadius;
 
 @end
 
@@ -24,7 +25,8 @@
                             identifier:(NSString *)identifier
                                mapView:(GMSMapView *)mapView
                              iconImage:(UIImage *)iconImage
-                              fontPath:(nonnull NSString *)fontPath {
+                              fontPath:(nonnull NSString *)fontPath
+                              markerRadius:(CGFloat)radius {
     self = [super init];
     if (self) {
         _marker = [GMSMarker markerWithPosition:position];
@@ -32,6 +34,7 @@
         _marker.userData = @[ identifier ];
         _iconImage = iconImage;
         _fontPath = fontPath;
+        _markerRadius = radius;
     }
     return self;
 }
@@ -158,6 +161,46 @@
     return image;
 }
 
+- (UIImage *)roundedMarkerImageWithText:(NSString *)text {
+    UIFont *textFont =  [UIFont fontWithName:self.fontPath size:[_iconImage size].width / 3.5];
+    CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
+    
+    CGFloat padding = 15;
+    CGFloat shadowSize = 2;
+
+    CGFloat minMarkerWidth = (self.markerRadius / [UIScreen mainScreen].scale) / 2;
+    CGFloat markerWidth = ((stringSize.width > minMarkerWidth) ? stringSize.width : minMarkerWidth) + padding + shadowSize;
+    CGFloat markerHeight = stringSize.height + padding + shadowSize;
+
+    CGSize canvas = CGSizeMake(markerWidth, markerHeight);
+    CGFloat y = (canvas.height / 2) - (stringSize.height / 2);
+    CGFloat x = (canvas.width / 2) - (stringSize.width / 2);
+    CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
+
+    UIGraphicsBeginImageContext(canvas);
+    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
+    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
+        
+        CGContextSetAlpha(rendererContext.CGContext, 0.15);
+        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
+        UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth, markerHeight) cornerRadius:20];
+        [shadow fill];
+        [shadow stroke];
+        CGContextSetAlpha(rendererContext.CGContext, 1.0);
+        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.whiteColor.CGColor);
+        CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
+        CGContextSetLineWidth(rendererContext.CGContext, 5);
+        CGContextSetLineJoin(rendererContext.CGContext, 0);
+        CGContextDrawPath(rendererContext.CGContext, 3);
+        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(shadowSize / 2, shadowSize / 2, markerWidth - shadowSize, markerHeight - shadowSize) cornerRadius:20];
+        [bezier fill];
+        [bezier stroke];
+        [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
+    }];
+    UIGraphicsEndImageContext();
+    return image;
+}
+
 
 - (void)interpretMarkerOptions:(NSDictionary *)data
                      registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
@@ -194,7 +237,20 @@
                                                                userInfo:nil];
                 @throw exception;
             }
-        }
+        } else if([markerType isEqualToString:@"rounded"]) {
+            NSString *label = data[@"label"];
+            if(label && label != (id)[NSNull null]) {
+                UIImage *img = [self roundedMarkerImageWithText:label];
+                [self setIcon:img];
+            } else {
+                NSString *error =
+                [NSString stringWithFormat:@"label was not provided."];
+                NSException *exception = [NSException exceptionWithName:@"InvalidBitmapDescriptor"
+                                                                 reason:error
+                                                               userInfo:nil];
+                @throw exception;
+            }           
+         }
         else if([markerType isEqualToString:@"price"]) {
             NSString *label = data[@"label"];
             if(label && label != (id)[NSNull null]) {
@@ -441,7 +497,8 @@ void CFSafeRelease(CFTypeRef cf) {
                                                           identifier:identifier
                                                              mapView:self.mapView
                                                            iconImage:self.emptyClusterMarker
-                                                            fontPath:self.fontPath];
+                                                            fontPath:self.fontPath
+                                                            markerRadius:[self markerRadius]];
         [controller interpretMarkerOptions:marker registrar:self.registrar];
         self.markerIdentifierToController[identifier] = controller;
     }
