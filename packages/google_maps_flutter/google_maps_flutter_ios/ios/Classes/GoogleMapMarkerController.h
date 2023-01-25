@@ -13,17 +13,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property(assign, nonatomic, readonly) BOOL consumeTapEvents;
 - (instancetype)initMarkerWithPosition:(CLLocationCoordinate2D)position
                             identifier:(NSString *)identifier
-                               mapView:(GMSMapView *)mapView
-                             iconImage:(UIImage *)iconImage
-                              fontPath:(nonnull NSString *)fontPath
-                              markerRadius:(CGFloat)radius;
+                               mapView:(GMSMapView *)mapView;
 - (void)showInfoWindow;
 - (void)hideInfoWindow;
 - (BOOL)isInfoWindowShown;
 - (void)removeMarker;
-- (UIImage *)clusterMarkerImageWithText:(NSString *)text;
-- (UIImage *)priceMarkerImageWithText:(NSString *)text;
-- (UIImage *)roundedMarkerImageWithText:(NSString *)text;
 @end
 
 @interface FLTMarkersController : NSObject
@@ -45,6 +39,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)hideMarkerInfoWindowWithIdentifier:(NSString *)identifier result:(FlutterResult)result;
 - (void)isInfoWindowShownForMarkerWithIdentifier:(NSString *)identifier
                                           result:(FlutterResult)result;
+- (UIImage *)clusterMarkerImageWithText:(NSString *)text;
+- (UIImage *)priceMarkerImageWithText:(NSString *)text;
+- (UIImage *)roundedMarkerImageWithText:(NSString *)text;
 @end
 
 NS_ASSUME_NONNULL_END
