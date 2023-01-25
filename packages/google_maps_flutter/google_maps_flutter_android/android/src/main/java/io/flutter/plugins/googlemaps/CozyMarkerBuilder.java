@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.LruCache;
 
 import androidx.core.content.res.ResourcesCompat;
 
@@ -20,6 +21,7 @@ public class CozyMarkerBuilder {
     private final Bitmap blankClusterMarker;
     private final Paint clusterTextStyle;
     private final Paint priceMarkerTextStyle;
+    private LruCache<String, Bitmap> memoryCache;
 
     CozyMarkerBuilder(Context context) {
         size = getMarkerSize();
@@ -28,6 +30,28 @@ public class CozyMarkerBuilder {
         blankClusterMarker = getEmptyClusterBitmap(size);
         clusterTextStyle = getTextPaint(size / 3f, context);
         priceMarkerTextStyle = getTextPaint(size / 3.5f, context);
+        setMemoryCache();
+    }
+
+    private void setMemoryCache() {
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        int cacheSize = maxMemory / 8;
+        memoryCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap value) {
+                return value.getByteCount() / 1024;
+            }
+        };
+    }
+
+    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+        if (getBitmapFromMemCache(key) == null) {
+            memoryCache.put(key, bitmap);
+        }
+    }
+
+    public Bitmap getBitmapFromMemCache(String key) {
+        return memoryCache.get(key);
     }
 
     private Paint getTextPaint(float size, Context context) {
@@ -92,7 +116,8 @@ public class CozyMarkerBuilder {
         clusterTextStyle.getTextBounds(text, 0, text.length(), clusterRect);
         float dx = getTextXOffset(marker.getWidth(), clusterRect);
         float dy = getTextYOffset(marker.getHeight(), clusterRect);
-        new Canvas(marker).drawText(text, dx, dy, clusterTextStyle);
+        Canvas canvas = new Canvas(marker);
+        canvas.drawText(text, dx, dy, clusterTextStyle);
         return marker;
     }
 
@@ -169,7 +194,7 @@ public class CozyMarkerBuilder {
         return marker;
     }
 
-    public Bitmap buildMarker(String type, String text) {
+    public Bitmap getMarker(String type, String text) {
         switch (type) {
             case "count":
                 return getClusterMarker(text);
@@ -182,4 +207,13 @@ public class CozyMarkerBuilder {
         }
     }
 
+    public Bitmap buildMarker(String type, String text) {
+        final Bitmap bitmap = getBitmapFromMemCache(text);
+        if (bitmap != null) {
+            return bitmap.copy(bitmap.getConfig(), true);
+        }
+        Bitmap marker = getMarker(type, text);
+        addBitmapToMemoryCache(text, marker);
+        return marker;
+    }
 }
