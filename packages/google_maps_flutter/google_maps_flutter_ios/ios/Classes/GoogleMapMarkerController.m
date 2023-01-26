@@ -469,7 +469,7 @@ void CFSafeRelease(CFTypeRef cf) {
                                      userInfo:nil];
     }
     UIImage *cachedImage = [[self cache] objectForKey:label];
-    if(cachedImage != (id)[NSNull null]) {
+    if(cachedImage != nil) {
         return cachedImage;
     }
     UIImage *image;
@@ -486,6 +486,7 @@ void CFSafeRelease(CFTypeRef cf) {
                                        reason:@"invalid markerType!"
                                      userInfo:nil];
     }
+    [[self cache] setObject:image forKey:label];
     return image;
 }
 
