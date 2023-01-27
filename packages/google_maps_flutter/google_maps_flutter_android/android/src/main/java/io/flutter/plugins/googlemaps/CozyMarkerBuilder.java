@@ -44,13 +44,13 @@ public class CozyMarkerBuilder {
         };
     }
 
-    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+    private void addBitmapToMemoryCache(String key, Bitmap bitmap) {
         if (getBitmapFromMemCache(key) == null) {
             memoryCache.put(key, bitmap);
         }
     }
 
-    public Bitmap getBitmapFromMemCache(String key) {
+    private Bitmap getBitmapFromMemCache(String key) {
         return memoryCache.get(key);
     }
 
@@ -194,7 +194,7 @@ public class CozyMarkerBuilder {
         return marker;
     }
 
-    public Bitmap getMarker(String type, String text) {
+    private Bitmap getMarker(String type, String text) {
         switch (type) {
             case "count":
                 return getClusterMarker(text);
