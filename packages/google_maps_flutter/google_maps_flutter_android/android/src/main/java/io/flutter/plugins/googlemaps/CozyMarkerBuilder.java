@@ -208,12 +208,13 @@ public class CozyMarkerBuilder {
     }
 
     public Bitmap buildMarker(String type, String text) {
-        final Bitmap bitmap = getBitmapFromMemCache(text);
+        String key = String.format("%s:%s", type, text);
+        final Bitmap bitmap = getBitmapFromMemCache(key);
         if (bitmap != null) {
             return bitmap.copy(bitmap.getConfig(), true);
         }
         Bitmap marker = getMarker(type, text);
-        addBitmapToMemoryCache(text, marker);
+        addBitmapToMemoryCache(key, marker);
         return marker;
     }
 }

@@ -468,7 +468,8 @@ void CFSafeRelease(CFTypeRef cf) {
                                        reason:@"no label was provided when expected."
                                      userInfo:nil];
     }
-    UIImage *cachedImage = [[self cache] objectForKey:label];
+    NSString *key = [NSString stringWithFormat:@"%@:%@", markerType, label];
+    UIImage *cachedImage = [[self cache] objectForKey:key];
     if(cachedImage != nil) {
         return cachedImage;
     }
@@ -486,7 +487,7 @@ void CFSafeRelease(CFTypeRef cf) {
                                        reason:@"invalid markerType!"
                                      userInfo:nil];
     }
-    [[self cache] setObject:image forKey:label];
+    [[self cache] setObject:image forKey:key];
     return image;
 }
 
