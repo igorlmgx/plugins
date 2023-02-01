@@ -144,8 +144,9 @@ public class CozyMarkerBuilder {
 
         Canvas canvas = new Canvas(marker);
 
-        canvas.drawRoundRect(shadow, 20, 20, getShadowPaint());
-        canvas.drawRoundRect(bubble, 20, 20, getMarkerPaint());
+        int borderRadius = 20;
+        canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
+        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getMarkerPaint());
         canvas.drawPath(getPriceMarkerTail(marker), getMarkerPaint());
 
         float dx = getTextXOffset(width, rect);
@@ -174,9 +175,10 @@ public class CozyMarkerBuilder {
         RectF shadow = new RectF(0, 0, markerWidth, markerHeight);
         RectF shape = new RectF(shadowSize, shadowSize, markerWidth - shadowSize, markerHeight - shadowSize);
 
+        int borderRadius = 40;
         Canvas canvas = new Canvas(marker);
-        canvas.drawRoundRect(shadow, 40, 40, getShadowPaint());
-        canvas.drawRoundRect(shape, 40, 40, getMarkerPaint());
+        canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
+        canvas.drawRoundRect(shape, borderRadius, borderRadius, getMarkerPaint());
 
         float dx = getTextXOffset(markerWidth, rect);
         float dy = getTextYOffset(markerHeight, rect);
