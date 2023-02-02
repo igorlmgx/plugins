@@ -72,11 +72,6 @@ public class CozyMarkerBuilder {
             return Math.max(proportionalMarkerSize, minMarkerSize);
     }
 
-    private int getBorderRadius(int multiply) {
-        double density = Resources.getSystem().getDisplayMetrics().density;
-        return (int) (density * multiply);
-    }
-
     private Bitmap getEmptyClusterBitmap(int size) {
         Bitmap marker = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(marker);
@@ -85,7 +80,7 @@ public class CozyMarkerBuilder {
         return marker;
     }
 
-    private Bitmap getClusterMarker(String text) {
+    private Bitmap getClusterMarkerBitmap(String text) {
         Bitmap marker = Bitmap.createBitmap(this.blankClusterMarker);
         Rect clusterRect = new Rect();
         Paint clusterTextStyle = getTextPaint(size / 3f, Color.BLACK);
@@ -110,7 +105,7 @@ public class CozyMarkerBuilder {
         return pointer;
     }
 
-    private Bitmap getPriceMarker(String text) {
+    private Bitmap getPriceMarkerBitmap(String text) {
         Rect rect = new Rect();
         Paint priceMarkerTextStyle = getTextPaint(size / 3.5f, Color.BLACK);
         priceMarkerTextStyle.getTextBounds(text, 0, text.length(), rect);
@@ -126,11 +121,10 @@ public class CozyMarkerBuilder {
 
         Canvas canvas = new Canvas(marker);
 
-        int borderRadius = getBorderRadius(5);
-        int shadowBorderRadius = getBorderRadius(10);
-        canvas.drawRoundRect(shadow, shadowBorderRadius, shadowBorderRadius, getShadowPaint());
-        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getMarkerPaint(Color.WHITE));
-        canvas.drawPath(getPriceMarkerTail(marker), getMarkerPaint(Color.WHITE));
+        int borderRadius = 20;
+        canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
+        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getMarkerPaint());
+        canvas.drawPath(getPriceMarkerTail(marker), getMarkerPaint());
 
         float dx = getTextXOffset(width, rect);
         float dy = getTextYOffset(height, rect);
@@ -138,15 +132,15 @@ public class CozyMarkerBuilder {
         return marker;
     }
 
-    private float getTextYOffset(float height, Rect rect) {
-        return (height / 2f) + (rect.height() / 2f) - rect.bottom;
+    private float getTextYOffset(float markerHeight, Rect rect) {
+        return (markerHeight / 2f) + (rect.height() / 2f) - rect.bottom;
     }
 
-    private float getTextXOffset(float width, Rect rect) {
-        return (width / 2f) - (rect.width() / 2f) - rect.left;
+    private float getTextXOffset(float markerWidth, Rect rect) {
+        return (markerWidth / 2f) - (rect.width() / 2f) - rect.left;
     }
 
-    private Bitmap getRoundedMarker(String text, int markerColor, int textColor) {
+    private Bitmap getRoundedMarkerBitmap(String text, int markerColor, int textColor) {
         Rect rect = new Rect();
         Paint priceMarkerTextStyle = getTextPaint(size / 3.5f, textColor);
         priceMarkerTextStyle.getTextBounds(text, 0, text.length(), rect);
@@ -159,11 +153,10 @@ public class CozyMarkerBuilder {
         RectF shadow = new RectF(0, 0, markerWidth, markerHeight);
         RectF shape = new RectF(shadowSize, shadowSize, markerWidth - shadowSize, markerHeight - shadowSize);
 
-        int borderRadius = getBorderRadius(15);
-        int shadowRadius = getBorderRadius(20);
+        int borderRadius = 40;
         Canvas canvas = new Canvas(marker);
-        canvas.drawRoundRect(shadow, shadowRadius, shadowRadius, getShadowPaint());
-        canvas.drawRoundRect(shape, borderRadius, borderRadius, getMarkerPaint(markerColor));
+        canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
+        canvas.drawRoundRect(shape, borderRadius, borderRadius, getMarkerPaint());
 
         float dx = getTextXOffset(markerWidth, rect);
         float dy = getTextYOffset(markerHeight, rect);
@@ -175,15 +168,15 @@ public class CozyMarkerBuilder {
     public Bitmap buildMarker(String type, String text) {
         switch (type) {
             case "count":
-                return getClusterMarker(text);
+                return getClusterMarkerBitmap(text);
             case "price":
-                return getPriceMarker(text);
+                return getPriceMarkerBitmap(text);
             case "rounded":
-                return getRoundedMarker(text, Color.WHITE, Color.BLACK);
+                return getRoundedMarkerBitmap(text, Color.WHITE, Color.BLACK);
             case "rounded_selected":
-                return getRoundedMarker(text, Color.rgb(57, 87, 189), Color.WHITE);
+                return getRoundedMarkerBitmap(text, Color.rgb(57, 87, 189), Color.WHITE);
             case "rounded_visited":
-                return getRoundedMarker(text, Color.WHITE, Color.rgb(110, 110, 100));
+                return getRoundedMarkerBitmap(text, Color.WHITE, Color.rgb(110, 110, 100));
             default:
                 return null;
         }
