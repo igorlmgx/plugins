@@ -3,7 +3,6 @@ package io.flutter.plugins.googlemaps;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -11,26 +10,27 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;
 
 public class CozyMarkerBuilder {
-    private final int bubblePointSize;
-    private final Bitmap defaultClusterMarker;
-    private final Paint clusterTextPaint;
-    private final Paint bubbleTextPaint;
+    private final int shadowSize = 3;
+    private final int priceMarkerTailSize;
+    private final int padding;
+    private final int size;
+    private final Bitmap blankClusterMarker;
+    private final Paint clusterTextStyle;
+    private final Paint priceMarkerTextStyle;
 
     CozyMarkerBuilder(Context context) {
-        int size = getMarkerSize();
-        this.bubblePointSize = size / 6;
-        defaultClusterMarker = getClusterBitmap(size);
-        clusterTextPaint = setTextPaint(size / 2.9f, context);
-        int bubbleFontSize = (int) (size / 3.4);
-        bubbleTextPaint = setTextPaint(bubbleFontSize, context);
+        size = getMarkerSize();
+        padding = size / 3;
+        priceMarkerTailSize = size / 6;
+        blankClusterMarker = getEmptyClusterBitmap(size);
+        clusterTextStyle = getTextPaint(size / 3f, context);
+        priceMarkerTextStyle = getTextPaint(size / 3.5f, context);
     }
 
-    @NonNull
-    private static Paint setTextPaint(float size, Context context) {
+    private Paint getTextPaint(float size, Context context) {
         Paint paint = new Paint();
         paint.setColor(Color.BLACK);
         paint.setTypeface(ResourcesCompat.getFont(context, R.font.oatmealpro2_semibold));
@@ -40,108 +40,136 @@ public class CozyMarkerBuilder {
         return paint;
     }
 
-    @NonNull
-    private static Paint getBackgroundColor() {
+    private Paint getMarkerPaint() {
         Paint paint = new Paint();
         paint.setColor(Color.WHITE);
         paint.setAntiAlias(true);
         return paint;
     }
 
-    @NonNull
-    private static Paint getShadowPaint() {
+    private Paint getShadowPaint() {
         Paint paint = new Paint();
         paint.setColor(Color.BLACK);
         paint.setStyle(Paint.Style.STROKE);
         paint.setAlpha(15);
-        paint.setStrokeWidth(6);
-        paint.setMaskFilter(new BlurMaskFilter(8, BlurMaskFilter.Blur.NORMAL));
+        paint.setStrokeWidth(shadowSize);
         paint.setAntiAlias(true);
         return paint;
     }
 
-    private static int getMarkerSize() {
+    private int getMarkerSize() {
         int baseScreenHeight = 2467;
         int baseMarkerSize = 167;
         int maxMarkerSize = 172;
         int minMarkerSize = 67;
 
         int physicalPixelHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
-        double heightRatio = ((double ) (physicalPixelHeight)) / ((double) (baseScreenHeight));
+        double heightRatio = ((double) (physicalPixelHeight)) / ((double) (baseScreenHeight));
         int proportionalMarkerSize = (int) (baseMarkerSize * heightRatio);
 
         if (proportionalMarkerSize > maxMarkerSize) {
             return maxMarkerSize;
-        } else if (proportionalMarkerSize < minMarkerSize) {
-            return minMarkerSize;
-        } else {
-            return proportionalMarkerSize;
-        }
+        } else
+            return Math.max(proportionalMarkerSize, minMarkerSize);
     }
 
-    private static Bitmap getClusterBitmap(int size) {
+    private Bitmap getEmptyClusterBitmap(int size) {
         Bitmap marker = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(marker);
         canvas.drawCircle(size / 2f, size / 2f, size / 2.2f, getShadowPaint());
-        canvas.drawCircle(size / 2f, size / 2f, size / 2.2f, getBackgroundColor());
+        canvas.drawCircle(size / 2f, size / 2f, (size / 2.2f) - shadowSize, getMarkerPaint());
         return marker;
     }
 
-    private Bitmap addClusterMarkerText(String text) {
-        Bitmap marker = Bitmap.createBitmap(this.defaultClusterMarker);
+    private Bitmap getClusterMarkerBitmap(String text) {
+        Bitmap marker = Bitmap.createBitmap(this.blankClusterMarker);
         Rect clusterRect = new Rect();
-        clusterTextPaint.getTextBounds(text, 0, text.length(), clusterRect);
-        float dx = (marker.getWidth() / 2f) - (clusterRect.width() / 2f) - clusterRect.left;
-        float dy = (marker.getHeight() / 2f) + (clusterRect.height() / 2f) - clusterRect.bottom;
-        new Canvas(marker).drawText(text, dx, dy, clusterTextPaint);
+        clusterTextStyle.getTextBounds(text, 0, text.length(), clusterRect);
+        float dx = getTextXOffset(marker.getWidth(), clusterRect);
+        float dy = getTextYOffset(marker.getHeight(), clusterRect);
+        new Canvas(marker).drawText(text, dx, dy, clusterTextStyle);
         return marker;
     }
 
-    private Path getBubblePoint(Bitmap marker) {
+    private Path getPriceMarkerTail(Bitmap marker) {
         Path pointer = new Path();
         pointer.setFillType(Path.FillType.EVEN_ODD);
         float width = marker.getWidth();
-        float height = marker.getHeight() - bubblePointSize;
-        pointer.moveTo(width / 2f - bubblePointSize, height);
-        pointer.lineTo(width / 2f + bubblePointSize, height);
-        pointer.lineTo(width / 2f, height + bubblePointSize);
-        pointer.lineTo(width / 2f - bubblePointSize, height);
+        float height = marker.getHeight() - priceMarkerTailSize - shadowSize;
+        pointer.moveTo(width / 2f - priceMarkerTailSize, height);
+        pointer.lineTo(width / 2f + priceMarkerTailSize, height);
+        pointer.lineTo(width / 2f, height + priceMarkerTailSize);
+        pointer.lineTo(width / 2f - priceMarkerTailSize, height);
         pointer.close();
         return pointer;
     }
 
-    private Bitmap addBubbleMarkerText(String text) {
+    private Bitmap getPriceMarkerBitmap(String text) {
         Rect rect = new Rect();
-        bubbleTextPaint.getTextBounds(text, 0, text.length(), rect);
+        priceMarkerTextStyle.getTextBounds(text, 0, text.length(), rect);
 
-        int padding = this.bubblePointSize * 2;
         int width = rect.width() + padding;
+        int height = rect.height() + padding;
+        int shadowWidth = width + shadowSize;
+        int shadowHeight = height + shadowSize;
+        Bitmap marker = Bitmap.createBitmap(shadowWidth, shadowHeight + priceMarkerTailSize, Bitmap.Config.ARGB_8888);
 
-        RectF bubble = new RectF(0, 0, width, rect.height() + padding);
+        RectF shadow = new RectF(0, 0, shadowWidth, shadowHeight);
+        RectF bubble = new RectF(shadowSize, shadowSize, width, height);
 
-        int height = rect.height() + padding + bubblePointSize;
-        Bitmap marker = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(marker);
 
-        double density = Resources.getSystem().getDisplayMetrics().density;
-        int borderRadius = (int) (5 * density);
-        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getShadowPaint());
-        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getBackgroundColor());
-        canvas.drawPath(getBubblePoint(marker), getBackgroundColor());
+        int borderRadius = 20;
+        canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
+        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getMarkerPaint());
+        canvas.drawPath(getPriceMarkerTail(marker), getMarkerPaint());
 
-        float dx = (width / 2f) - (rect.width() / 2f) - rect.left;
-        float dy = ((rect.height() + padding) / 2f) + (rect.height() / 2f) - rect.bottom;
+        float dx = getTextXOffset(width, rect);
+        float dy = getTextYOffset(height, rect);
+        canvas.drawText(text, dx, dy, priceMarkerTextStyle);
+        return marker;
+    }
 
-        canvas.drawText(text, dx, dy, bubbleTextPaint);
+    private float getTextYOffset(float markerHeight, Rect rect) {
+        return (markerHeight / 2f) + (rect.height() / 2f) - rect.bottom;
+    }
+
+    private float getTextXOffset(float markerWidth, Rect rect) {
+        return (markerWidth / 2f) - (rect.width() / 2f) - rect.left;
+    }
+
+    private Bitmap getRoundedMarkerBitmap(String text) {
+        Rect rect = new Rect();
+        priceMarkerTextStyle.getTextBounds(text, 0, text.length(), rect);
+        int minWidth = Math.max(rect.width(), size / 2);
+
+        int markerWidth = minWidth + padding + shadowSize;
+        int markerHeight = rect.height() + padding + shadowSize;
+        Bitmap marker = Bitmap.createBitmap(markerWidth, markerHeight, Bitmap.Config.ARGB_8888);
+
+        RectF shadow = new RectF(0, 0, markerWidth, markerHeight);
+        RectF shape = new RectF(shadowSize, shadowSize, markerWidth - shadowSize, markerHeight - shadowSize);
+
+        int borderRadius = 40;
+        Canvas canvas = new Canvas(marker);
+        canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
+        canvas.drawRoundRect(shape, borderRadius, borderRadius, getMarkerPaint());
+
+        float dx = getTextXOffset(markerWidth, rect);
+        float dy = getTextYOffset(markerHeight, rect);
+
+        canvas.drawText(text, dx, dy, priceMarkerTextStyle);
         return marker;
     }
 
     public Bitmap buildMarker(String type, String text) {
         switch (type) {
             case "count":
-                return addClusterMarkerText(text);
+                return getClusterMarkerBitmap(text);
             case "price":
-                return addBubbleMarkerText(text);
+                return getPriceMarkerBitmap(text);
+            case "rounded":
+                return getRoundedMarkerBitmap(text);
             default:
                 return null;
         }
