@@ -13,6 +13,7 @@ import android.graphics.Typeface;
 
 import androidx.core.content.res.ResourcesCompat;
 
+
 public class CozyMarkerBuilder {
     private final int shadowSize = 3;
     private final int priceMarkerTailSize;
@@ -123,8 +124,8 @@ public class CozyMarkerBuilder {
 
         int borderRadius = 20;
         canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
-        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getMarkerPaint());
-        canvas.drawPath(getPriceMarkerTail(marker), getMarkerPaint());
+        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getMarkerPaint(Color.WHITE));
+        canvas.drawPath(getPriceMarkerTail(marker), getMarkerPaint(Color.WHITE));
 
         float dx = getTextXOffset(width, rect);
         float dy = getTextYOffset(height, rect);
@@ -156,7 +157,7 @@ public class CozyMarkerBuilder {
         int borderRadius = 40;
         Canvas canvas = new Canvas(marker);
         canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
-        canvas.drawRoundRect(shape, borderRadius, borderRadius, getMarkerPaint());
+        canvas.drawRoundRect(shape, borderRadius, borderRadius, getMarkerPaint(markerColor));
 
         float dx = getTextXOffset(markerWidth, rect);
         float dy = getTextYOffset(markerHeight, rect);
