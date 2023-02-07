@@ -27,6 +27,14 @@ enum MarkerType {
   /// to the text. If chosen, an label must be passed in the label argument.
   rounded,
 
+  /// A grey rounded square with fading text in the middle. The shape adjusts itself
+  /// to the text. If chosen, an label must be passed in the label argument.
+  rounded_visited,
+
+  /// A blue rounded square with white text in the middle. The shape adjusts itself
+  /// to the text. If chosen, an label must be passed in the label argument.
+  rounded_selected,
+
   /// A non-standard icon. If chosen, an icon must be passed in the icon
   /// argument.
   icon
