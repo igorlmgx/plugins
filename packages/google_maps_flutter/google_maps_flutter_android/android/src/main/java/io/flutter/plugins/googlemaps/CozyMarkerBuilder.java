@@ -177,14 +177,18 @@ public class CozyMarkerBuilder {
         }
     }
 
+    private Bitmap copyOnlyBitmapProperties(Bitmap bitmap) {
+        return bitmap.copy(bitmap.getConfig(), true);
+    }
+
     public Bitmap buildMarker(String type, String text) {
         String key = String.format("%s:%s", type, text);
         final Bitmap bitmap = markerCache.getBitmapFromMemCache(key);
         if (bitmap != null) {
-            return bitmap.copy(bitmap.getConfig(), true);
+            return copyOnlyBitmapProperties(bitmap);
         }
         Bitmap marker = getMarker(type, text);
         markerCache.addBitmapToMemoryCache(key, marker);
-        return marker.copy(marker.getConfig(), true);
+        return copyOnlyBitmapProperties(marker);
     }
 }
