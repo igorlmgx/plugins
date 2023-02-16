@@ -363,6 +363,48 @@ void CFSafeRelease(CFTypeRef cf) {
     return image;
 }
 
+
+- (UIImage *)roundedMarkerImageWithText:(NSString *)text withMarkerColor:(UIColor *)color withTextColor:(UIColor *)textColor {
+    UIFont *textFont =  [UIFont fontWithName:self.fontPath size:[self.baseClusterMarker size].width / 3.5];
+    CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
+    
+    CGFloat padding = 15;
+    CGFloat shadowSize = 2;
+
+    CGFloat minMarkerWidth = (self.markerRadius / [UIScreen mainScreen].scale) / 2;
+    CGFloat markerWidth = ((stringSize.width > minMarkerWidth) ? stringSize.width : minMarkerWidth) + padding + shadowSize;
+    CGFloat markerHeight = stringSize.height + padding + shadowSize;
+
+    CGSize canvas = CGSizeMake(markerWidth, markerHeight);
+    CGFloat y = (canvas.height / 2) - (stringSize.height / 2);
+    CGFloat x = (canvas.width / 2) - (stringSize.width / 2);
+    CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
+
+    UIGraphicsBeginImageContext(canvas);
+    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
+    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
+        
+        CGContextSetAlpha(rendererContext.CGContext, 0.15);
+        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
+        UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth, markerHeight) cornerRadius:20];
+        [shadow fill];
+        [shadow stroke];
+        CGContextSetAlpha(rendererContext.CGContext, 1.0);
+        CGContextSetFillColorWithColor(rendererContext.CGContext, color.CGColor);
+        CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
+        CGContextSetLineWidth(rendererContext.CGContext, 5);
+        CGContextSetLineJoin(rendererContext.CGContext, 0);
+        CGContextDrawPath(rendererContext.CGContext, 3);
+        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(shadowSize / 2, shadowSize / 2, markerWidth - shadowSize, markerHeight - shadowSize) cornerRadius:20];
+        [bezier fill];
+        [bezier stroke];
+        [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont, NSForegroundColorAttributeName: textColor}];
+    }];
+    UIGraphicsEndImageContext();
+    return image;
+}
+
+
 - (UIImage *)extractIconFromData:(NSArray *)iconData
                        registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
     UIImage *image;

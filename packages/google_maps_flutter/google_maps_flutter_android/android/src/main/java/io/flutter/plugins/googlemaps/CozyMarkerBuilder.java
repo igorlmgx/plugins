@@ -9,7 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.util.LruCache;
+import android.graphics.Typeface;
 
 import androidx.core.content.res.ResourcesCompat;
 
@@ -19,54 +19,29 @@ public class CozyMarkerBuilder {
     private final int padding;
     private final int size;
     private final Bitmap blankClusterMarker;
-    private final Paint clusterTextStyle;
-    private final Paint priceMarkerTextStyle;
-    private LruCache<String, Bitmap> memoryCache;
+    private final Typeface font;
 
     CozyMarkerBuilder(Context context) {
         size = getMarkerSize();
         padding = size / 3;
         priceMarkerTailSize = size / 6;
         blankClusterMarker = getEmptyClusterBitmap(size);
-        clusterTextStyle = getTextPaint(size / 3f, context);
-        priceMarkerTextStyle = getTextPaint(size / 3.5f, context);
-        setMemoryCache();
+        font = ResourcesCompat.getFont(context, R.font.oatmealpro2_semibold);
     }
 
-    private void setMemoryCache() {
-        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        int cacheSize = maxMemory / 8;
-        memoryCache = new LruCache<String, Bitmap>(cacheSize) {
-            @Override
-            protected int sizeOf(String key, Bitmap value) {
-                return value.getByteCount() / 1024;
-            }
-        };
-    }
-
-    private void addBitmapToMemoryCache(String key, Bitmap bitmap) {
-        if (getBitmapFromMemCache(key) == null) {
-            memoryCache.put(key, bitmap);
-        }
-    }
-
-    private Bitmap getBitmapFromMemCache(String key) {
-        return memoryCache.get(key);
-    }
-
-    private Paint getTextPaint(float size, Context context) {
+    private Paint getTextPaint(float size, int color) {
         Paint paint = new Paint();
-        paint.setColor(Color.BLACK);
-        paint.setTypeface(ResourcesCompat.getFont(context, R.font.oatmealpro2_semibold));
+        paint.setColor(color);
+        paint.setTypeface(font);
         paint.setTextSize(size);
         paint.setAntiAlias(true);
         paint.setTextAlign(Paint.Align.LEFT);
         return paint;
     }
 
-    private Paint getMarkerPaint() {
+    private Paint getMarkerPaint(int color) {
         Paint paint = new Paint();
-        paint.setColor(Color.WHITE);
+        paint.setColor(color);
         paint.setAntiAlias(true);
         return paint;
     }
@@ -101,13 +76,14 @@ public class CozyMarkerBuilder {
         Bitmap marker = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(marker);
         canvas.drawCircle(size / 2f, size / 2f, size / 2.2f, getShadowPaint());
-        canvas.drawCircle(size / 2f, size / 2f, (size / 2.2f) - shadowSize, getMarkerPaint());
+        canvas.drawCircle(size / 2f, size / 2f, (size / 2.2f) - shadowSize, getMarkerPaint(Color.WHITE));
         return marker;
     }
 
     private Bitmap getClusterMarkerBitmap(String text) {
         Bitmap marker = Bitmap.createBitmap(this.blankClusterMarker);
         Rect clusterRect = new Rect();
+        Paint clusterTextStyle = getTextPaint(size / 3f, Color.BLACK);
         clusterTextStyle.getTextBounds(text, 0, text.length(), clusterRect);
         float dx = getTextXOffset(marker.getWidth(), clusterRect);
         float dy = getTextYOffset(marker.getHeight(), clusterRect);
@@ -131,6 +107,7 @@ public class CozyMarkerBuilder {
 
     private Bitmap getPriceMarkerBitmap(String text) {
         Rect rect = new Rect();
+        Paint priceMarkerTextStyle = getTextPaint(size / 3.5f, Color.BLACK);
         priceMarkerTextStyle.getTextBounds(text, 0, text.length(), rect);
 
         int width = rect.width() + padding;
@@ -146,8 +123,8 @@ public class CozyMarkerBuilder {
 
         int borderRadius = 20;
         canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
-        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getMarkerPaint());
-        canvas.drawPath(getPriceMarkerTail(marker), getMarkerPaint());
+        canvas.drawRoundRect(bubble, borderRadius, borderRadius, getMarkerPaint(Color.WHITE));
+        canvas.drawPath(getPriceMarkerTail(marker), getMarkerPaint(Color.WHITE));
 
         float dx = getTextXOffset(width, rect);
         float dy = getTextYOffset(height, rect);
@@ -163,8 +140,9 @@ public class CozyMarkerBuilder {
         return (markerWidth / 2f) - (rect.width() / 2f) - rect.left;
     }
 
-    private Bitmap getRoundedMarkerBitmap(String text) {
+    private Bitmap getRoundedMarkerBitmap(String text, int markerColor, int textColor) {
         Rect rect = new Rect();
+        Paint priceMarkerTextStyle = getTextPaint(size / 3.5f, textColor);
         priceMarkerTextStyle.getTextBounds(text, 0, text.length(), rect);
         int minWidth = Math.max(rect.width(), size / 2);
 
@@ -178,7 +156,7 @@ public class CozyMarkerBuilder {
         int borderRadius = 40;
         Canvas canvas = new Canvas(marker);
         canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
-        canvas.drawRoundRect(shape, borderRadius, borderRadius, getMarkerPaint());
+        canvas.drawRoundRect(shape, borderRadius, borderRadius, getMarkerPaint(markerColor));
 
         float dx = getTextXOffset(markerWidth, rect);
         float dy = getTextYOffset(markerHeight, rect);
@@ -194,7 +172,11 @@ public class CozyMarkerBuilder {
             case "price":
                 return getPriceMarkerBitmap(text);
             case "rounded":
-                return getRoundedMarkerBitmap(text);
+                return getRoundedMarkerBitmap(text, Color.WHITE, Color.BLACK);
+            case "rounded_selected":
+                return getRoundedMarkerBitmap(text, Color.rgb(57, 87, 189), Color.WHITE);
+            case "rounded_visited":
+                return getRoundedMarkerBitmap(text, Color.WHITE, Color.rgb(110, 110, 100));
             default:
                 return null;
         }
