@@ -13,9 +13,7 @@
 @property(strong, nonatomic) GMSMarker *marker;
 @property(weak, nonatomic) GMSMapView *mapView;
 @property(assign, nonatomic, readwrite) BOOL consumeTapEvents;
-@property(strong, nonatomic) UIImage *iconImage;
-@property(strong, nonatomic) NSString *fontPath;
-@property(nonatomic, assign) CGFloat markerRadius;
+@property(strong, nonatomic) CozyMarkerBuilder *cozy;
 
 @end
 
@@ -23,16 +21,17 @@
 
 - (instancetype)initMarkerWithPosition:(CLLocationCoordinate2D)position
                             identifier:(NSString *)identifier
-                               mapView:(GMSMapView *)mapView {
+                               mapView:(GMSMapView *)mapView
+                            cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy {
     self = [super init];
     if (self) {
+        _cozy = cozy;
         _marker = [GMSMarker markerWithPosition:position];
         _mapView = mapView;
         _marker.userData = @[ identifier ];
     }
     return self;
 }
-
 
 - (void)showInfoWindow {
     self.mapView.selectedMarker = self.marker;
@@ -97,9 +96,9 @@
     self.marker.zIndex = zIndex;
 }
 
+
 - (void)interpretMarkerOptions:(NSDictionary *)data
-                     registrar:(NSObject<FlutterPluginRegistrar> *)registrar
-                         image:(UIImage *)image {
+                     registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
     NSNumber *alpha = data[@"alpha"];
     if (alpha && alpha != (id)[NSNull null]) {
         [self setAlpha:[alpha floatValue]];
@@ -112,8 +111,28 @@
     if (draggable && draggable != (id)[NSNull null]) {
         [self setDraggable:[draggable boolValue]];
     }
-    if(image && image != (id)[NSNull null]) {
-        [self setIcon:image];
+    NSString *markerType = data[@"markerType"];
+    
+    if(markerType != (id)[NSNull null]) {
+        if([markerType isEqualToString:@"icon"]) {
+            NSArray *icon = data[@"icon"];
+            if (icon && icon != (id)[NSNull null]) {
+                UIImage *image = [self extractIconFromData:icon registrar:registrar];
+                [self setIcon:image];
+            }
+        } else {
+            
+            NSString *label = data[@"label"];
+            if(label == (id)[NSNull null]) {
+                @throw [NSException exceptionWithName:@"InvalidMarker"
+                                                   reason:@"label not found for icon."
+                                                 userInfo:nil];
+            }
+    
+            UIImage *image = [[self cozy] buildMarker:label withMarkerType:markerType];
+            [self setIcon:image];
+        }
+        
     }
     NSNumber *flat = data[@"flat"];
     if (flat && flat != (id)[NSNull null]) {
@@ -156,254 +175,6 @@
         }
     }
 }
-
-@end
-
-@interface FLTMarkersController ()
-
-@property(strong, nonatomic) NSMutableDictionary *markerIdentifierToController;
-@property(strong, nonatomic) NSCache *cache;
-@property(strong, nonatomic) FlutterMethodChannel *methodChannel;
-@property(strong, nonatomic) UIImage *emptyClusterMarker;
-@property(strong, nonatomic) NSString *fontPath;
-@property(weak, nonatomic) NSObject<FlutterPluginRegistrar> *registrar;
-@property(weak, nonatomic) GMSMapView *mapView;
-
-
-@end
-
-@implementation FLTMarkersController
-
-
-- (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
-                              mapView:(GMSMapView *)mapView
-                            registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
-    self = [super init];
-    if (self) {
-        _methodChannel = methodChannel;
-        _mapView = mapView;
-        _markerIdentifierToController = [[NSMutableDictionary alloc] init];
-        _cache = [[NSCache alloc] init];
-        _registrar = registrar;
-        _emptyClusterMarker = [self baseClusterMarker];
-        _fontPath = [self loadFont];
-    }
-    return self;
-}
-
-
-void CFSafeRelease(CFTypeRef cf) {
-    if (cf != NULL) {
-        CFRelease(cf);
-    }
-}
-
-- (CGFontRef)fontRefFromBundle {
-    NSBundle *frameworkBundle = [NSBundle bundleForClass:self.classForCoder];
-    NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"CozyFonts.bundle"];
-    NSBundle *bundle = [NSBundle  bundleWithURL:bundleURL];
-    NSURL *fontURL = [bundle URLForResource:@"oatmealpro2_semibold" withExtension:@"otf"];
-    NSData *inData = [NSData dataWithContentsOfURL:fontURL];
-    CGDataProviderRef provider = CGDataProviderCreateWithCFData((CFDataRef)inData);
-    CGFontRef font = CGFontCreateWithDataProvider(provider);
-    CFSafeRelease(provider);
-    return font;
-}
-
-- (void)registerFont:(CGFontRef)font {
-    CFErrorRef error;
-    if (!CTFontManagerRegisterGraphicsFont(font, &error)) {
-        CFStringRef errorDescription = CFErrorCopyDescription(error);
-        NSLog(@"Failed to load font: %@", errorDescription);
-        CFRelease(errorDescription);
-    }
-}
-
-- (NSString *)loadFont {
-    CGFontRef font = [self fontRefFromBundle];
-    [self registerFont:font];
-    NSString *fontName = (__bridge NSString *)CGFontCopyPostScriptName(font);
-    CFSafeRelease(font);
-    return fontName;
-}
-
-- (CGFloat)markerRadius {
-    CGFloat baseScreenHeight = 2220;
-    CGFloat maxMarkerRadius = 155;
-    CGFloat minMarkerRadius = 60;
-    CGFloat devicePixelRatio = [UIScreen mainScreen].bounds.size.height * [UIScreen mainScreen].scale;
-    CGFloat proportionalMarkerRadius = 150 * (devicePixelRatio / baseScreenHeight);
-    if(proportionalMarkerRadius > maxMarkerRadius) {
-        return maxMarkerRadius;
-    } else if (proportionalMarkerRadius < minMarkerRadius) {
-        return minMarkerRadius;
-    }
-    return proportionalMarkerRadius;
-}
-
-
-- (UIImage *)baseClusterMarker {
-    CGFloat shadowWidth = 2;
-    CGFloat size = ([self markerRadius] / [UIScreen mainScreen].scale) + shadowWidth;
-    CGSize canvas = CGSizeMake(size, size);
-    UIGraphicsBeginImageContext(canvas);
-    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
-    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
-        CGContextSetAlpha(rendererContext.CGContext, 0.02);
-        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
-        CGContextAddEllipseInRect(rendererContext.CGContext, CGRectMake(0, 0, size, size));
-        CGContextDrawPath(rendererContext.CGContext, kCGPathFillStroke);
-        CGContextSetAlpha(rendererContext.CGContext, 1.0);
-        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.whiteColor.CGColor);
-        CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
-        CGContextSetLineWidth(rendererContext.CGContext, 10);
-        CGContextAddEllipseInRect(rendererContext.CGContext, CGRectMake(1, 1, size - 2, size - 2));
-        CGContextDrawPath(rendererContext.CGContext, kCGPathFillStroke);
-    }];
-    UIGraphicsEndImageContext();
-    return image;
-}
-
-- (UIImage *)clusterMarkerImageWithText:(NSString *)string {
-    CGSize size = [self.baseClusterMarker size];
-    UIFont *textFont = [UIFont fontWithName:self.fontPath size:size.width / 2.5];
-    CGSize stringSize = [string sizeWithAttributes:@{NSFontAttributeName:textFont}];
-    CGFloat textY = (size.height / 2) - (stringSize.height / 2);
-    CGFloat textX = (size.width / 2) - (stringSize.width / 2);
-    UIGraphicsBeginImageContext(size);
-    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:size];
-    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
-        CGRect rect = CGRectMake(0, 0, size.width, size.height);
-        [self.baseClusterMarker drawInRect:CGRectIntegral(rect)];
-        CGRect textRect = CGRectMake(textX, textY, stringSize.width, stringSize.height);
-        [string drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
-    }];
-    UIGraphicsEndImageContext();
-    return image;
-}
-
-- (UIImage *)priceMarkerImageWithText:(NSString *)text {
-    UIFont *textFont =  [UIFont fontWithName:self.fontPath size:[self.baseClusterMarker size].width / 3.5];
-    CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
-    CGFloat markerWidth = stringSize.width * 1.25;
-    CGFloat markerHeight = stringSize.height * 1.50;
-    CGSize canvas = CGSizeMake(markerWidth + 2, markerHeight + 10);
-    CGFloat y = ((canvas.height - 10) / 2) - (stringSize.height / 2);
-    CGFloat x = (canvas.width / 2) - (stringSize.width / 2);
-    CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
-    UIGraphicsBeginImageContext(canvas);
-    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
-    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
-        
-        CGMutablePathRef path = CGPathCreateMutable();
-        CGPathMoveToPoint(path, nil, canvas.width / 2 - 10, markerHeight);
-        CGPathAddLineToPoint(path, nil, canvas.width / 2, markerHeight + 10);
-        CGPathAddLineToPoint(path, nil, canvas.width / 2 + 10, markerHeight);
-        CGPathAddLineToPoint(path, nil, canvas.width / 2 - 10, markerHeight);
-        
-        CGContextSetAlpha(rendererContext.CGContext, 0.02);
-        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
-        UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth + 2, markerHeight + 2) cornerRadius:5];
-        [shadow fill];
-        [shadow stroke];
-        CGContextSetAlpha(rendererContext.CGContext, 1.0);
-        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.whiteColor.CGColor);
-        CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
-        CGContextSetLineWidth(rendererContext.CGContext, 5);
-        CGContextSetLineJoin(rendererContext.CGContext, 0);
-        CGContextAddPath(rendererContext.CGContext, path);
-        CGContextDrawPath(rendererContext.CGContext, 3);
-        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(1, 1, markerWidth, markerHeight) cornerRadius:5];
-        [bezier fill];
-        [bezier stroke];
-        [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
-        CGPathRelease(path);
-    }];
-    UIGraphicsEndImageContext();
-    return image;
-}
-
-- (UIImage *)roundedMarkerImageWithText:(NSString *)text {
-    UIFont *textFont =  [UIFont fontWithName:self.fontPath size:[self.baseClusterMarker size].width / 3.5];
-    CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
-    
-    CGFloat padding = 15;
-    CGFloat shadowSize = 2;
-
-    CGFloat minMarkerWidth = (self.markerRadius / [UIScreen mainScreen].scale) / 2;
-    CGFloat markerWidth = ((stringSize.width > minMarkerWidth) ? stringSize.width : minMarkerWidth) + padding + shadowSize;
-    CGFloat markerHeight = stringSize.height + padding + shadowSize;
-
-    CGSize canvas = CGSizeMake(markerWidth, markerHeight);
-    CGFloat y = (canvas.height / 2) - (stringSize.height / 2);
-    CGFloat x = (canvas.width / 2) - (stringSize.width / 2);
-    CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
-
-    UIGraphicsBeginImageContext(canvas);
-    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
-    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
-        
-        CGContextSetAlpha(rendererContext.CGContext, 0.15);
-        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
-        UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth, markerHeight) cornerRadius:20];
-        [shadow fill];
-        [shadow stroke];
-        CGContextSetAlpha(rendererContext.CGContext, 1.0);
-        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.whiteColor.CGColor);
-        CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
-        CGContextSetLineWidth(rendererContext.CGContext, 5);
-        CGContextSetLineJoin(rendererContext.CGContext, 0);
-        CGContextDrawPath(rendererContext.CGContext, 3);
-        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(shadowSize / 2, shadowSize / 2, markerWidth - shadowSize, markerHeight - shadowSize) cornerRadius:20];
-        [bezier fill];
-        [bezier stroke];
-        [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont}];
-    }];
-    UIGraphicsEndImageContext();
-    return image;
-}
-
-
-- (UIImage *)roundedMarkerImageWithText:(NSString *)text withMarkerColor:(UIColor *)color withTextColor:(UIColor *)textColor {
-    UIFont *textFont =  [UIFont fontWithName:self.fontPath size:[self.baseClusterMarker size].width / 3.5];
-    CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
-    
-    CGFloat padding = 15;
-    CGFloat shadowSize = 2;
-
-    CGFloat minMarkerWidth = (self.markerRadius / [UIScreen mainScreen].scale) / 2;
-    CGFloat markerWidth = ((stringSize.width > minMarkerWidth) ? stringSize.width : minMarkerWidth) + padding + shadowSize;
-    CGFloat markerHeight = stringSize.height + padding + shadowSize;
-
-    CGSize canvas = CGSizeMake(markerWidth, markerHeight);
-    CGFloat y = (canvas.height / 2) - (stringSize.height / 2);
-    CGFloat x = (canvas.width / 2) - (stringSize.width / 2);
-    CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
-
-    UIGraphicsBeginImageContext(canvas);
-    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
-    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
-        
-        CGContextSetAlpha(rendererContext.CGContext, 0.15);
-        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
-        UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth, markerHeight) cornerRadius:20];
-        [shadow fill];
-        [shadow stroke];
-        CGContextSetAlpha(rendererContext.CGContext, 1.0);
-        CGContextSetFillColorWithColor(rendererContext.CGContext, color.CGColor);
-        CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
-        CGContextSetLineWidth(rendererContext.CGContext, 5);
-        CGContextSetLineJoin(rendererContext.CGContext, 0);
-        CGContextDrawPath(rendererContext.CGContext, 3);
-        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(shadowSize / 2, shadowSize / 2, markerWidth - shadowSize, markerHeight - shadowSize) cornerRadius:20];
-        [bezier fill];
-        [bezier stroke];
-        [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont, NSForegroundColorAttributeName: textColor}];
-    }];
-    UIGraphicsEndImageContext();
-    return image;
-}
-
 
 - (UIImage *)extractIconFromData:(NSArray *)iconData
                        registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
@@ -473,6 +244,37 @@ void CFSafeRelease(CFTypeRef cf) {
     return image;
 }
 
+@end
+
+@interface FLTMarkersController ()
+
+@property(strong, nonatomic) NSMutableDictionary *markerIdentifierToController;
+@property(strong, nonatomic) FlutterMethodChannel *methodChannel;
+@property(weak, nonatomic) NSObject<FlutterPluginRegistrar> *registrar;
+@property(weak, nonatomic) GMSMapView *mapView;
+@property(strong, nonatomic) CozyMarkerBuilder *cozy;
+
+
+@end
+
+@implementation FLTMarkersController
+
+- (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
+                              mapView:(GMSMapView *)mapView
+                            registrar:(NSObject<FlutterPluginRegistrar> *)registrar
+                            cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy {
+    self = [super init];
+    if (self) {
+        _methodChannel = methodChannel;
+        _mapView = mapView;
+        _markerIdentifierToController = [[NSMutableDictionary alloc] init];
+        _registrar = registrar;
+        _cozy = cozy;
+    }
+    return self;
+}
+
+
 - (void)addMarkers:(NSArray *)markersToAdd {
     for (NSDictionary *marker in markersToAdd) {
         CLLocationCoordinate2D position = [FLTMarkersController getPosition:marker];
@@ -480,57 +282,11 @@ void CFSafeRelease(CFTypeRef cf) {
         FLTGoogleMapMarkerController *controller =
         [[FLTGoogleMapMarkerController alloc] initMarkerWithPosition:position
                                                           identifier:identifier
-                                                             mapView:self.mapView];
-        
-        UIImage *image = [self getMarkerImage:marker];
-        [controller interpretMarkerOptions:marker registrar:self.registrar image:image];
-        
+                                                             mapView:self.mapView
+                                                    cozyMarkerBuilder:self.cozy];
+        [controller interpretMarkerOptions:marker registrar:self.registrar];
         self.markerIdentifierToController[identifier] = controller;
     }
-}
-
--(UIImage *)getMarkerImage:(NSDictionary *)marker {
-    NSString *markerType = marker[@"markerType"];
-    if(markerType == (id)[NSNull null] || [markerType isEqualToString:@""]) {
-        @throw [NSException exceptionWithName:@"InvalidMarker"
-                                       reason:@"no markerType was provided."
-                                     userInfo:nil];;
-    }
-    if([markerType isEqualToString:@"icon"]) {
-        if (marker[@"icon"] == (id)[NSNull null]) {
-            @throw [NSException exceptionWithName:@"InvalidMarker"
-                                           reason:@"markerType was icon, but icon was not provided."
-                                         userInfo:nil];
-        }
-        return [self extractIconFromData:marker[@"icon"] registrar:self.registrar];
-    }
-    NSString *label = marker[@"label"];
-    if(label == (id)[NSNull null] || [label isEqualToString:@""]) {
-        @throw [NSException exceptionWithName:@"InvalidMarker"
-                                       reason:@"no label was provided when expected."
-                                     userInfo:nil];
-    }
-    NSString *key = [NSString stringWithFormat:@"%@:%@", markerType, label];
-    UIImage *cachedImage = [[self cache] objectForKey:key];
-    if(cachedImage != nil) {
-        return cachedImage;
-    }
-    UIImage *image;
-    if([markerType isEqualToString:@"rounded"]) {
-        image = [self roundedMarkerImageWithText:label];
-    }
-    else if([markerType isEqualToString:@"count"]) {
-        image = [self clusterMarkerImageWithText:label];
-    }
-    else if([markerType isEqualToString:@"price"]) {
-        image = [self priceMarkerImageWithText:label];
-    } else {
-        @throw [NSException exceptionWithName:@"InvalidMarker"
-                                       reason:@"invalid markerType!"
-                                     userInfo:nil];
-    }
-    [[self cache] setObject:image forKey:key];
-    return image;
 }
 
 - (void)changeMarkers:(NSArray *)markersToChange {
@@ -540,8 +296,7 @@ void CFSafeRelease(CFTypeRef cf) {
         if (!controller) {
             continue;
         }
-        UIImage *image = [self getMarkerImage:marker];
-        [controller interpretMarkerOptions:marker registrar:self.registrar image:image];
+        [controller interpretMarkerOptions:marker registrar:self.registrar];
     }
 }
 

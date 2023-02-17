@@ -10,7 +10,8 @@ public class MarkerCache {
     public MarkerCache() {
         int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
         int cacheSize = maxMemory / 8;
-        memoryCache = new LruCache<String, Bitmap>(cacheSize) {};
+        memoryCache = new LruCache<String, Bitmap>(cacheSize) {
+        };
     }
 
     public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
