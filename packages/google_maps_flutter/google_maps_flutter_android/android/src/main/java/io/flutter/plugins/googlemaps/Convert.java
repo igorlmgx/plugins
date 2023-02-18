@@ -378,6 +378,10 @@ class Convert {
     if (buildingsEnabled != null) {
       sink.setBuildingsEnabled(toBoolean(buildingsEnabled));
     }
+    final Object cacheMarkers = data.get("cacheMarkers");
+    if(cacheMarkers != null) {
+      sink.setMarkerCachingEnabled(toBoolean(cacheMarkers));
+    }
   }
 
   /** Returns the dartMarkerId of the interpreted marker. */

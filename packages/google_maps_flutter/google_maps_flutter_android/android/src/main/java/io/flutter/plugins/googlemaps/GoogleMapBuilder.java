@@ -21,6 +21,7 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
   private boolean indoorEnabled = true;
   private boolean trafficEnabled = false;
   private boolean buildingsEnabled = true;
+  private boolean markerCachingEnabled = false;
   private Object initialMarkers;
   private Object initialPolygons;
   private Object initialPolylines;
@@ -33,8 +34,8 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
       Context context,
       BinaryMessenger binaryMessenger,
       LifecycleProvider lifecycleProvider) {
-    final GoogleMapController controller =
-        new GoogleMapController(id, context, binaryMessenger, lifecycleProvider, options);
+    final GoogleMapController controller = new GoogleMapController(id, context, binaryMessenger, lifecycleProvider,
+        options);
     controller.init();
     controller.setMyLocationEnabled(myLocationEnabled);
     controller.setMyLocationButtonEnabled(myLocationButtonEnabled);
@@ -48,6 +49,7 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
     controller.setInitialCircles(initialCircles);
     controller.setPadding(padding.top, padding.left, padding.bottom, padding.right);
     controller.setInitialTileOverlays(initialTileOverlays);
+    controller.setMarkerCachingEnabled(markerCachingEnabled);
     return controller;
   }
 
@@ -173,5 +175,10 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
   @Override
   public void setInitialTileOverlays(List<Map<String, ?>> initialTileOverlays) {
     this.initialTileOverlays = initialTileOverlays;
+  }
+
+  @Override
+  public void setMarkerCachingEnabled(boolean isEnabled) {
+    this.markerCachingEnabled = isEnabled;
   }
 }

@@ -9,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.util.LruCache;
 import android.graphics.Typeface;
 
 import androidx.core.content.res.ResourcesCompat;
@@ -19,15 +18,14 @@ public class CozyMarkerBuilder {
     private final int priceMarkerTailSize;
     private final int padding;
     private final int size;
-    private final MarkerCache markerCache;
     private final Typeface font;
+    private MarkerCache markerCache;
 
     CozyMarkerBuilder(Context context) {
         size = getMarkerSize();
         padding = size / 3;
         priceMarkerTailSize = size / 6;
         font = ResourcesCompat.getFont(context, R.font.oatmealpro2_semibold);
-        markerCache = new MarkerCache();
     }
 
     private Paint getTextPaint(float size, int color) {
@@ -181,14 +179,24 @@ public class CozyMarkerBuilder {
         return bitmap.copy(bitmap.getConfig(), true);
     }
 
-    public Bitmap buildMarker(String type, String text) {
+    private Bitmap bitmapWithCache(String type, String text) {
         String key = String.format("%s:%s", type, text);
         final Bitmap bitmap = markerCache.getBitmapFromMemCache(key);
         if (bitmap != null) {
-            return copyOnlyBitmapProperties(bitmap);
+            return bitmap;
         }
         Bitmap marker = getMarker(type, text);
         markerCache.addBitmapToMemoryCache(key, marker);
+        return marker;
+    }
+
+    public void setCachingEnabled(boolean isCachingEnabled) {
+        this.markerCache = isCachingEnabled ? new MarkerCache() : null;
+    }
+
+    public Bitmap buildMarker(String type, String text) {
+        Bitmap marker = markerCache != null ? bitmapWithCache(type, text) : getMarker(type, text);
+        if(marker == null) return null;
         return copyOnlyBitmapProperties(marker);
     }
 }

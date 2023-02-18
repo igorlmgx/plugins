@@ -69,6 +69,7 @@ final class GoogleMapController
   private boolean indoorEnabled = true;
   private boolean trafficEnabled = false;
   private boolean buildingsEnabled = true;
+  private boolean markerCachingEnabled = false;
   private boolean disposed = false;
   private final float density;
   private MethodChannel.Result mapReadyResult;
@@ -79,6 +80,7 @@ final class GoogleMapController
   private final PolylinesController polylinesController;
   private final CirclesController circlesController;
   private final TileOverlaysController tileOverlaysController;
+  private final CozyMarkerBuilder cozyMarkerBuilder;
   private List<Object> initialMarkers;
   private List<Object> initialPolygons;
   private List<Object> initialPolylines;
@@ -95,13 +97,14 @@ final class GoogleMapController
     this.id = id;
     this.context = context;
     this.options = options;
+    this.cozyMarkerBuilder = new CozyMarkerBuilder(context);
     this.mapView = new MapView(context, options);
     this.density = context.getResources().getDisplayMetrics().density;
     methodChannel =
         new MethodChannel(binaryMessenger, "plugins.flutter.dev/google_maps_android_" + id);
     methodChannel.setMethodCallHandler(this);
     this.lifecycleProvider = lifecycleProvider;
-    this.markersController = new MarkersController(methodChannel, new CozyMarkerBuilder(context));
+    this.markersController = new MarkersController(methodChannel, this.cozyMarkerBuilder);
     this.polygonsController = new PolygonsController(methodChannel, density);
     this.polylinesController = new PolylinesController(methodChannel, density);
     this.circlesController = new CirclesController(methodChannel, density);
@@ -907,5 +910,9 @@ final class GoogleMapController
 
   public void setBuildingsEnabled(boolean buildingsEnabled) {
     this.buildingsEnabled = buildingsEnabled;
+  }
+
+  public void setMarkerCachingEnabled(boolean cachingEnabled) {
+    this.cozyMarkerBuilder.setCachingEnabled(cachingEnabled);
   }
 }
