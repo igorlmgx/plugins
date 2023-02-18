@@ -13,13 +13,16 @@
 @implementation CozyMarkerBuilder
 
 
-- (instancetype)initCozy {
+- (instancetype)initWithCache:(BOOL)useCache {
     self = [super init];
     if(self) {
-    _cache = [[NSCache alloc] init];
-    _fontPath = [self loadCozyFont];
-    _markerSize = [self calculateMarkerSize];
-    _shadowWidth = 5;
+        _fontPath = [self loadCozyFont];
+        _markerSize = [self calculateMarkerSize];
+        _shadowWidth = 5;
+        _useCache = useCache;
+        if(useCache == YES) {
+            _cache = [[NSCache alloc] init];
+        }
     }
     return self;
 }
@@ -50,7 +53,7 @@
     CFErrorRef error;
     if (!CTFontManagerRegisterGraphicsFont(font, &error)) {
         CFStringRef errorDescription = CFErrorCopyDescription(error);
-        NSLog(@"Failed to load font: %@", errorDescription);
+
         CFRelease(errorDescription);
     }
 }
@@ -214,22 +217,29 @@ void CFSafeRelease(CFTypeRef cf) {
     
 }
 
-- (UIImage *)buildMarker:(NSString *)label withMarkerType:(NSString *)markerType {
-    if(label == (id)[NSNull null] || [label isEqualToString:@""]) {
-        @throw [NSException exceptionWithName:@"InvalidMarker"
-                                       reason:@"no label was provided when expected."
-                                     userInfo:nil];
-    }
+- (UIImage *)cacheMarkerWithLabel:(NSString *)label withMarkerType:(NSString *)markerType {
     NSString *key = [NSString stringWithFormat:@"%@:%@", markerType, label];
     UIImage *cachedImage = [[self cache] objectForKey:key];
     if(cachedImage != nil) {
         return cachedImage;
     }
     UIImage *image = [self getMarker:label withMarkerType:markerType];
-   
     [[self cache] setObject:image forKey:key];
     return image;
 }
 
+- (UIImage *)buildMarker:(NSString *)label withMarkerType:(NSString *)markerType {
+    if(label == (id)[NSNull null] || [label isEqualToString:@""]) {
+        @throw [NSException exceptionWithName:@"InvalidMarker"
+                                       reason:@"no label was provided when expected."
+                                     userInfo:nil];
+    }
+    if(_useCache == YES) {
+        return [self cacheMarkerWithLabel:label withMarkerType:markerType];
+    }
+    return [self getMarker:label withMarkerType:markerType];;
+}
+
     
 @end
+

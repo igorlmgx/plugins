@@ -8,12 +8,13 @@
 #import <CoreText/CoreText.h>
 
 @interface CozyMarkerBuilder : NSObject
-- (instancetype) initCozy;
+- (instancetype) initWithCache:(BOOL)useCache;
 - (UIImage *) buildMarker:(NSString *)label withMarkerType:(NSString *)markerType;
 
 @property(strong, nonatomic) NSCache *cache;
 @property(strong, nonatomic) NSString *fontPath;
 @property(nonatomic, assign) CGFloat markerSize;
 @property(nonatomic, assign) CGFloat shadowWidth;
+@property(nonatomic, assign) BOOL useCache;
 @end
 
