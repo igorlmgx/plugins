@@ -176,6 +176,7 @@ public class CozyMarkerBuilder {
     }
 
     private Bitmap copyOnlyBitmapProperties(Bitmap bitmap) {
+        if (bitmap == null) return null;
         return bitmap.copy(bitmap.getConfig(), true);
     }
 
@@ -195,8 +196,11 @@ public class CozyMarkerBuilder {
     }
 
     public Bitmap buildMarker(String type, String text) {
-        Bitmap marker = markerCache != null ? bitmapWithCache(type, text) : getMarker(type, text);
-        if(marker == null) return null;
+        if(markerCache != null) {
+            final Bitmap marker = bitmapWithCache(type, text);
+            return copyOnlyBitmapProperties(marker);
+        }
+        final Bitmap marker = getMarker(type, text);
         return copyOnlyBitmapProperties(marker);
     }
 }
