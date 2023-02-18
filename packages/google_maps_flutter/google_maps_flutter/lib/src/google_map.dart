@@ -106,6 +106,7 @@ class GoogleMap extends StatefulWidget {
     this.tiltGesturesEnabled = true,
     this.myLocationEnabled = false,
     this.myLocationButtonEnabled = true,
+    this.cacheMarkers = false,
     this.layoutDirection,
 
     /// If no padding is specified default padding will be 0.
@@ -134,6 +135,9 @@ class GoogleMap extends StatefulWidget {
 
   /// The initial position of the map's camera.
   final CameraPosition initialCameraPosition;
+
+  /// True if the map should cache markers when displaying the map.
+  final bool cacheMarkers;
 
   /// True if the map should show a compass when rotated.
   final bool compassEnabled;
@@ -549,6 +553,7 @@ class _GoogleMapState extends State<GoogleMap> {
 MapConfiguration _configurationFromMapWidget(GoogleMap map) {
   assert(!map.liteModeEnabled || Platform.isAndroid);
   return MapConfiguration(
+    cacheMarkers: map.cacheMarkers,
     compassEnabled: map.compassEnabled,
     mapToolbarEnabled: map.mapToolbarEnabled,
     cameraTargetBounds: map.cameraTargetBounds,
