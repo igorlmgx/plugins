@@ -28,11 +28,11 @@
 }
 
 - (CGFloat)calculateMarkerSize {
-    CGFloat baseScreenHeight = 2220;
-    CGFloat maxMarkerRadius = 155;
-    CGFloat minMarkerRadius = 60;
+    CGFloat baseScreenHeight = 2467;
+    CGFloat maxMarkerRadius = 172;
+    CGFloat minMarkerRadius = 67;
     CGFloat devicePixelRatio = [UIScreen mainScreen].bounds.size.height * [UIScreen mainScreen].scale;
-    CGFloat proportionalMarkerRadius = 150 * (devicePixelRatio / baseScreenHeight);
+    CGFloat proportionalMarkerRadius = 167 * (devicePixelRatio / baseScreenHeight);
     if(proportionalMarkerRadius > maxMarkerRadius) {
         return maxMarkerRadius;
     } else if (proportionalMarkerRadius < minMarkerRadius) {
