@@ -630,6 +630,8 @@ class GoogleMapsFlutterAndroid extends GoogleMapsFlutterPlatform {
 Map<String, Object> _jsonForMapConfiguration(MapConfiguration config) {
   final EdgeInsets? padding = config.padding;
   return <String, Object>{
+    if (config.enableMarkerCaching != null)
+      'enableMarkerCaching': config.enableMarkerCaching!,
     if (config.compassEnabled != null) 'compassEnabled': config.compassEnabled!,
     if (config.mapToolbarEnabled != null)
       'mapToolbarEnabled': config.mapToolbarEnabled!,

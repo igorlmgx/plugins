@@ -5,6 +5,7 @@
 #import <Flutter/Flutter.h>
 #import <GoogleMaps/GoogleMaps.h>
 #import "GoogleMapController.h"
+#import "CozyMarkerBuilder.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -14,22 +15,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initMarkerWithPosition:(CLLocationCoordinate2D)position
                             identifier:(NSString *)identifier
                                mapView:(GMSMapView *)mapView
-                             iconImage:(UIImage *)iconImage
-                              fontPath:(nonnull NSString *)fontPath
-                              markerRadius:(CGFloat)radius;
+                     cozyMarkerBuilder:(CozyMarkerBuilder *)cozy;
 - (void)showInfoWindow;
 - (void)hideInfoWindow;
 - (BOOL)isInfoWindowShown;
 - (void)removeMarker;
-- (UIImage *)clusterMarkerImageWithText:(NSString *)text;
-- (UIImage *)priceMarkerImageWithText:(NSString *)text;
-- (UIImage *)roundedMarkerImageWithText:(NSString *)text;
 @end
 
 @interface FLTMarkersController : NSObject
 - (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
                               mapView:(GMSMapView *)mapView
-                            registrar:(NSObject<FlutterPluginRegistrar> *)registrar;
+                            registrar:(NSObject<FlutterPluginRegistrar> *)registrar
+                            cozyMarkerBuilder:(CozyMarkerBuilder *)cozy;
 - (void)addMarkers:(NSArray *)markersToAdd;
 - (void)changeMarkers:(NSArray *)markersToChange;
 - (void)removeMarkersWithIdentifiers:(NSArray *)identifiers;

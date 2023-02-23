@@ -15,6 +15,7 @@ class MapConfiguration {
   /// as either a full configuration selection, or an update to an existing
   /// configuration where only non-null values are updated.
   const MapConfiguration({
+    this.enableMarkerCaching,
     this.compassEnabled,
     this.mapToolbarEnabled,
     this.cameraTargetBounds,
@@ -49,6 +50,9 @@ class MapConfiguration {
 
   /// The prefered zoom range.
   final MinMaxZoomPreference? minMaxZoomPreference;
+
+  /// True if map should cache markers.
+  final bool? enableMarkerCaching;
 
   /// True if rotate gestures should be enabled.
   final bool? rotateGesturesEnabled;
@@ -94,6 +98,9 @@ class MapConfiguration {
   /// that are different from [other].
   MapConfiguration diffFrom(MapConfiguration other) {
     return MapConfiguration(
+      enableMarkerCaching: enableMarkerCaching != other.enableMarkerCaching
+          ? enableMarkerCaching
+          : null,
       compassEnabled:
           compassEnabled != other.compassEnabled ? compassEnabled : null,
       mapToolbarEnabled: mapToolbarEnabled != other.mapToolbarEnabled
@@ -150,6 +157,9 @@ class MapConfiguration {
   /// replacing the previous values.
   MapConfiguration applyDiff(MapConfiguration diff) {
     return MapConfiguration(
+      enableMarkerCaching: enableMarkerCaching != diff.enableMarkerCaching
+          ? enableMarkerCaching
+          : null,
       compassEnabled: diff.compassEnabled ?? compassEnabled,
       mapToolbarEnabled: diff.mapToolbarEnabled ?? mapToolbarEnabled,
       cameraTargetBounds: diff.cameraTargetBounds ?? cameraTargetBounds,
@@ -213,6 +223,7 @@ class MapConfiguration {
         scrollGesturesEnabled == other.scrollGesturesEnabled &&
         tiltGesturesEnabled == other.tiltGesturesEnabled &&
         trackCameraPosition == other.trackCameraPosition &&
+        enableMarkerCaching == other.enableMarkerCaching &&
         zoomControlsEnabled == other.zoomControlsEnabled &&
         zoomGesturesEnabled == other.zoomGesturesEnabled &&
         liteModeEnabled == other.liteModeEnabled &&
@@ -231,6 +242,7 @@ class MapConfiguration {
         cameraTargetBounds,
         mapType,
         minMaxZoomPreference,
+        enableMarkerCaching,
         rotateGesturesEnabled,
         scrollGesturesEnabled,
         tiltGesturesEnabled,

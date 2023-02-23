@@ -5,6 +5,7 @@
 #import "GoogleMapController.h"
 #import "FLTGoogleMapJSONConversions.h"
 #import "FLTGoogleMapTileOverlayController.h"
+#import "CozyMarkerBuilder.h"
 
 #pragma mark - Conversion of JSON-like values sent via platform channels. Forward declarations.
 
@@ -61,6 +62,7 @@
 @property(nonatomic, strong) GMSMapView *mapView;
 @property(nonatomic, strong) FlutterMethodChannel *channel;
 @property(nonatomic, assign) BOOL trackCameraPosition;
+@property(nonatomic, assign) BOOL enableMarkerCaching;
 @property(nonatomic, weak) NSObject<FlutterPluginRegistrar> *registrar;
 @property(nonatomic, strong) FLTMarkersController *markersController;
 @property(nonatomic, strong) FLTPolygonsController *polygonsController;
@@ -107,7 +109,8 @@
     _registrar = registrar;
     _markersController = [[FLTMarkersController alloc] initWithMethodChannel:_channel
                                                                      mapView:_mapView
-                                                                   registrar:registrar];
+                                                                   registrar:registrar
+                                                           cozyMarkerBuilder:[[CozyMarkerBuilder alloc] initWithCache:_enableMarkerCaching]];
     _polygonsController = [[FLTPolygonsController alloc] init:_channel
                                                       mapView:_mapView
                                                     registrar:registrar];
@@ -475,6 +478,10 @@
   _trackCameraPosition = enabled;
 }
 
+- (void)setCachingEnabled:(BOOL)enabled {
+  _enableMarkerCaching = enabled;
+}
+
 - (void)setZoomGesturesEnabled:(BOOL)enabled {
   self.mapView.settings.zoomGestures = enabled;
 }
@@ -640,6 +647,10 @@
   NSNumber *myLocationButtonEnabled = data[@"myLocationButtonEnabled"];
   if (myLocationButtonEnabled && myLocationButtonEnabled != (id)[NSNull null]) {
     [self setMyLocationButtonEnabled:[myLocationButtonEnabled boolValue]];
+  }
+  NSNumber *isMarkerCachingEnabled = data[@"enableMarkerCaching"];
+  if (isMarkerCachingEnabled && isMarkerCachingEnabled != (id)[NSNull null]) {
+    [self setCachingEnabled:[isMarkerCachingEnabled boolValue]];
   }
 }
 
