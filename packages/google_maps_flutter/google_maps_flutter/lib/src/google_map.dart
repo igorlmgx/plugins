@@ -136,7 +136,7 @@ class GoogleMap extends StatefulWidget {
   /// The initial position of the map's camera.
   final CameraPosition initialCameraPosition;
 
-  /// True if the map should cache markers when displaying the map.
+  /// If `true`, will cache markers when displaying the map for improved performance.
   final bool enableMarkerCaching;
 
   /// True if the map should show a compass when rotated.
