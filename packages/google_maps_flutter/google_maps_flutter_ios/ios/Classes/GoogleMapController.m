@@ -62,7 +62,7 @@
 @property(nonatomic, strong) GMSMapView *mapView;
 @property(nonatomic, strong) FlutterMethodChannel *channel;
 @property(nonatomic, assign) BOOL trackCameraPosition;
-@property(nonatomic, assign) BOOL cacheMarkers;
+@property(nonatomic, assign) BOOL enableMarkerCaching;
 @property(nonatomic, weak) NSObject<FlutterPluginRegistrar> *registrar;
 @property(nonatomic, strong) FLTMarkersController *markersController;
 @property(nonatomic, strong) FLTPolygonsController *polygonsController;
@@ -110,7 +110,7 @@
     _markersController = [[FLTMarkersController alloc] initWithMethodChannel:_channel
                                                                      mapView:_mapView
                                                                    registrar:registrar
-                                                           cozyMarkerBuilder:[[CozyMarkerBuilder alloc] initWithCache:_cacheMarkers]];
+                                                           cozyMarkerBuilder:[[CozyMarkerBuilder alloc] initWithCache:_enableMarkerCaching]];
     _polygonsController = [[FLTPolygonsController alloc] init:_channel
                                                       mapView:_mapView
                                                     registrar:registrar];
@@ -479,7 +479,7 @@
 }
 
 - (void)setCachingEnabled:(BOOL)enabled {
-  _cacheMarkers = enabled;
+  _enableMarkerCaching = enabled;
 }
 
 - (void)setZoomGesturesEnabled:(BOOL)enabled {
@@ -648,7 +648,7 @@
   if (myLocationButtonEnabled && myLocationButtonEnabled != (id)[NSNull null]) {
     [self setMyLocationButtonEnabled:[myLocationButtonEnabled boolValue]];
   }
-  NSNumber *isMarkerCachingEnabled = data[@"cacheMarkers"];
+  NSNumber *isMarkerCachingEnabled = data[@"enableMarkerCaching"];
   if (isMarkerCachingEnabled && isMarkerCachingEnabled != (id)[NSNull null]) {
     [self setCachingEnabled:[isMarkerCachingEnabled boolValue]];
   }

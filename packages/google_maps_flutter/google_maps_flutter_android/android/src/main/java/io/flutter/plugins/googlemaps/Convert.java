@@ -378,9 +378,9 @@ class Convert {
     if (buildingsEnabled != null) {
       sink.setBuildingsEnabled(toBoolean(buildingsEnabled));
     }
-    final Object cacheMarkers = data.get("cacheMarkers");
-    if(cacheMarkers != null) {
-      sink.setMarkerCachingEnabled(toBoolean(cacheMarkers));
+    final Object enableMarkerCaching = data.get("enableMarkerCaching");
+    if (enableMarkerCaching != null) {
+      sink.setMarkerCachingEnabled(toBoolean(enableMarkerCaching));
     }
   }
 
