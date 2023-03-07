@@ -28,11 +28,11 @@
 }
 
 - (CGFloat)calculateMarkerSize {
-    CGFloat baseScreenHeight = 2467;
-    CGFloat maxMarkerRadius = 172;
-    CGFloat minMarkerRadius = 67;
+    CGFloat baseScreenHeight = 2220;
+    CGFloat maxMarkerRadius = 155;
+    CGFloat minMarkerRadius = 60;
     CGFloat devicePixelRatio = [UIScreen mainScreen].bounds.size.height * [UIScreen mainScreen].scale;
-    CGFloat proportionalMarkerRadius = 167 * (devicePixelRatio / baseScreenHeight);
+    CGFloat proportionalMarkerRadius = 150 * (devicePixelRatio / baseScreenHeight);   
     if(proportionalMarkerRadius > maxMarkerRadius) {
         return maxMarkerRadius;
     } else if (proportionalMarkerRadius < minMarkerRadius) {
@@ -117,10 +117,14 @@ void CFSafeRelease(CFTypeRef cf) {
 }
 
 - (UIImage *)priceMarkerImageWithText:(NSString *)text {
-    UIFont *textFont = [UIFont fontWithName:self.fontPath size:([self markerSize] / [UIScreen mainScreen].scale) / 3];
+    CGFloat fontSize = ([self markerSize] / [UIScreen mainScreen].scale) / 3;
+    UIFont *textFont = [UIFont fontWithName:self.fontPath size:fontSize];
     CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
-    CGFloat markerWidth = stringSize.width * 1.25;
-    CGFloat markerHeight = stringSize.height * 1.50;
+    
+    CGFloat padding = fontSize;
+    CGFloat markerWidth = stringSize.width + padding;
+    CGFloat markerHeight = stringSize.height + padding;
+    
     CGSize canvas = CGSizeMake(markerWidth + 2, markerHeight + 10);
     CGFloat y = ((canvas.height - 10) / 2) - (stringSize.height / 2);
     CGFloat x = (canvas.width / 2) - (stringSize.width / 2);
