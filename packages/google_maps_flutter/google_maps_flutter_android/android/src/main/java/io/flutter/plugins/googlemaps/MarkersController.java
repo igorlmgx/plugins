@@ -68,9 +68,9 @@ class MarkersController {
       String markerId = (String) rawMarkerId;
       final MarkerController markerController = markerIdToController.remove(markerId);
       if (markerController != null) {
-        ValueAnimator ani = ValueAnimator.ofFloat(1f, 0f);
-        ani.setDuration(500);
-        ani.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        ValueAnimator fadeOut = ValueAnimator.ofFloat(1f, 0f);
+        fadeOut.setDuration(300);
+        fadeOut.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 markerController.setAlpha((float) animation.getAnimatedValue());
@@ -79,7 +79,7 @@ class MarkersController {
                 }
             }
         });
-        ani.start();
+        fadeOut.start();
         googleMapsMarkerIdToDartMarkerId.remove(markerController.getGoogleMapsMarkerId());
       }
     }
@@ -182,7 +182,7 @@ class MarkersController {
   private void addMarker(String markerId, MarkerOptions markerOptions, boolean consumeTapEvents) {
     final Marker marker = googleMap
             .addMarker(markerOptions);
-    ObjectAnimator.ofFloat(marker, "alpha", 0f, 1f).setDuration(500).start();
+    ObjectAnimator.ofFloat(marker, "alpha", 0f, 1f).setDuration(300).start();
     MarkerController controller = new MarkerController(marker, consumeTapEvents);
     markerIdToController.put(markerId, controller);
     googleMapsMarkerIdToDartMarkerId.put(marker.getId(), markerId);
