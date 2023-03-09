@@ -35,7 +35,7 @@
         CABasicAnimation *fadeIn = [CABasicAnimation animationWithKeyPath:@"opacity"];
         fadeIn.fromValue = [NSNumber numberWithFloat:0.0];
         fadeIn.toValue = [NSNumber numberWithFloat:1.0];
-        fadeIn.duration = 0.3;
+        fadeIn.duration = 0.1;
 
         [_marker.layer addAnimation:fadeIn forKey:@"fadeInAnimation"];
     }
@@ -63,7 +63,7 @@
         CABasicAnimation *fadeOut = [CABasicAnimation animationWithKeyPath:@"opacity"];
         fadeOut.fromValue = [NSNumber numberWithFloat:1.0];
         fadeOut.toValue = [NSNumber numberWithFloat:0.0];
-        fadeOut.duration = 0.3;
+        fadeOut.duration = 0.1;
         fadeOut.fillMode = kCAFillModeForwards;
         fadeOut.removedOnCompletion = NO;
 
