@@ -30,6 +30,15 @@
         _mapView = mapView;
         _marker.userData = @[ identifier ];
     }
+    bool animated = true;
+    if(animated){
+        CABasicAnimation *fadeIn = [CABasicAnimation animationWithKeyPath:@"opacity"];
+        fadeIn.fromValue = [NSNumber numberWithFloat:0.0];
+        fadeIn.toValue = [NSNumber numberWithFloat:1.0];
+        fadeIn.duration = 0.5;
+
+        [_marker.layer addAnimation:fadeIn forKey:@"fadeInAnimation"];
+    }
     return self;
 }
 
@@ -48,7 +57,25 @@
 }
 
 - (void)removeMarker {
-    self.marker.map = nil;
+    bool animated = true;
+    if(animated){
+        [CATransaction begin];
+        CABasicAnimation *fadeOut = [CABasicAnimation animationWithKeyPath:@"opacity"];
+        fadeOut.fromValue = [NSNumber numberWithFloat:1.0];
+        fadeOut.toValue = [NSNumber numberWithFloat:0.0];
+        fadeOut.duration = 0.5;
+        fadeOut.fillMode = kCAFillModeForwards;
+        fadeOut.removedOnCompletion = NO;
+
+        [CATransaction setCompletionBlock:^{
+             self.marker.map = nil;
+        }];
+
+        [self.marker.layer addAnimation:fadeOut forKey:@"fadeOutAnimation"];
+        [CATransaction commit];
+    }else{
+        self.marker.map = nil;
+    }
 }
 
 - (void)setAlpha:(float)alpha {

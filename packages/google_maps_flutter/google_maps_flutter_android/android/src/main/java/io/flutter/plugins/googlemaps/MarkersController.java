@@ -5,6 +5,8 @@
 package io.flutter.plugins.googlemaps;
 
 import android.graphics.Bitmap;
+import android.animation.ValueAnimator;
+import android.animation.ObjectAnimator;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -66,7 +68,18 @@ class MarkersController {
       String markerId = (String) rawMarkerId;
       final MarkerController markerController = markerIdToController.remove(markerId);
       if (markerController != null) {
-        markerController.remove();
+        ValueAnimator ani = ValueAnimator.ofFloat(1f, 0f);
+        ani.setDuration(500);
+        ani.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                markerController.setAlpha((float) animation.getAnimatedValue());
+                if((float) animation.getAnimatedValue() == 0f){
+                  markerController.remove();
+                }
+            }
+        });
+        ani.start();
         googleMapsMarkerIdToDartMarkerId.remove(markerController.getGoogleMapsMarkerId());
       }
     }
@@ -169,6 +182,7 @@ class MarkersController {
   private void addMarker(String markerId, MarkerOptions markerOptions, boolean consumeTapEvents) {
     final Marker marker = googleMap
             .addMarker(markerOptions);
+    ObjectAnimator.ofFloat(marker, "alpha", 0f, 1f).setDuration(500).start();
     MarkerController controller = new MarkerController(marker, consumeTapEvents);
     markerIdToController.put(markerId, controller);
     googleMapsMarkerIdToDartMarkerId.put(marker.getId(), markerId);
