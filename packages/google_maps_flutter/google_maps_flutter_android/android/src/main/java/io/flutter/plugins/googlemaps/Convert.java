@@ -382,6 +382,14 @@ class Convert {
     if (enableMarkerCaching != null) {
       sink.setMarkerCachingEnabled(toBoolean(enableMarkerCaching));
     }
+    final Object markersAnimationEnabled = data.get("markersAnimationEnabled");
+    if (markersAnimationEnabled != null) {
+      sink.setMarkersAnimationEnabled(toBoolean(markersAnimationEnabled));
+    }
+    final Object markersAnimationDuration = data.get("markersAnimationDuration");
+    if (markersAnimationDuration != null) {
+      sink.setMarkersAnimationDuration(toInt(markersAnimationDuration));
+    }
   }
 
   /** Returns the dartMarkerId of the interpreted marker. */

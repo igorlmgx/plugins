@@ -28,6 +28,8 @@ class MarkersController {
   private final MethodChannel methodChannel;
   private GoogleMap googleMap;
   private final CozyMarkerBuilder cozyMarkerBuilder;
+  private boolean markersAnimationEnabled;
+  private int markersAnimationDuration;
 
   MarkersController(MethodChannel methodChannel, CozyMarkerBuilder cozyMarkerBuilder) {
     this.markerIdToController = new HashMap<>();
@@ -36,6 +38,13 @@ class MarkersController {
     this.cozyMarkerBuilder = cozyMarkerBuilder;
   }
 
+  public void setMarkersAnimationEnabled(boolean markersAnimationEnabled){
+    this.markersAnimationEnabled = markersAnimationEnabled;
+  }
+
+  public void setMarkersAnimationDuration(int markersAnimationDuration){
+    this.markersAnimationDuration = markersAnimationDuration;
+  }
 
   void setGoogleMap(GoogleMap googleMap) {
     this.googleMap = googleMap;
@@ -68,18 +77,22 @@ class MarkersController {
       String markerId = (String) rawMarkerId;
       final MarkerController markerController = markerIdToController.remove(markerId);
       if (markerController != null) {
-        ValueAnimator fadeOut = ValueAnimator.ofFloat(1f, 0f);
-        fadeOut.setDuration(100);
-        fadeOut.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                markerController.setAlpha((float) animation.getAnimatedValue());
-                if((float) animation.getAnimatedValue() == 0f){
-                  markerController.remove();
-                }
-            }
-        });
-        fadeOut.start();
+        if (this.markersAnimationEnabled) {
+          ValueAnimator fadeOut = ValueAnimator.ofFloat(1f, 0f);
+          fadeOut.setDuration(this.markersAnimationDuration);
+          fadeOut.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+              @Override
+              public void onAnimationUpdate(ValueAnimator animation) {
+                  markerController.setAlpha((float) animation.getAnimatedValue());
+                  if((float) animation.getAnimatedValue() == 0f){
+                    markerController.remove();
+                  }
+              }
+          });
+          fadeOut.start();
+        }else{
+          markerController.remove();
+        }
         googleMapsMarkerIdToDartMarkerId.remove(markerController.getGoogleMapsMarkerId());
       }
     }
@@ -182,15 +195,17 @@ class MarkersController {
   private void addMarker(String markerId, MarkerOptions markerOptions, boolean consumeTapEvents) {
     final Marker marker = googleMap
             .addMarker(markerOptions);
-    ValueAnimator fadeIn = ValueAnimator.ofFloat(0f, 1f);
-    fadeIn.setDuration(100);
-    fadeIn.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-        @Override
-        public void onAnimationUpdate(ValueAnimator animation) {
-            marker.setAlpha((float) animation.getAnimatedValue());
-        }
-    });
-    fadeIn.start();
+    if (this.markersAnimationEnabled) {
+      ValueAnimator fadeIn = ValueAnimator.ofFloat(0f, 1f);
+      fadeIn.setDuration(this.markersAnimationDuration);
+      fadeIn.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+          @Override
+          public void onAnimationUpdate(ValueAnimator animation) {
+              marker.setAlpha((float) animation.getAnimatedValue());
+          }
+      });
+      fadeIn.start();
+    }
     MarkerController controller = new MarkerController(marker, consumeTapEvents);
     markerIdToController.put(markerId, controller);
     googleMapsMarkerIdToDartMarkerId.put(marker.getId(), markerId);

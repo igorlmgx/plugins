@@ -13,6 +13,8 @@
 @property(strong, nonatomic) GMSMarker *marker;
 @property(weak, nonatomic) GMSMapView *mapView;
 @property(assign, nonatomic, readwrite) BOOL consumeTapEvents;
+@property(assign, nonatomic, readwrite) BOOL markersAnimationEnabled;
+@property(assign, nonatomic, readwrite) int markersAnimationDuration;
 @property(strong, nonatomic) CozyMarkerBuilder *cozy;
 
 @end
@@ -30,12 +32,13 @@
         _mapView = mapView;
         _marker.userData = @[ identifier ];
     }
-    bool animated = true;
-    if(animated){
+    if(self.markersAnimationEnabled){
         CABasicAnimation *fadeIn = [CABasicAnimation animationWithKeyPath:@"opacity"];
         fadeIn.fromValue = [NSNumber numberWithFloat:0.0];
         fadeIn.toValue = [NSNumber numberWithFloat:1.0];
-        fadeIn.duration = 0.1;
+        //float durationInMillis = _markersAnimationDuration;
+        fadeIn.duration = 1.0;
+        //fadeIn.duration = durationInMillis/1000;
 
         [_marker.layer addAnimation:fadeIn forKey:@"fadeInAnimation"];
     }
@@ -57,13 +60,14 @@
 }
 
 - (void)removeMarker {
-    bool animated = true;
-    if(animated){
+    if(self.markersAnimationEnabled){
         [CATransaction begin];
         CABasicAnimation *fadeOut = [CABasicAnimation animationWithKeyPath:@"opacity"];
         fadeOut.fromValue = [NSNumber numberWithFloat:1.0];
         fadeOut.toValue = [NSNumber numberWithFloat:0.0];
-        fadeOut.duration = 0.1;
+        //float durationInMillis = _markersAnimationDuration;
+        //fadeOut.duration = durationInMillis/1000;
+        fadeOut.duration = 1.0;
         fadeOut.fillMode = kCAFillModeForwards;
         fadeOut.removedOnCompletion = NO;
 

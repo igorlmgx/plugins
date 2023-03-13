@@ -34,6 +34,8 @@ class MapConfiguration {
     this.indoorViewEnabled,
     this.trafficEnabled,
     this.buildingsEnabled,
+    this.markersAnimationEnabled,
+    this.markersAnimationDuration,
   });
 
   /// True if the compass UI should be shown.
@@ -94,6 +96,12 @@ class MapConfiguration {
   /// True if 3D building display should be enabled.
   final bool? buildingsEnabled;
 
+  /// If `true` will animate markers when adding or removing them.
+  final bool? markersAnimationEnabled;
+
+  /// Markers animation duration in milliseconds.
+  final int? markersAnimationDuration;
+
   /// Returns a new options object containing only the values of this instance
   /// that are different from [other].
   MapConfiguration diffFrom(MapConfiguration other) {
@@ -150,6 +158,14 @@ class MapConfiguration {
           trafficEnabled != other.trafficEnabled ? trafficEnabled : null,
       buildingsEnabled:
           buildingsEnabled != other.buildingsEnabled ? buildingsEnabled : null,
+      markersAnimationEnabled:
+          markersAnimationEnabled != other.markersAnimationEnabled
+              ? markersAnimationEnabled
+              : null,
+      markersAnimationDuration:
+          markersAnimationDuration != other.markersAnimationDuration
+              ? markersAnimationDuration
+              : null,
     );
   }
 
@@ -181,6 +197,10 @@ class MapConfiguration {
       indoorViewEnabled: diff.indoorViewEnabled ?? indoorViewEnabled,
       trafficEnabled: diff.trafficEnabled ?? trafficEnabled,
       buildingsEnabled: diff.buildingsEnabled ?? buildingsEnabled,
+      markersAnimationEnabled:
+          diff.markersAnimationEnabled ?? markersAnimationEnabled,
+      markersAnimationDuration:
+          diff.markersAnimationDuration ?? markersAnimationDuration,
     );
   }
 
@@ -203,7 +223,9 @@ class MapConfiguration {
       padding == null &&
       indoorViewEnabled == null &&
       trafficEnabled == null &&
-      buildingsEnabled == null;
+      buildingsEnabled == null &&
+      markersAnimationEnabled == null &&
+      markersAnimationDuration == null;
 
   @override
   bool operator ==(Object other) {
@@ -232,7 +254,9 @@ class MapConfiguration {
         padding == other.padding &&
         indoorViewEnabled == other.indoorViewEnabled &&
         trafficEnabled == other.trafficEnabled &&
-        buildingsEnabled == other.buildingsEnabled;
+        buildingsEnabled == other.buildingsEnabled &&
+        markersAnimationDuration == other.markersAnimationDuration &&
+        markersAnimationEnabled == other.markersAnimationEnabled;
   }
 
   @override
@@ -256,5 +280,6 @@ class MapConfiguration {
         indoorViewEnabled,
         trafficEnabled,
         buildingsEnabled,
+        markersAnimationEnabled,
       );
 }

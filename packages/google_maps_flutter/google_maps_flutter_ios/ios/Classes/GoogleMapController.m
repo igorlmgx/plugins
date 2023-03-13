@@ -450,6 +450,14 @@
   self.mapView.buildingsEnabled = enabled;
 }
 
+- (void)setMarkersAnimationEnabled:(BOOL)enabled {
+  self.markersController.markersAnimationEnabled = YES;
+}
+
+- (void)setMarkersAnimationDuration:(int)duration {
+  self.markersController.markersAnimationDuration = duration;
+}
+
 - (void)setMapType:(GMSMapViewType)mapType {
   self.mapView.mapType = mapType;
 }
@@ -651,6 +659,14 @@
   NSNumber *isMarkerCachingEnabled = data[@"enableMarkerCaching"];
   if (isMarkerCachingEnabled && isMarkerCachingEnabled != (id)[NSNull null]) {
     [self setCachingEnabled:[isMarkerCachingEnabled boolValue]];
+  }
+  NSNumber *markersAnimationEnabled = data[@"markersAnimationEnabled"];
+  if (markersAnimationEnabled && markersAnimationEnabled != (id)[NSNull null]) {
+    [self setMarkersAnimationEnabled:[markersAnimationEnabled boolValue]];
+  }
+  NSNumber *markersAnimationDuration = data[@"markersAnimationDuration"];
+  if (markersAnimationDuration && markersAnimationDuration != (id)[NSNull null]) {
+    [self setMarkersAnimationDuration:[markersAnimationDuration intValue]];
   }
 }
 

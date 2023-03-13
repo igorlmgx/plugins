@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FLTMarkersController : NSObject
+@property(assign, nonatomic, readwrite) BOOL markersAnimationEnabled;
+@property(assign, nonatomic, readwrite) int markersAnimationDuration;
 - (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
                               mapView:(GMSMapView *)mapView
                             registrar:(NSObject<FlutterPluginRegistrar> *)registrar

@@ -107,6 +107,8 @@ class GoogleMap extends StatefulWidget {
     this.myLocationEnabled = false,
     this.myLocationButtonEnabled = true,
     this.enableMarkerCaching = false,
+    this.markersAnimationEnabled = false,
+    this.markersAnimationDuration = 1000,
     this.layoutDirection,
 
     /// If no padding is specified default padding will be 0.
@@ -138,6 +140,12 @@ class GoogleMap extends StatefulWidget {
 
   /// If `true`, will cache markers when displaying the map for improved performance.
   final bool enableMarkerCaching;
+
+  /// If `true` will animate markers when adding or removing them.
+  final bool markersAnimationEnabled;
+
+  /// Markers animation duration in milliseconds.
+  final int markersAnimationDuration;
 
   /// True if the map should show a compass when rotated.
   final bool compassEnabled;
@@ -572,5 +580,7 @@ MapConfiguration _configurationFromMapWidget(GoogleMap map) {
     indoorViewEnabled: map.indoorViewEnabled,
     trafficEnabled: map.trafficEnabled,
     buildingsEnabled: map.buildingsEnabled,
+    markersAnimationEnabled: map.markersAnimationEnabled,
+    markersAnimationDuration: map.markersAnimationDuration,
   );
 }
