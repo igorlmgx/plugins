@@ -7,6 +7,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
@@ -14,7 +16,7 @@ import android.graphics.Typeface;
 import androidx.core.content.res.ResourcesCompat;
 
 public class CozyMarkerBuilder {
-    private final int shadowSize = 3;
+    private final int shadowSize = 4;
     private final int priceMarkerTailSize;
     private final int padding;
     private final int size;
@@ -45,11 +47,12 @@ public class CozyMarkerBuilder {
         return paint;
     }
 
-    private Paint getShadowPaint() {
+    private Paint getShadowPaint(int alpha) {
         Paint paint = new Paint();
         paint.setColor(Color.BLACK);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OVER));
         paint.setStyle(Paint.Style.STROKE);
-        paint.setAlpha(15);
+        paint.setAlpha(alpha);
         paint.setStrokeWidth(shadowSize);
         paint.setAntiAlias(true);
         return paint;
@@ -71,10 +74,18 @@ public class CozyMarkerBuilder {
             return Math.max(proportionalMarkerSize, minMarkerSize);
     }
 
-    private Bitmap getClusterMarkerBitmap(String text) {
+    private float getTextYOffset(float markerHeight, Rect rect) {
+        return (markerHeight / 2f) + (rect.height() / 2f) - rect.bottom;
+    }
+
+    private float getTextXOffset(float markerWidth, Rect rect) {
+        return (markerWidth / 2f) - (rect.width() / 2f) - rect.left;
+    }
+
+    private Bitmap getClusterBitmap(String text) {
         Bitmap marker = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(marker);
-        canvas.drawCircle(size / 2f, size / 2f, size / 2.2f, getShadowPaint());
+        canvas.drawCircle(size / 2f, size / 2f, size / 2.2f, getShadowPaint(15));
         canvas.drawCircle(size / 2f, size / 2f, (size / 2.2f) - shadowSize, getMarkerPaint(Color.WHITE));
         Rect clusterRect = new Rect();
         Paint clusterTextStyle = getTextPaint(size / 3f, Color.BLACK);
@@ -85,20 +96,20 @@ public class CozyMarkerBuilder {
         return marker;
     }
 
-    private Path getPriceMarkerTail(Bitmap marker) {
+    private Path addTailOnMarkerCenter(Bitmap marker, int tailSize) {
         Path pointer = new Path();
         pointer.setFillType(Path.FillType.EVEN_ODD);
         float width = marker.getWidth();
-        float height = marker.getHeight() - priceMarkerTailSize - shadowSize;
-        pointer.moveTo(width / 2f - priceMarkerTailSize, height);
-        pointer.lineTo(width / 2f + priceMarkerTailSize, height);
-        pointer.lineTo(width / 2f, height + priceMarkerTailSize);
-        pointer.lineTo(width / 2f - priceMarkerTailSize, height);
+        float height = marker.getHeight() - tailSize - shadowSize;
+        pointer.moveTo(width / 2f - tailSize, height);
+        pointer.lineTo(width / 2f + tailSize, height);
+        pointer.lineTo(width / 2f, height + tailSize);
+        pointer.lineTo(width / 2f - tailSize, height);
         pointer.close();
         return pointer;
     }
 
-    private Bitmap getPriceMarkerBitmap(String text) {
+    private Bitmap getPriceBitmap(String text) {
         Rect rect = new Rect();
         Paint priceMarkerTextStyle = getTextPaint(size / 3.5f, Color.BLACK);
         priceMarkerTextStyle.getTextBounds(text, 0, text.length(), rect);
@@ -115,9 +126,9 @@ public class CozyMarkerBuilder {
         Canvas canvas = new Canvas(marker);
 
         int borderRadius = 20;
-        canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
+        canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint(15));
         canvas.drawRoundRect(bubble, borderRadius, borderRadius, getMarkerPaint(Color.WHITE));
-        canvas.drawPath(getPriceMarkerTail(marker), getMarkerPaint(Color.WHITE));
+        canvas.drawPath(addTailOnMarkerCenter(marker, priceMarkerTailSize), getMarkerPaint(Color.WHITE));
 
         float dx = getTextXOffset(width, rect);
         float dy = getTextYOffset(height, rect);
@@ -125,34 +136,42 @@ public class CozyMarkerBuilder {
         return marker;
     }
 
-    private float getTextYOffset(float markerHeight, Rect rect) {
-        return (markerHeight / 2f) + (rect.height() / 2f) - rect.bottom;
-    }
+    private Bitmap getPinBitmap(String text, int markerColor, int textColor, boolean hasTail) {
 
-    private float getTextXOffset(float markerWidth, Rect rect) {
-        return (markerWidth / 2f) - (rect.width() / 2f) - rect.left;
-    }
-
-    private Bitmap getRoundedMarkerBitmap(String text, int markerColor, int textColor) {
+        float textSize = size / 4f;
         Rect rect = new Rect();
-        Paint priceMarkerTextStyle = getTextPaint(size / 3.5f, textColor);
+        Paint priceMarkerTextStyle = getTextPaint(textSize, textColor);
         priceMarkerTextStyle.getTextBounds(text, 0, text.length(), rect);
-        int minWidth = Math.max(rect.width(), size / 2);
 
+        int smallestPinSize = size / 2;
+        int minWidth = Math.max(rect.width(), smallestPinSize);
         int markerWidth = minWidth + padding + shadowSize;
+
+        int priceTailSize = (hasTail ? (int) (priceMarkerTailSize / 1.5f) : 0);
         int markerHeight = rect.height() + padding + shadowSize;
-        Bitmap marker = Bitmap.createBitmap(markerWidth, markerHeight, Bitmap.Config.ARGB_8888);
 
+        Bitmap marker = Bitmap.createBitmap(markerWidth, markerHeight + priceTailSize, Bitmap.Config.ARGB_8888);
+
+        int shapeWidth = markerWidth - shadowSize;
+        int shapeHeight = markerHeight - shadowSize;
         RectF shadow = new RectF(0, 0, markerWidth, markerHeight);
-        RectF shape = new RectF(shadowSize, shadowSize, markerWidth - shadowSize, markerHeight - shadowSize);
+        RectF shape = new RectF(shadowSize, shadowSize, shapeWidth, shapeHeight);
 
-        int borderRadius = 40;
+        int shadowBorderRadius = 40;
+        int shapeBorderRadius = 50;
         Canvas canvas = new Canvas(marker);
-        canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint());
-        canvas.drawRoundRect(shape, borderRadius, borderRadius, getMarkerPaint(markerColor));
+        canvas.drawRoundRect(shadow, shadowBorderRadius, shadowBorderRadius, getShadowPaint(25));
+        canvas.drawRoundRect(shape, shapeBorderRadius, shapeBorderRadius, getMarkerPaint(markerColor));
+
+        if (hasTail) {
+            int shadowTailSize = priceTailSize + shadowSize;
+            canvas.drawPath(addTailOnMarkerCenter(marker, shadowTailSize), getShadowPaint(25));
+            canvas.drawPath(addTailOnMarkerCenter(marker, priceTailSize),
+                    getMarkerPaint(markerColor));
+        }
 
         float dx = getTextXOffset(markerWidth, rect);
-        float dy = getTextYOffset(markerHeight, rect);
+        float dy = getTextYOffset(shapeHeight, rect);
 
         canvas.drawText(text, dx, dy, priceMarkerTextStyle);
         return marker;
@@ -160,23 +179,30 @@ public class CozyMarkerBuilder {
 
     private Bitmap getMarker(String type, String text) {
         switch (type) {
-            case "count":
-                return getClusterMarkerBitmap(text);
+            case "cluster":
+                return getClusterBitmap(text);
             case "price":
-                return getPriceMarkerBitmap(text);
-            case "rounded":
-                return getRoundedMarkerBitmap(text, Color.WHITE, Color.BLACK);
-            case "rounded_selected":
-                return getRoundedMarkerBitmap(text, Color.rgb(57, 87, 189), Color.WHITE);
-            case "rounded_visited":
-                return getRoundedMarkerBitmap(text, Color.WHITE, Color.rgb(110, 110, 100));
+                return getPriceBitmap(text);
+            case "pin_cluster":
+                return getPinBitmap(text, Color.WHITE, Color.BLACK, false);
+            case "pin_cluster_selected":
+                return getPinBitmap(text, Color.rgb(57, 87, 189), Color.WHITE, false);
+            case "pin_cluster_visited":
+                return getPinBitmap(text, Color.WHITE, Color.rgb(110, 110, 100), false);
+            case "pin_price":
+                return getPinBitmap(text, Color.WHITE, Color.BLACK, true);
+            case "pin_price_selected":
+                return getPinBitmap(text, Color.rgb(57, 87, 189), Color.WHITE, true);
+            case "pin_price_visited":
+                return getPinBitmap(text, Color.WHITE, Color.rgb(110, 110, 100), true);
             default:
                 return null;
         }
     }
 
     private Bitmap copyOnlyBitmapProperties(Bitmap bitmap) {
-        if (bitmap == null) return null;
+        if (bitmap == null)
+            return null;
         return bitmap.copy(bitmap.getConfig(), true);
     }
 
@@ -196,7 +222,7 @@ public class CozyMarkerBuilder {
     }
 
     public Bitmap buildMarker(String type, String text) {
-        if(markerCache != null) {
+        if (markerCache != null) {
             final Bitmap marker = bitmapWithCache(type, text);
             return copyOnlyBitmapProperties(marker);
         }
