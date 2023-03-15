@@ -63,6 +63,8 @@
 @property(nonatomic, strong) FlutterMethodChannel *channel;
 @property(nonatomic, assign) BOOL trackCameraPosition;
 @property(nonatomic, assign) BOOL enableMarkerCaching;
+@property(nonatomic, assign) BOOL markersAnimationEnabled;
+@property(nonatomic, assign) int markersAnimationDuration;
 @property(nonatomic, weak) NSObject<FlutterPluginRegistrar> *registrar;
 @property(nonatomic, strong) FLTMarkersController *markersController;
 @property(nonatomic, strong) FLTPolygonsController *polygonsController;
@@ -110,7 +112,9 @@
     _markersController = [[FLTMarkersController alloc] initWithMethodChannel:_channel
                                                                      mapView:_mapView
                                                                    registrar:registrar
-                                                           cozyMarkerBuilder:[[CozyMarkerBuilder alloc] initWithCache:_enableMarkerCaching]];
+                                                           cozyMarkerBuilder:[[CozyMarkerBuilder alloc] initWithCache:_enableMarkerCaching]
+                                                           markersAnimationEnabled:self.markersAnimationEnabled
+                                                           markersAnimationDuration:self.markersAnimationDuration];
     _polygonsController = [[FLTPolygonsController alloc] init:_channel
                                                       mapView:_mapView
                                                     registrar:registrar];
@@ -451,11 +455,13 @@
 }
 
 - (void)setMarkersAnimationEnabled:(BOOL)enabled {
-  self.markersController.markersAnimationEnabled = YES;
+  _markersAnimationEnabled = enabled;
+  [self.markersController setMarkersAnimationEnabled:enabled];
 }
 
 - (void)setMarkersAnimationDuration:(int)duration {
-  self.markersController.markersAnimationDuration = duration;
+  _markersAnimationDuration = duration;
+  [self.markersController setMarkersAnimationDuration:duration];
 }
 
 - (void)setMapType:(GMSMapViewType)mapType {
@@ -661,11 +667,15 @@
     [self setCachingEnabled:[isMarkerCachingEnabled boolValue]];
   }
   NSNumber *markersAnimationEnabled = data[@"markersAnimationEnabled"];
+  NSLog(@"markersAnimationEnabled %@", markersAnimationEnabled);
   if (markersAnimationEnabled && markersAnimationEnabled != (id)[NSNull null]) {
+    NSLog(@"markers animation enabled set data");
     [self setMarkersAnimationEnabled:[markersAnimationEnabled boolValue]];
   }
   NSNumber *markersAnimationDuration = data[@"markersAnimationDuration"];
+  NSLog(@"markersAnimationDuration %@", markersAnimationDuration);
   if (markersAnimationDuration && markersAnimationDuration != (id)[NSNull null]) {
+    NSLog(@"markers animation duration set data");
     [self setMarkersAnimationDuration:[markersAnimationDuration intValue]];
   }
 }
