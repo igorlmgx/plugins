@@ -18,7 +18,7 @@
     if(self) {
         _fontPath = [self loadCozyFont];
         _markerSize = [self calculateMarkerSize];
-        _shadowWidth = 5;
+        _shadowWidth = 3;
         _useCache = useCache;
         if(useCache == YES) {
             _cache = [[NSCache alloc] init];
@@ -162,18 +162,20 @@ void CFSafeRelease(CFTypeRef cf) {
     return image;
 }
 
-- (UIImage *)roundedMarkerImageWithText:(NSString *)text withMarkerColor:(UIColor *)color withTextColor:(UIColor *)textColor {
+- (UIImage *)pinMarkerImageWithText:(NSString *)text withMarkerColor:(UIColor *)color withTextColor:(UIColor *)textColor withTail:(BOOL)withTail {
+    
     UIFont *textFont =  [UIFont fontWithName:self.fontPath size:[self.baseClusterMarker size].width / 3.5];
     CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
-    
     CGFloat padding = 15;
 
     CGFloat minMarkerWidth = ([self markerSize] / [UIScreen mainScreen].scale) / 2;
     CGFloat markerWidth = ((stringSize.width > minMarkerWidth) ? stringSize.width : minMarkerWidth) + padding + [self shadowWidth];
+    
     CGFloat markerHeight = stringSize.height + padding + [self shadowWidth];
 
-    CGSize canvas = CGSizeMake(markerWidth, markerHeight);
-    CGFloat y = (canvas.height / 2) - (stringSize.height / 2);
+    CGFloat tailSize = withTail == YES ? 10 : 0;
+    CGSize canvas = CGSizeMake(markerWidth, markerHeight + tailSize);
+    CGFloat y = ((canvas.height - tailSize) / 2) - (stringSize.height / 2);
     CGFloat x = (canvas.width / 2) - (stringSize.width / 2);
     CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
 
@@ -181,7 +183,7 @@ void CFSafeRelease(CFTypeRef cf) {
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
     UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
         
-        CGContextSetAlpha(rendererContext.CGContext, 0.02);
+        CGContextSetAlpha(rendererContext.CGContext, 0.05);
         CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
         UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth, markerHeight) cornerRadius:20];
         [shadow fill];
@@ -191,10 +193,44 @@ void CFSafeRelease(CFTypeRef cf) {
         CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
         CGContextSetLineWidth(rendererContext.CGContext, 5);
         CGContextSetLineJoin(rendererContext.CGContext, 0);
+        
+        if(withTail == YES) {
+            CGFloat x = canvas.width / 2;
+            CGFloat y = markerHeight - [self shadowWidth];
+            
+            CGMutablePathRef shadow = CGPathCreateMutable();
+            CGContextSetAlpha(rendererContext.CGContext, 0.05);
+            CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
+            CGPathMoveToPoint(shadow, nil, x - tailSize, y);
+            CGPathAddLineToPoint(shadow, nil, x, y + tailSize);
+            CGPathAddLineToPoint(shadow, nil, x + tailSize, y);
+            CGPathAddLineToPoint(shadow, nil, x - tailSize, y);
+            CGContextAddPath(rendererContext.CGContext, shadow);
+            
+            x = x - [self shadowWidth];
+            y = y - [self shadowWidth];
+            
+            
+            CGMutablePathRef path = CGPathCreateMutable();
+            CGContextSetAlpha(rendererContext.CGContext, 1.0);
+            CGContextSetFillColorWithColor(rendererContext.CGContext, color.CGColor);
+            CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
+            CGPathMoveToPoint(path, nil, x - tailSize, y);
+            CGPathAddLineToPoint(path, nil, x, y + tailSize);
+            CGPathAddLineToPoint(path, nil, x + tailSize, y);
+            CGPathAddLineToPoint(path, nil, x - tailSize, y);
+            CGContextAddPath(rendererContext.CGContext, path);
+            
+            CGPathRelease(path);
+            CGPathRelease(shadow);
+        }
         CGContextDrawPath(rendererContext.CGContext, 3);
         UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake([self shadowWidth] / 2, [self shadowWidth] / 2, markerWidth - [self shadowWidth], markerHeight - [self shadowWidth]) cornerRadius:20];
         [bezier fill];
         [bezier stroke];
+        
+       
+        
         [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont, NSForegroundColorAttributeName: textColor}];
     }];
     UIGraphicsEndImageContext();
@@ -202,18 +238,28 @@ void CFSafeRelease(CFTypeRef cf) {
 }
 
 - (UIImage *)getMarker:(NSString *)label withMarkerType:(NSString *)markerType {
-    if([markerType isEqualToString:@"count"]) {
+    if([markerType isEqualToString:@"cluster"]) {
         return [self clusterMarkerImageWithText:label];
-    } else if([markerType isEqualToString:@"rounded"]) {
-        return [self roundedMarkerImageWithText:label withMarkerColor:UIColor.whiteColor withTextColor:UIColor.blackColor];
-    } else if([markerType isEqualToString:@"rounded_visited"]) {
-        return [self roundedMarkerImageWithText:label withMarkerColor:UIColor.whiteColor withTextColor:[UIColor colorWithRed:(110.0f/255.0f) green:(110.0f/255.0f) blue:(100.0f/255.0f) alpha:1]];
-    }
-    else if([markerType isEqualToString:@"rounded_selected"]) {
-        return [self roundedMarkerImageWithText:label withMarkerColor:[UIColor colorWithRed:(57.0f/255.0f) green:(87.0f/255.0f) blue:(189.0f/255.0f) alpha:1] withTextColor:UIColor.whiteColor];
     }
     else if([markerType isEqualToString:@"price"]) {
         return [self priceMarkerImageWithText:label];
+    }
+    else if([markerType isEqualToString:@"pin_cluster"]) {
+        return [self pinMarkerImageWithText:label withMarkerColor:UIColor.whiteColor withTextColor:UIColor.blackColor withTail:NO];
+    } else if([markerType isEqualToString:@"pin_cluster_visited"]) {
+        return [self pinMarkerImageWithText:label withMarkerColor:UIColor.whiteColor withTextColor:[UIColor colorWithRed:(110.0f/255.0f) green:(110.0f/255.0f) blue:(100.0f/255.0f) alpha:1] withTail:NO];
+    }
+    else if([markerType isEqualToString:@"pin_cluster_selected"]) {
+        return [self pinMarkerImageWithText:label withMarkerColor:[UIColor colorWithRed:(57.0f/255.0f) green:(87.0f/255.0f) blue:(189.0f/255.0f) alpha:1] withTextColor:UIColor.whiteColor withTail:NO];
+    }
+    else if([markerType isEqualToString:@"pin_price"]) {
+        return [self pinMarkerImageWithText:label withMarkerColor:UIColor.whiteColor withTextColor:UIColor.blackColor withTail:YES];
+    }
+    else if([markerType isEqualToString:@"pin_price_visited"]) {
+        return [self pinMarkerImageWithText:label withMarkerColor:UIColor.whiteColor withTextColor:[UIColor colorWithRed:(110.0f/255.0f) green:(110.0f/255.0f) blue:(100.0f/255.0f) alpha:1] withTail:YES];
+    }
+    else if([markerType isEqualToString:@"pin_price_selected"]) {
+        return [self pinMarkerImageWithText:label withMarkerColor:[UIColor colorWithRed:(57.0f/255.0f) green:(87.0f/255.0f) blue:(189.0f/255.0f) alpha:1] withTextColor:UIColor.whiteColor withTail:YES];
     }
     @throw [NSException exceptionWithName:@"InvalidMarker"
                                        reason:@"markerType not found for icon."
