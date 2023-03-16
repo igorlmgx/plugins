@@ -424,10 +424,13 @@ class Convert {
         sink.setIcon(toBitmapDescriptor(icon));
         break;
       case "price":
-      case "rounded":
-      case "rounded_selected":
-      case "rounded_visited":
-      case "count":
+      case "cluster":
+      case "pin_cluster":
+      case "pin_cluster_visited":
+      case "pin_cluster_selected":
+      case "pin_price":
+      case "pin_price_visited":
+      case "pin_price_selected":
         final Object label = data.get("label");
         if (label == null) {
           throw new IllegalArgumentException("markerType was label but label was not provided.");

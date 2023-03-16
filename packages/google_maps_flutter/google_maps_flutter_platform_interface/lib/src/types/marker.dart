@@ -17,23 +17,35 @@ Object _offsetToJson(Offset offset) {
 enum MarkerType {
   /// A white circle with text in the middle. If chosen, an label must
   /// be passed in the label argument.
-  count,
+  cluster,
 
   /// A white text bubble with text in the middle. The bubble adjusts itself
   /// to the text. If chosen, an label must be passed in the label argument.
   price,
 
-  /// A white rounded square with text in the middle. The shape adjusts itself
+  /// A white pin with text in the middle. The shape adjusts itself
   /// to the text. If chosen, an label must be passed in the label argument.
-  rounded,
+  pin_cluster,
 
-  /// A grey rounded square with fading text in the middle. The shape adjusts itself
+  /// A grey pin with fading text in the middle. The shape adjusts itself
   /// to the text. If chosen, an label must be passed in the label argument.
-  rounded_visited,
+  pin_cluster_visited,
 
-  /// A blue rounded square with white text in the middle. The shape adjusts itself
+  /// A blue pin with white text in the middle. The shape adjusts itself
   /// to the text. If chosen, an label must be passed in the label argument.
-  rounded_selected,
+  pin_cluster_selected,
+
+  /// A white pin with text in the middle and a tail. The shape adjusts itself
+  /// to the text. If chosen, an label must be passed in the label argument.
+  pin_price,
+
+  /// A grey pin with fading text in the middle and a tail. The shape adjusts itself
+  /// to the text. If chosen, an label must be passed in the label argument.
+  pin_price_visited,
+
+  /// A blue pin with white text in the middle and a tail. The shape adjusts itself
+  /// to the text. If chosen, an label must be passed in the label argument.
+  pin_price_selected,
 
   /// A non-standard icon. If chosen, an icon must be passed in the icon
   /// argument.
