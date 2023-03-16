@@ -164,7 +164,7 @@ void CFSafeRelease(CFTypeRef cf) {
 
 - (UIImage *)pinMarkerImageWithText:(NSString *)text withMarkerColor:(UIColor *)color withTextColor:(UIColor *)textColor withTail:(BOOL)withTail {
     
-    // getting font and setting its size to 3.5 the size of the marker size
+    // getting font and setting its size to 3 the size of the marker size
     CGFloat fontSize = ([self markerSize] / [UIScreen mainScreen].scale) / 3;
     UIFont *textFont =  [UIFont fontWithName:self.fontPath size:fontSize];
     CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
