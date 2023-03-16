@@ -76,7 +76,7 @@ void CFSafeRelease(CFTypeRef cf) {
     }
 }
 
-- (UIImage *)baseClusterMarker {
+- (UIImage *)baseMarker {
     CGFloat size = ([self markerSize] / [UIScreen mainScreen].scale) + [self shadowWidth];
     CGSize canvas = CGSizeMake(size, size);
     UIGraphicsBeginImageContext(canvas);
@@ -98,7 +98,7 @@ void CFSafeRelease(CFTypeRef cf) {
 }
 
 - (UIImage *)clusterMarkerImageWithText:(NSString *)string {
-    UIImage *circle = [self baseClusterMarker];
+    UIImage *circle = [self baseMarker];
     CGSize size = [circle size];
     UIFont *textFont = [UIFont fontWithName:self.fontPath size:size.width / 2.5];
     CGSize stringSize = [string sizeWithAttributes:@{NSFontAttributeName:textFont}];
@@ -164,74 +164,69 @@ void CFSafeRelease(CFTypeRef cf) {
 
 - (UIImage *)pinMarkerImageWithText:(NSString *)text withMarkerColor:(UIColor *)color withTextColor:(UIColor *)textColor withTail:(BOOL)withTail {
     
-    UIFont *textFont =  [UIFont fontWithName:self.fontPath size:[self.baseClusterMarker size].width / 3.5];
+    // getting font and setting its size to 3.5 the size of the marker size
+    CGFloat fontSize = ([self markerSize] / [UIScreen mainScreen].scale) / 3;
+    UIFont *textFont =  [UIFont fontWithName:self.fontPath size:fontSize];
     CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
-    CGFloat padding = 15;
-
-    CGFloat minMarkerWidth = ([self markerSize] / [UIScreen mainScreen].scale) / 2;
-    CGFloat markerWidth = ((stringSize.width > minMarkerWidth) ? stringSize.width : minMarkerWidth) + padding + [self shadowWidth];
     
-    CGFloat markerHeight = stringSize.height + padding + [self shadowWidth];
+    // setting padding and shadow width
+    CGFloat padding = 15;
+    CGFloat shadowWidth = 2;
 
-    CGFloat tailSize = withTail == YES ? 10 : 0;
-    CGSize canvas = CGSizeMake(markerWidth, markerHeight + tailSize);
-    CGFloat y = ((canvas.height - tailSize) / 2) - (stringSize.height / 2);
-    CGFloat x = (canvas.width / 2) - (stringSize.width / 2);
-    CGRect textRect = CGRectMake(x, y, stringSize.width, stringSize.height);
+    // setting marker width with a minimum width in case the string size is below the minimum
+    CGFloat minMarkerWidth = ([self markerSize] / [UIScreen mainScreen].scale) / 2;
+    CGFloat markerWidth = ((stringSize.width > minMarkerWidth) ? stringSize.width : minMarkerWidth) + padding + shadowWidth;
+    
+    // in case a tail will be used, sets a tail size, else it becomes 0.
+    CGFloat tailSize = withTail ? 6 : 0;
+    
+    // setting the marker height
+    CGFloat markerHeight = stringSize.height + padding + shadowWidth + tailSize;
+
+    
+    // creating canvas
+    CGSize canvas = CGSizeMake(markerWidth, markerHeight);
 
     UIGraphicsBeginImageContext(canvas);
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
     UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
         
-        CGContextSetAlpha(rendererContext.CGContext, 0.05);
-        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
-        UIBezierPath *shadow = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth, markerHeight) cornerRadius:20];
-        [shadow fill];
-        [shadow stroke];
+        // setting colors and shadows
+        CGContextSetShadowWithColor(rendererContext.CGContext, CGSizeMake(0, 0), 2.0, UIColor.grayColor.CGColor);
         CGContextSetAlpha(rendererContext.CGContext, 1.0);
         CGContextSetFillColorWithColor(rendererContext.CGContext, color.CGColor);
         CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
         CGContextSetLineWidth(rendererContext.CGContext, 5);
         CGContextSetLineJoin(rendererContext.CGContext, 0);
         
-        if(withTail == YES) {
+        // drawing bubble from point x/y, and with width and height
+        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth, markerHeight - tailSize) cornerRadius:20];
+        
+        // if a tail will be used, sets a point in the bottom center of the bubble,
+        // draws a triangle from this point and adds to the bubble path above
+        if(withTail) {
             CGFloat x = canvas.width / 2;
-            CGFloat y = markerHeight - [self shadowWidth];
+            CGFloat y = markerHeight - tailSize;
             
-            CGMutablePathRef shadow = CGPathCreateMutable();
-            CGContextSetAlpha(rendererContext.CGContext, 0.05);
-            CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.grayColor.CGColor);
-            CGPathMoveToPoint(shadow, nil, x - tailSize, y);
-            CGPathAddLineToPoint(shadow, nil, x, y + tailSize);
-            CGPathAddLineToPoint(shadow, nil, x + tailSize, y);
-            CGPathAddLineToPoint(shadow, nil, x - tailSize, y);
-            CGContextAddPath(rendererContext.CGContext, shadow);
-            
-            x = x - [self shadowWidth];
-            y = y - [self shadowWidth];
-            
-            
-            CGMutablePathRef path = CGPathCreateMutable();
-            CGContextSetAlpha(rendererContext.CGContext, 1.0);
-            CGContextSetFillColorWithColor(rendererContext.CGContext, color.CGColor);
-            CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
-            CGPathMoveToPoint(path, nil, x - tailSize, y);
-            CGPathAddLineToPoint(path, nil, x, y + tailSize);
-            CGPathAddLineToPoint(path, nil, x + tailSize, y);
-            CGPathAddLineToPoint(path, nil, x - tailSize, y);
-            CGContextAddPath(rendererContext.CGContext, path);
-            
-            CGPathRelease(path);
-            CGPathRelease(shadow);
+            UIBezierPath *tailPath = [UIBezierPath bezierPath];
+            [tailPath moveToPoint:CGPointMake(x - tailSize, y)];
+            [tailPath addLineToPoint:CGPointMake(x, y + tailSize)];
+            [tailPath addLineToPoint:CGPointMake(x + tailSize, y)];
+            [tailPath closePath];
+            [bezier appendPath:tailPath];
         }
-        CGContextDrawPath(rendererContext.CGContext, 3);
-        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake([self shadowWidth] / 2, [self shadowWidth] / 2, markerWidth - [self shadowWidth], markerHeight - [self shadowWidth]) cornerRadius:20];
-        [bezier fill];
+        
+        // draws the bubble with the tail, if used
         [bezier stroke];
-        
-       
-        
+        [bezier fill];
+     
+        // removes the shadow and draws the text
+        CGContextSetShadowWithColor(rendererContext.CGContext, CGSizeMake(0, 0), 0.0, NULL);
+        CGFloat textY = ((canvas.height - tailSize) / 2) - (stringSize.height / 2);
+        CGFloat textX = (canvas.width / 2) - (stringSize.width / 2);
+        CGRect textRect = CGRectMake(textX, textY, stringSize.width, stringSize.height);
         [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont, NSForegroundColorAttributeName: textColor}];
+        
     }];
     UIGraphicsEndImageContext();
     return image;
