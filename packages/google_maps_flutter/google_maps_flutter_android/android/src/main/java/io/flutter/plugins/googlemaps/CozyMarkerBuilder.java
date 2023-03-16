@@ -138,7 +138,7 @@ public class CozyMarkerBuilder {
 
     private Bitmap getPinBitmap(String text, int markerColor, int textColor, boolean hasTail) {
 
-        float textSize = size / 4f;
+        float textSize = size / 3.5f;
         Rect rect = new Rect();
         Paint priceMarkerTextStyle = getTextPaint(textSize, textColor);
         priceMarkerTextStyle.getTextBounds(text, 0, text.length(), rect);
@@ -154,21 +154,27 @@ public class CozyMarkerBuilder {
 
         int shapeWidth = markerWidth - shadowSize;
         int shapeHeight = markerHeight - shadowSize;
-        RectF shadow = new RectF(0, 0, markerWidth, markerHeight);
-        RectF shape = new RectF(shadowSize, shadowSize, shapeWidth, shapeHeight);
 
-        int shadowBorderRadius = 40;
+        RectF shape = new RectF(shadowSize, shadowSize, shapeWidth, shapeHeight);
+        Path bubblePath = new Path();
         int shapeBorderRadius = 50;
+        bubblePath.addRoundRect(shape, shapeBorderRadius, shapeBorderRadius, Path.Direction.CW);
+
         Canvas canvas = new Canvas(marker);
-        canvas.drawRoundRect(shadow, shadowBorderRadius, shadowBorderRadius, getShadowPaint(25));
-        canvas.drawRoundRect(shape, shapeBorderRadius, shapeBorderRadius, getMarkerPaint(markerColor));
 
         if (hasTail) {
-            int shadowTailSize = priceTailSize + shadowSize;
-            canvas.drawPath(addTailOnMarkerCenter(marker, shadowTailSize), getShadowPaint(25));
-            canvas.drawPath(addTailOnMarkerCenter(marker, priceTailSize),
-                    getMarkerPaint(markerColor));
+            bubblePath.addPath(addTailOnMarkerCenter(marker, priceTailSize));
         }
+
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(shadowSize);
+        paint.setAlpha(50);
+        paint.setShadowLayer(shadowSize, 0, 0, Color.BLACK);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(markerColor);
+        canvas.drawPath(bubblePath, paint);
 
         float dx = getTextXOffset(markerWidth, rect);
         float dy = getTextYOffset(shapeHeight, rect);
