@@ -200,13 +200,13 @@ void CFSafeRelease(CFTypeRef cf) {
         CGContextSetLineJoin(rendererContext.CGContext, 0);
         
         // drawing bubble from point x/y, and with width and height
-        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, markerWidth, markerHeight - tailSize) cornerRadius:20];
+        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(shadowWidth / 2, shadowWidth / 2, markerWidth - shadowWidth, markerHeight - shadowWidth - tailSize) cornerRadius:20];
         
         // if a tail will be used, sets a point in the bottom center of the bubble,
         // draws a triangle from this point and adds to the bubble path above
         if(withTail) {
             CGFloat x = canvas.width / 2;
-            CGFloat y = markerHeight - tailSize;
+            CGFloat y = markerHeight - tailSize - shadowWidth / 2;
             
             UIBezierPath *tailPath = [UIBezierPath bezierPath];
             [tailPath moveToPoint:CGPointMake(x - tailSize, y)];
