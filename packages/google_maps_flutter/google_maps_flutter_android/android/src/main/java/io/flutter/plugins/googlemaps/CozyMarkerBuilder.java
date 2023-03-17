@@ -96,7 +96,7 @@ public class CozyMarkerBuilder {
         return marker;
     }
 
-    private Path addTailOnMarkerCenter(Bitmap marker, int tailSize) {
+    private Path addTailOnMarkerCenter(Bitmap marker, int tailSize, int shadowSize) {
         Path pointer = new Path();
         pointer.setFillType(Path.FillType.EVEN_ODD);
         float width = marker.getWidth();
@@ -128,7 +128,7 @@ public class CozyMarkerBuilder {
         int borderRadius = 20;
         canvas.drawRoundRect(shadow, borderRadius, borderRadius, getShadowPaint(15));
         canvas.drawRoundRect(bubble, borderRadius, borderRadius, getMarkerPaint(Color.WHITE));
-        canvas.drawPath(addTailOnMarkerCenter(marker, priceMarkerTailSize), getMarkerPaint(Color.WHITE));
+        canvas.drawPath(addTailOnMarkerCenter(marker, priceMarkerTailSize, shadowSize), getMarkerPaint(Color.WHITE));
 
         float dx = getTextXOffset(width, rect);
         float dy = getTextYOffset(height, rect);
@@ -138,48 +138,64 @@ public class CozyMarkerBuilder {
 
     private Bitmap getPinBitmap(String text, int markerColor, int textColor, boolean hasTail) {
 
-        float textSize = size / 3.5f;
+        // gets the text size based on the font
         Rect rect = new Rect();
+        float textSize = size / 3.5f;
         Paint priceMarkerTextStyle = getTextPaint(textSize, textColor);
         priceMarkerTextStyle.getTextBounds(text, 0, text.length(), rect);
 
+        // calculates if the minimum width will
+        // be a specific size or is adjusted to the width of the string
         int smallestPinSize = size / 2;
         int minWidth = Math.max(rect.width(), smallestPinSize);
+
+        // set the marker width as the minimum width with space for padding and shadow
+        int padding = size / 2;
+        int shadowSize = 6;
         int markerWidth = minWidth + padding + shadowSize;
 
-        int priceTailSize = (hasTail ? (int) (priceMarkerTailSize / 1.5f) : 0);
+        // set the marker height as the string height with space for padding and shadow
         int markerHeight = rect.height() + padding + shadowSize;
 
+        // creates a bitmap with the marker width and height
+        // if a tail will be used, gets an extra spacing in the marker height for the
+        // tail
+        int priceTailSize = (hasTail ? (int) (priceMarkerTailSize / 1.5f) : 0);
         Bitmap marker = Bitmap.createBitmap(markerWidth, markerHeight + priceTailSize, Bitmap.Config.ARGB_8888);
 
+        // gets a bubble path, centering in a space for shadow on the left and top side
         int shapeWidth = markerWidth - shadowSize;
         int shapeHeight = markerHeight - shadowSize;
-
         RectF shape = new RectF(shadowSize, shadowSize, shapeWidth, shapeHeight);
-        Path bubblePath = new Path();
+
+        // add the path, and if a tail is used, add a tail path on the bottom center of
+        // the marker
         int shapeBorderRadius = 50;
+        Path bubblePath = new Path();
         bubblePath.addRoundRect(shape, shapeBorderRadius, shapeBorderRadius, Path.Direction.CW);
-
-        Canvas canvas = new Canvas(marker);
-
         if (hasTail) {
-            bubblePath.addPath(addTailOnMarkerCenter(marker, priceTailSize));
+            bubblePath.addPath(addTailOnMarkerCenter(marker, priceTailSize, shadowSize));
         }
 
+        // sets the shadow and marker paint
         Paint paint = new Paint();
         paint.setAntiAlias(true);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(shadowSize);
-        paint.setAlpha(50);
-        paint.setShadowLayer(shadowSize, 0, 0, Color.BLACK);
+        int shadowColor = Color.argb(128, 0, 0, 0);
+        paint.setShadowLayer(shadowSize, 0, 0, shadowColor);
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(markerColor);
+
+        // draws the path
+        Canvas canvas = new Canvas(marker);
         canvas.drawPath(bubblePath, paint);
 
+        // gets the text offset from the marker and draws it
         float dx = getTextXOffset(markerWidth, rect);
         float dy = getTextYOffset(shapeHeight, rect);
-
         canvas.drawText(text, dx, dy, priceMarkerTextStyle);
+
         return marker;
     }
 

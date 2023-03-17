@@ -170,7 +170,7 @@ void CFSafeRelease(CFTypeRef cf) {
     CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
     
     // setting padding and shadow width
-    CGFloat padding = 15;
+    CGFloat padding = 20;
     CGFloat shadowWidth = 2;
 
     // setting marker width with a minimum width in case the string size is below the minimum
