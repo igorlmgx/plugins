@@ -66,23 +66,25 @@
 
 - (void)removeMarker {
     if(self.markersAnimationEnabled){
-        [CATransaction begin];
-        CABasicAnimation *fadeOut = [CABasicAnimation animationWithKeyPath:@"opacity"];
-        fadeOut.fromValue = [NSNumber numberWithFloat:1.0];
-        fadeOut.toValue = [NSNumber numberWithFloat:0.0];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+            [CATransaction begin];
+            CABasicAnimation *fadeOut = [CABasicAnimation animationWithKeyPath:@"opacity"];
+            fadeOut.fromValue = [NSNumber numberWithFloat:1.0];
+            fadeOut.toValue = [NSNumber numberWithFloat:0.0];
 
-        float durationInMillis = self.markersAnimationDuration;
-        fadeOut.duration = durationInMillis/1000;
-        
-        fadeOut.fillMode = kCAFillModeForwards;
-        fadeOut.removedOnCompletion = NO;
+            float durationInMillis = self.markersAnimationDuration;
+            fadeOut.duration = durationInMillis/1000;
+            
+            fadeOut.fillMode = kCAFillModeForwards;
+            fadeOut.removedOnCompletion = NO;
 
-        [CATransaction setCompletionBlock:^{
-             self.marker.map = nil;
-        }];
+            [CATransaction setCompletionBlock:^{
+                self.marker.map = nil;
+            }];
 
-        [self.marker.layer addAnimation:fadeOut forKey:@"fadeOutAnimation"];
-        [CATransaction commit];
+            [self.marker.layer addAnimation:fadeOut forKey:@"fadeOutAnimation"];
+            [CATransaction commit];
+        });
     }else{
         self.marker.map = nil;
     }
