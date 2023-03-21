@@ -4,10 +4,10 @@ publish_to: none
 
 environment:
   sdk: ">=2.14.0 <3.0.0"
-  flutter: ">=2.10.0"
+  flutter: ">=3.0.0"
 
 dependencies:
-  cupertino_icons: ^0.1.0
+  cupertino_icons: ^1.0.5
   flutter:
     sdk: flutter
   flutter_plugin_android_lifecycle: ^2.0.1
@@ -19,22 +19,23 @@ dependencies:
     # the parent directory to use the current plugin's version.
     git:
       url: https://github.com/fulpismo/plugins.git
-      ref: v2.2.1-fork.6.1
+      ref: v2.2.3-fork.2
       path: packages/google_maps_flutter/google_maps_flutter 
 
   google_maps_flutter_android: 
     git:
       url: https://github.com/fulpismo/plugins.git
-      ref: v2.2.1-fork.6.1
+      ref: v2.2.3-fork.2
       path: packages/google_maps_flutter/google_maps_flutter_android
   google_maps_flutter_platform_interface:
     git:
       url: https://github.com/fulpismo/plugins.git
-      ref: v2.2.1-fork.6.1
+      ref: v2.2.3-fork.2
       path: packages/google_maps_flutter/google_maps_flutter_platform_interface
 
 dev_dependencies:
-  espresso: ^0.1.0+2
+  build_runner: ^2.1.10
+  espresso: ^0.2.0
   flutter_driver:
     sdk: flutter
   flutter_test:
