@@ -39,11 +39,14 @@
     NSLog(@"setMarkersAnimationEnabled initMarkerWithPosition %d", markersAnimationEnabled);
     NSLog(@"markersAnimationDuration initMarkerWithPosition %i", markersAnimationDuration);
     if(markersAnimationEnabled){
+        float durationInMillis = markersAnimationDuration;
+        float durationInSeconds = durationInMillis/1000;
+
         CABasicAnimation *fadeIn = [CABasicAnimation animationWithKeyPath:@"opacity"];
         fadeIn.fromValue = [NSNumber numberWithFloat:0.0];
         fadeIn.toValue = [NSNumber numberWithFloat:1.0];
-        float durationInMillis = markersAnimationDuration;
-        fadeIn.duration = durationInMillis/1000;
+        fadeIn.duration = durationInSeconds;
+        fadeIn.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.5: 1: 0.89: 1];
 
         [_marker.layer addAnimation:fadeIn forKey:@"fadeInAnimation"];
     }
@@ -66,7 +69,7 @@
 
 - (void)removeMarker {
     if(self.markersAnimationEnabled){
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, self.markersAnimationDuration * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
             [CATransaction begin];
             CABasicAnimation *fadeOut = [CABasicAnimation animationWithKeyPath:@"opacity"];
             fadeOut.fromValue = [NSNumber numberWithFloat:1.0];
@@ -74,6 +77,7 @@
 
             float durationInMillis = self.markersAnimationDuration;
             fadeOut.duration = durationInMillis/1000;
+            fadeOut.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.5: 1: 0.89: 1];
             
             fadeOut.fillMode = kCAFillModeForwards;
             fadeOut.removedOnCompletion = NO;
