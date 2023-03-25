@@ -167,7 +167,7 @@ public class CozyMarkerBuilder {
         RectF shape = new RectF(strokeSize, strokeSize, shapeWidth, shapeHeight);
 
         // add the path, and if a tail is used, add a tail path on the bottom center of the marker
-        int shapeBorderRadius = 50;
+        int shapeBorderRadius = Math.round(getDpFromPx(50));
         Path bubblePath = new Path();
         bubblePath.addRoundRect(shape, shapeBorderRadius, shapeBorderRadius, Path.Direction.CW);
         if (hasTail) {
