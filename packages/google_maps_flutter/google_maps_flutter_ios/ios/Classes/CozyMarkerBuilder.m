@@ -172,7 +172,7 @@ void CFSafeRelease(CFTypeRef cf) {
     // setting padding and stroke size
     CGFloat paddingHorizontal = 11;
     CGFloat paddingVertical = 12;
-    CGFloat strokeSize = 1;
+    CGFloat strokeSize = 3;
 
     // setting stroke color
     UIColor *strokeColor = [UIColor colorWithRed:212.0f/255.0f green:(214.0f/255.0f) blue:(202.0f/255.0f) alpha:1];
@@ -202,11 +202,10 @@ void CFSafeRelease(CFTypeRef cf) {
         CGContextSetAlpha(rendererContext.CGContext, 1.0);
         CGContextSetFillColorWithColor(rendererContext.CGContext, color.CGColor);
         CGContextSetStrokeColorWithColor(rendererContext.CGContext, strokeColor.CGColor);
-        CGContextSetLineWidth(rendererContext.CGContext, 5);
         CGContextSetLineJoin(rendererContext.CGContext, 0);
         
         // drawing bubble from point x/y, and with width and height
-        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(1, 1, markerWidth - (2 * strokeSize), markerHeight - (2 * strokeSize) - tailSize) cornerRadius:20];
+        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(strokeSize, strokeSize, markerWidth - (2 * strokeSize), markerHeight - (2 * strokeSize) - tailSize) cornerRadius:20];
         
         // if a tail will be used, sets a point in the bottom center of the bubble,
         // draws a triangle from this point and adds to the bubble path above
@@ -223,6 +222,7 @@ void CFSafeRelease(CFTypeRef cf) {
         }
         
         // draws the bubble with the tail, if used
+        [bezier setLineWidth: strokeSize];
         [bezier stroke];
         [bezier fill];
      

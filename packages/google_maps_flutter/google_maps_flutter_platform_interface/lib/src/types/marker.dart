@@ -364,6 +364,7 @@ class Marker implements MapsObject<Marker> {
     }
     return other is Marker &&
         markerId == other.markerId &&
+        markerType == other.markerType &&
         alpha == other.alpha &&
         anchor == other.anchor &&
         icon == other.icon &&
