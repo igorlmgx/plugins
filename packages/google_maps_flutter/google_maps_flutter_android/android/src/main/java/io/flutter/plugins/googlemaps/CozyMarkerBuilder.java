@@ -137,59 +137,60 @@ public class CozyMarkerBuilder {
     }
 
     private Bitmap getPinBitmap(String text, int markerColor, int textColor, boolean hasTail) {
-
         // gets the text size based on the font
         Rect rect = new Rect();
-        float textSize = size / 3.5f;
+        float textSize = getDpFromPx(12f);
         Paint priceMarkerTextStyle = getTextPaint(textSize, textColor);
         priceMarkerTextStyle.getTextBounds(text, 0, text.length(), rect);
 
-        // calculates if the minimum width will
-        // be a specific size or is adjusted to the width of the string
-        int smallestPinSize = size / 2;
-        int minWidth = Math.max(rect.width(), smallestPinSize);
+        // set the marker width
+        int paddingVertical = Math.round(getDpFromPx(12f));
+        int paddingHorizontal = Math.round(getDpFromPx(11f));
+        int minMarkerWidth = Math.round(getDpFromPx(40f));
+        int strokeSize = Math.round(getDpFromPx(1.5f));
+        int markerWidth = rect.width() + (2 * paddingHorizontal) + strokeSize;
+        if (markerWidth < minMarkerWidth) {
+            markerWidth = minMarkerWidth;
+        }
 
-        // set the marker width as the minimum width with space for padding and shadow
-        int padding = size / 2;
-        int shadowSize = 6;
-        int markerWidth = minWidth + padding + shadowSize;
-
-        // set the marker height as the string height with space for padding and shadow
-        int markerHeight = rect.height() + padding + shadowSize;
+        // set the marker height as the string height with space for padding and stroke
+        int markerHeight = rect.height() + (2 * paddingVertical) + strokeSize;
 
         // creates a bitmap with the marker width and height
-        // if a tail will be used, gets an extra spacing in the marker height for the
-        // tail
+        // if a tail will be used, gets an extra spacing in the marker height for the tail
         int priceTailSize = (hasTail ? (int) (priceMarkerTailSize / 1.5f) : 0);
         Bitmap marker = Bitmap.createBitmap(markerWidth, markerHeight + priceTailSize, Bitmap.Config.ARGB_8888);
 
-        // gets a bubble path, centering in a space for shadow on the left and top side
-        int shapeWidth = markerWidth - shadowSize;
-        int shapeHeight = markerHeight - shadowSize;
-        RectF shape = new RectF(shadowSize, shadowSize, shapeWidth, shapeHeight);
+        // gets a bubble path, centering in a space for stroke on the left and top side
+        int shapeWidth = markerWidth - strokeSize;
+        int shapeHeight = markerHeight - strokeSize;
+        RectF shape = new RectF(strokeSize, strokeSize, shapeWidth, shapeHeight);
 
-        // add the path, and if a tail is used, add a tail path on the bottom center of
-        // the marker
-        int shapeBorderRadius = 50;
+        // add the path, and if a tail is used, add a tail path on the bottom center of the marker
+        int shapeBorderRadius = Math.round(getDpFromPx(50));
         Path bubblePath = new Path();
         bubblePath.addRoundRect(shape, shapeBorderRadius, shapeBorderRadius, Path.Direction.CW);
         if (hasTail) {
-            bubblePath.addPath(addTailOnMarkerCenter(marker, priceTailSize, shadowSize));
+            Path tailPath = addTailOnMarkerCenter(marker, priceTailSize, strokeSize);
+            bubblePath.op(bubblePath, tailPath, Path.Op.UNION);
         }
 
-        // sets the shadow and marker paint
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(shadowSize);
-        int shadowColor = Color.argb(128, 0, 0, 0);
-        paint.setShadowLayer(shadowSize, 0, 0, shadowColor);
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(markerColor);
+        Paint fillPaint = new Paint();
+        fillPaint.setAntiAlias(true);
+        fillPaint.setStyle(Paint.Style.FILL);
+        fillPaint.setColor(markerColor);
+
+        Paint strokePaint = new Paint();
+        strokePaint.setAntiAlias(true);
+        strokePaint.setStyle(Paint.Style.STROKE);
+        strokePaint.setColor(Color.parseColor("#D9DBD0"));
+        strokePaint.setStrokeWidth(strokeSize);
+        strokePaint.setStrokeCap(Paint.Cap.ROUND);
 
         // draws the path
         Canvas canvas = new Canvas(marker);
-        canvas.drawPath(bubblePath, paint);
+        canvas.drawPath(bubblePath, fillPaint);
+        canvas.drawPath(bubblePath, strokePaint);
 
         // gets the text offset from the marker and draws it
         float dx = getTextXOffset(markerWidth, rect);
@@ -200,26 +201,37 @@ public class CozyMarkerBuilder {
     }
 
     private Bitmap getMarker(String type, String text) {
+        int defaultMarkerColor = Color.WHITE;
+        int defaultTextColor = Color.BLACK;
+        int selectedMarkerColor = Color.rgb(57, 87, 189);
+        int selectedTextColor = Color.WHITE;
+        int visitedMarkerColor = Color.rgb(248, 249, 245);
+        int visitedTextColor = Color.rgb(110, 110, 100);
+
         switch (type) {
             case "cluster":
                 return getClusterBitmap(text);
             case "price":
                 return getPriceBitmap(text);
             case "pin_cluster":
-                return getPinBitmap(text, Color.WHITE, Color.BLACK, false);
+                return getPinBitmap(text, defaultMarkerColor, defaultTextColor, false);
             case "pin_cluster_selected":
-                return getPinBitmap(text, Color.rgb(57, 87, 189), Color.WHITE, false);
+                return getPinBitmap(text, selectedMarkerColor, selectedTextColor, false);
             case "pin_cluster_visited":
-                return getPinBitmap(text, Color.WHITE, Color.rgb(110, 110, 100), false);
+                return getPinBitmap(text, visitedMarkerColor, visitedTextColor, false);
             case "pin_price":
-                return getPinBitmap(text, Color.WHITE, Color.BLACK, true);
+                return getPinBitmap(text, defaultMarkerColor, defaultTextColor, true);
             case "pin_price_selected":
-                return getPinBitmap(text, Color.rgb(57, 87, 189), Color.WHITE, true);
+                return getPinBitmap(text, selectedMarkerColor, selectedTextColor, true);
             case "pin_price_visited":
-                return getPinBitmap(text, Color.WHITE, Color.rgb(110, 110, 100), true);
+                return getPinBitmap(text, visitedMarkerColor, visitedTextColor, true);
             default:
                 return null;
         }
+    }
+
+    private static float getDpFromPx(float px){
+        return px * Resources.getSystem().getDisplayMetrics().density;
     }
 
     private Bitmap copyOnlyBitmapProperties(Bitmap bitmap) {

@@ -165,23 +165,30 @@ void CFSafeRelease(CFTypeRef cf) {
 - (UIImage *)pinMarkerImageWithText:(NSString *)text withMarkerColor:(UIColor *)color withTextColor:(UIColor *)textColor withTail:(BOOL)withTail {
     
     // getting font and setting its size to 3 the size of the marker size
-    CGFloat fontSize = ([self markerSize] / [UIScreen mainScreen].scale) / 3;
+    CGFloat fontSize = 12;
     UIFont *textFont =  [UIFont fontWithName:self.fontPath size:fontSize];
     CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
     
-    // setting padding and shadow width
-    CGFloat padding = 20;
-    CGFloat shadowWidth = 2;
+    // setting padding and stroke size
+    CGFloat paddingHorizontal = 11;
+    CGFloat paddingVertical = 12;
+    CGFloat strokeSize = 3;
+
+    // setting stroke color
+    UIColor *strokeColor = [UIColor colorWithRed:212.0f/255.0f green:(214.0f/255.0f) blue:(202.0f/255.0f) alpha:1];
 
     // setting marker width with a minimum width in case the string size is below the minimum
-    CGFloat minMarkerWidth = ([self markerSize] / [UIScreen mainScreen].scale) / 2;
-    CGFloat markerWidth = ((stringSize.width > minMarkerWidth) ? stringSize.width : minMarkerWidth) + padding + shadowWidth;
-    
+    CGFloat minMarkerWidth = 40;
+    CGFloat markerWidth = stringSize.width + (2 * paddingVertical) + (2 * strokeSize);
+    if(markerWidth < minMarkerWidth) {
+        markerWidth = minMarkerWidth;
+    }
+     
     // in case a tail will be used, sets a tail size, else it becomes 0.
     CGFloat tailSize = withTail ? 6 : 0;
     
     // setting the marker height
-    CGFloat markerHeight = stringSize.height + padding + shadowWidth + tailSize;
+    CGFloat markerHeight = stringSize.height + (2 * paddingHorizontal) + (2 * strokeSize) + tailSize;
 
     
     // creating canvas
@@ -191,22 +198,20 @@ void CFSafeRelease(CFTypeRef cf) {
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
     UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
         
-        // setting colors and shadows
-        CGContextSetShadowWithColor(rendererContext.CGContext, CGSizeMake(0, 0), 2.0, UIColor.grayColor.CGColor);
+        // setting colors and stroke
         CGContextSetAlpha(rendererContext.CGContext, 1.0);
         CGContextSetFillColorWithColor(rendererContext.CGContext, color.CGColor);
-        CGContextSetStrokeColorWithColor(rendererContext.CGContext, UIColor.clearColor.CGColor);
-        CGContextSetLineWidth(rendererContext.CGContext, 5);
+        CGContextSetStrokeColorWithColor(rendererContext.CGContext, strokeColor.CGColor);
         CGContextSetLineJoin(rendererContext.CGContext, 0);
         
         // drawing bubble from point x/y, and with width and height
-        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(shadowWidth / 2, shadowWidth / 2, markerWidth - shadowWidth, markerHeight - shadowWidth - tailSize) cornerRadius:20];
+        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(strokeSize, strokeSize, markerWidth - (2 * strokeSize), markerHeight - (2 * strokeSize) - tailSize) cornerRadius:20];
         
         // if a tail will be used, sets a point in the bottom center of the bubble,
         // draws a triangle from this point and adds to the bubble path above
         if(withTail) {
             CGFloat x = canvas.width / 2;
-            CGFloat y = markerHeight - tailSize - shadowWidth / 2;
+            CGFloat y = markerHeight - tailSize - strokeSize;
             
             UIBezierPath *tailPath = [UIBezierPath bezierPath];
             [tailPath moveToPoint:CGPointMake(x - tailSize, y)];
@@ -217,11 +222,11 @@ void CFSafeRelease(CFTypeRef cf) {
         }
         
         // draws the bubble with the tail, if used
+        [bezier setLineWidth: strokeSize];
         [bezier stroke];
         [bezier fill];
      
-        // removes the shadow and draws the text
-        CGContextSetShadowWithColor(rendererContext.CGContext, CGSizeMake(0, 0), 0.0, NULL);
+        // draws the text
         CGFloat textY = ((canvas.height - tailSize) / 2) - (stringSize.height / 2);
         CGFloat textX = (canvas.width / 2) - (stringSize.width / 2);
         CGRect textRect = CGRectMake(textX, textY, stringSize.width, stringSize.height);
