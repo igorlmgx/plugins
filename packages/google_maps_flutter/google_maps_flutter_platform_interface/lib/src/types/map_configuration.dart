@@ -35,7 +35,6 @@ class MapConfiguration {
     this.trafficEnabled,
     this.buildingsEnabled,
     this.markersAnimationEnabled,
-    this.markersAnimationDuration,
   });
 
   /// True if the compass UI should be shown.
@@ -99,9 +98,6 @@ class MapConfiguration {
   /// If `true` will animate markers when adding or removing them.
   final bool? markersAnimationEnabled;
 
-  /// Markers animation duration in milliseconds.
-  final int? markersAnimationDuration;
-
   /// Returns a new options object containing only the values of this instance
   /// that are different from [other].
   MapConfiguration diffFrom(MapConfiguration other) {
@@ -162,10 +158,6 @@ class MapConfiguration {
           markersAnimationEnabled != other.markersAnimationEnabled
               ? markersAnimationEnabled
               : null,
-      markersAnimationDuration:
-          markersAnimationDuration != other.markersAnimationDuration
-              ? markersAnimationDuration
-              : null,
     );
   }
 
@@ -199,8 +191,6 @@ class MapConfiguration {
       buildingsEnabled: diff.buildingsEnabled ?? buildingsEnabled,
       markersAnimationEnabled:
           diff.markersAnimationEnabled ?? markersAnimationEnabled,
-      markersAnimationDuration:
-          diff.markersAnimationDuration ?? markersAnimationDuration,
     );
   }
 
@@ -224,8 +214,7 @@ class MapConfiguration {
       indoorViewEnabled == null &&
       trafficEnabled == null &&
       buildingsEnabled == null &&
-      markersAnimationEnabled == null &&
-      markersAnimationDuration == null;
+      markersAnimationEnabled == null;
 
   @override
   bool operator ==(Object other) {
@@ -255,7 +244,6 @@ class MapConfiguration {
         indoorViewEnabled == other.indoorViewEnabled &&
         trafficEnabled == other.trafficEnabled &&
         buildingsEnabled == other.buildingsEnabled &&
-        markersAnimationDuration == other.markersAnimationDuration &&
         markersAnimationEnabled == other.markersAnimationEnabled;
   }
 

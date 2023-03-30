@@ -59,6 +59,4 @@ interface GoogleMapOptionsSink {
   void setMarkerCachingEnabled(boolean toBoolean);
 
   void setMarkersAnimationEnabled(boolean markersAnimationEnabled);
-
-  void setMarkersAnimationDuration(int markersAnimationDuration);
 }

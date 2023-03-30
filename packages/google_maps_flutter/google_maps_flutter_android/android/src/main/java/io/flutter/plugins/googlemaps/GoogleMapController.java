@@ -70,7 +70,6 @@ final class GoogleMapController
   private boolean trafficEnabled = false;
   private boolean buildingsEnabled = true;
   private boolean markersAnimationEnabled = false;
-  private int markersAnimationDuration = 0;
   private boolean disposed = false;
   @VisibleForTesting final float density;
   private MethodChannel.Result mapReadyResult;
@@ -942,9 +941,5 @@ final class GoogleMapController
 
   public void setMarkersAnimationEnabled(boolean markersAnimationEnabled){
     this.markersController.setMarkersAnimationEnabled(markersAnimationEnabled);
-  }
-
-  public void setMarkersAnimationDuration(int markersAnimationDuration){
-    this.markersController.setMarkersAnimationDuration(markersAnimationDuration);
   }
 }

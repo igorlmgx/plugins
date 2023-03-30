@@ -23,7 +23,6 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
   private boolean buildingsEnabled = true;
   private boolean markerCachingEnabled = false;
   private boolean markersAnimationEnabled = false;
-  private int markersAnimationDuration = 0;
   private Object initialMarkers;
   private Object initialPolygons;
   private Object initialPolylines;
@@ -53,7 +52,6 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
     controller.setInitialTileOverlays(initialTileOverlays);
     controller.setMarkerCachingEnabled(markerCachingEnabled);
     controller.setMarkersAnimationEnabled(markersAnimationEnabled);
-    controller.setMarkersAnimationDuration(markersAnimationDuration);
     return controller;
   }
 
@@ -189,10 +187,5 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
   @Override
   public void setMarkersAnimationEnabled(boolean markersAnimationEnabled){
     this.markersAnimationEnabled = markersAnimationEnabled;
-  }
-
-  @Override
-  public void setMarkersAnimationDuration(int markersAnimationDuration){
-    this.markersAnimationDuration = markersAnimationDuration;
   }
 }

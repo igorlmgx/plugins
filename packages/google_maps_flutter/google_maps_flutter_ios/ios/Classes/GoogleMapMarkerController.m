@@ -25,21 +25,18 @@
                             identifier:(NSString *)identifier
                                mapView:(GMSMapView *)mapView
                             cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy
-                            markersAnimationEnabled:(BOOL)markersAnimationEnabled
-                            markersAnimationDuration:(int)markersAnimationDuration {
+                            markersAnimationEnabled:(BOOL)markersAnimationEnabled {
     self = [super init];
-    if (self) {
+    if (self) { 
         _cozy = cozy;
         _marker = [GMSMarker markerWithPosition:position];
         _mapView = mapView;
         _marker.userData = @[ identifier ];
         _markersAnimationEnabled = markersAnimationEnabled;
-        _markersAnimationDuration = markersAnimationDuration;
+        _markersAnimationDuration = 100;
     }
-    NSLog(@"setMarkersAnimationEnabled initMarkerWithPosition %d", markersAnimationEnabled);
-    NSLog(@"markersAnimationDuration initMarkerWithPosition %i", markersAnimationDuration);
     if(markersAnimationEnabled){
-        float durationInMillis = markersAnimationDuration;
+        float durationInMillis = _markersAnimationDuration;
         float durationInSeconds = durationInMillis/1000;
 
         CABasicAnimation *fadeIn = [CABasicAnimation animationWithKeyPath:@"opacity"];
@@ -77,7 +74,7 @@
 
             float durationInMillis = self.markersAnimationDuration;
             fadeOut.duration = durationInMillis/1000;
-            fadeOut.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.5: 1: 0.89: 1];
+            fadeOut.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.11: 0: 0.5: 0];
             
             fadeOut.fillMode = kCAFillModeForwards;
             fadeOut.removedOnCompletion = NO;
@@ -297,7 +294,6 @@
 @property(weak, nonatomic) GMSMapView *mapView;
 @property(strong, nonatomic) CozyMarkerBuilder *cozy;
 @property(nonatomic, assign) BOOL markersAnimationEnabled;
-@property(nonatomic, assign) int markersAnimationDuration;
 
 @end
 
@@ -307,8 +303,7 @@
                               mapView:(GMSMapView *)mapView
                             registrar:(NSObject<FlutterPluginRegistrar> *)registrar
                             cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy
-                            markersAnimationEnabled:(BOOL)markersAnimationEnabled
-                            markersAnimationDuration:(int)markersAnimationDuration; {
+                            markersAnimationEnabled:(BOOL)markersAnimationEnabled {
     self = [super init];
     if (self) {
         _methodChannel = methodChannel;
@@ -317,7 +312,6 @@
         _registrar = registrar;
         _cozy = cozy;
         _markersAnimationEnabled = markersAnimationEnabled;
-        _markersAnimationDuration = markersAnimationDuration;
     }
     return self;
 }
@@ -327,15 +321,12 @@
     for (NSDictionary *marker in markersToAdd) {
         CLLocationCoordinate2D position = [FLTMarkersController getPosition:marker];
         NSString *identifier = marker[@"markerId"];
-        NSLog(@"setMarkersAnimationEnabled addMarkers %d", self.markersAnimationEnabled);
-        NSLog(@"markersAnimationDuration addMarkers %i", self.markersAnimationDuration);
         FLTGoogleMapMarkerController *controller =
         [[FLTGoogleMapMarkerController alloc] initMarkerWithPosition:position
                                                           identifier:identifier
                                                              mapView:self.mapView
                                                     cozyMarkerBuilder:self.cozy
-                                                    markersAnimationEnabled: self.markersAnimationEnabled
-                                                    markersAnimationDuration: self.markersAnimationDuration];
+                                                    markersAnimationEnabled: self.markersAnimationEnabled];
         [controller interpretMarkerOptions:marker registrar:self.registrar];
         self.markerIdentifierToController[identifier] = controller;
     }
@@ -464,10 +455,6 @@
 
 - (void)setMarkersAnimationEnabled:(BOOL)enabled {
   _markersAnimationEnabled = enabled;
-}
-
-- (void)setMarkersAnimationDuration:(int)duration {
-  _markersAnimationDuration = duration;
 }
 
 + (CLLocationCoordinate2D)getPosition:(NSDictionary *)marker {

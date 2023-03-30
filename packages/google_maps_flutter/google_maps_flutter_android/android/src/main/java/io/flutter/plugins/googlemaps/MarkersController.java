@@ -7,6 +7,8 @@ package io.flutter.plugins.googlemaps;
 import android.graphics.Bitmap;
 import android.animation.ValueAnimator;
 import android.animation.ObjectAnimator;
+import android.view.animation.Interpolator;
+import androidx.core.view.animation.PathInterpolatorCompat;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -29,7 +31,7 @@ class MarkersController {
   private GoogleMap googleMap;
   private final CozyMarkerBuilder cozyMarkerBuilder;
   private boolean markersAnimationEnabled;
-  private int markersAnimationDuration;
+  private final int markersAnimationDuration = 100;
 
   MarkersController(MethodChannel methodChannel, CozyMarkerBuilder cozyMarkerBuilder) {
     this.markerIdToController = new HashMap<>();
@@ -40,10 +42,6 @@ class MarkersController {
 
   public void setMarkersAnimationEnabled(boolean markersAnimationEnabled){
     this.markersAnimationEnabled = markersAnimationEnabled;
-  }
-
-  public void setMarkersAnimationDuration(int markersAnimationDuration){
-    this.markersAnimationDuration = markersAnimationDuration;
   }
 
   void setGoogleMap(GoogleMap googleMap) {
@@ -89,6 +87,9 @@ class MarkersController {
                   }
               }
           });
+          Interpolator fadeOutInterpolator = PathInterpolatorCompat.create(0.11f, 0f, 0.5f, 0f);
+          fadeOut.setInterpolator(fadeOutInterpolator);
+
           fadeOut.start();
         }else{
           markerController.remove();
@@ -204,6 +205,9 @@ class MarkersController {
               marker.setAlpha((float) animation.getAnimatedValue());
           }
       });
+
+      Interpolator fadeInInterpolator = PathInterpolatorCompat.create(0.5f, 1f, 0.89f, 1f);
+      fadeIn.setInterpolator(fadeInInterpolator);
       fadeIn.start();
     }
     MarkerController controller = new MarkerController(marker, consumeTapEvents);

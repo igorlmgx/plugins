@@ -62,7 +62,5 @@ Map<String, Object> jsonForMapConfiguration(MapConfiguration config) {
       'buildingsEnabled': config.buildingsEnabled!,
     if (config.markersAnimationEnabled != null)
       'markersAnimationEnabled': config.markersAnimationEnabled!,
-    if (config.markersAnimationDuration != null)
-      'markersAnimationDuration': config.markersAnimationDuration!,
   };
 }

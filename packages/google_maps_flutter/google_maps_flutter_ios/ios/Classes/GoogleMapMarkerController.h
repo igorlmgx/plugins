@@ -18,8 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
                             identifier:(NSString *)identifier
                                mapView:(GMSMapView *)mapView
                      cozyMarkerBuilder:(CozyMarkerBuilder *)cozy
-                     markersAnimationEnabled:(BOOL)markersAnimationEnabled
-                     markersAnimationDuration:(int)markersAnimationDuration;
+                     markersAnimationEnabled:(BOOL)markersAnimationEnabled;
 - (void)showInfoWindow;
 - (void)hideInfoWindow;
 - (BOOL)isInfoWindowShown;
@@ -31,8 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
                               mapView:(GMSMapView *)mapView
                             registrar:(NSObject<FlutterPluginRegistrar> *)registrar
                             cozyMarkerBuilder:(CozyMarkerBuilder *)cozy
-                            markersAnimationEnabled:(BOOL)markersAnimationEnabled
-                            markersAnimationDuration:(int)markersAnimationDuration;
+                            markersAnimationEnabled:(BOOL)markersAnimationEnabled;
 - (void)addMarkers:(NSArray *)markersToAdd;
 - (void)changeMarkers:(NSArray *)markersToChange;
 - (void)removeMarkersWithIdentifiers:(NSArray *)identifiers;
@@ -49,7 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)isInfoWindowShownForMarkerWithIdentifier:(NSString *)identifier
                                           result:(FlutterResult)result;
 - (void)setMarkersAnimationEnabled:(BOOL)enabled;
-- (void)setMarkersAnimationDuration:(int)duration;
 @end
 
 NS_ASSUME_NONNULL_END
