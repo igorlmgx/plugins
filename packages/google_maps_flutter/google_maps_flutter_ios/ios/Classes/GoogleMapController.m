@@ -63,6 +63,7 @@
 @property(nonatomic, strong) FlutterMethodChannel *channel;
 @property(nonatomic, assign) BOOL trackCameraPosition;
 @property(nonatomic, assign) BOOL enableMarkerCaching;
+@property(nonatomic, assign) BOOL markersAnimationEnabled;
 @property(nonatomic, weak) NSObject<FlutterPluginRegistrar> *registrar;
 @property(nonatomic, strong) FLTMarkersController *markersController;
 @property(nonatomic, strong) FLTPolygonsController *polygonsController;
@@ -110,7 +111,8 @@
     _markersController = [[FLTMarkersController alloc] initWithMethodChannel:_channel
                                                                      mapView:_mapView
                                                                    registrar:registrar
-                                                           cozyMarkerBuilder:[[CozyMarkerBuilder alloc] initWithCache:_enableMarkerCaching]];
+                                                           cozyMarkerBuilder:[[CozyMarkerBuilder alloc] initWithCache:_enableMarkerCaching]
+                                                           markersAnimationEnabled:self.markersAnimationEnabled];
     _polygonsController = [[FLTPolygonsController alloc] init:_channel
                                                       mapView:_mapView
                                                     registrar:registrar];
@@ -450,6 +452,11 @@
   self.mapView.buildingsEnabled = enabled;
 }
 
+- (void)setMarkersAnimationEnabled:(BOOL)enabled {
+  _markersAnimationEnabled = enabled;
+  [self.markersController setMarkersAnimationEnabled:enabled];
+}
+
 - (void)setMapType:(GMSMapViewType)mapType {
   self.mapView.mapType = mapType;
 }
@@ -651,6 +658,10 @@
   NSNumber *isMarkerCachingEnabled = data[@"enableMarkerCaching"];
   if (isMarkerCachingEnabled && isMarkerCachingEnabled != (id)[NSNull null]) {
     [self setCachingEnabled:[isMarkerCachingEnabled boolValue]];
+  }
+  NSNumber *markersAnimationEnabled = data[@"markersAnimationEnabled"];
+  if (markersAnimationEnabled && markersAnimationEnabled != (id)[NSNull null]) {
+    [self setMarkersAnimationEnabled:[markersAnimationEnabled boolValue]];
   }
 }
 

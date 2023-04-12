@@ -34,6 +34,7 @@ class MapConfiguration {
     this.indoorViewEnabled,
     this.trafficEnabled,
     this.buildingsEnabled,
+    this.markersAnimationEnabled,
   });
 
   /// True if the compass UI should be shown.
@@ -94,6 +95,9 @@ class MapConfiguration {
   /// True if 3D building display should be enabled.
   final bool? buildingsEnabled;
 
+  /// If `true` will animate markers when adding or removing them.
+  final bool? markersAnimationEnabled;
+
   /// Returns a new options object containing only the values of this instance
   /// that are different from [other].
   MapConfiguration diffFrom(MapConfiguration other) {
@@ -150,6 +154,10 @@ class MapConfiguration {
           trafficEnabled != other.trafficEnabled ? trafficEnabled : null,
       buildingsEnabled:
           buildingsEnabled != other.buildingsEnabled ? buildingsEnabled : null,
+      markersAnimationEnabled:
+          markersAnimationEnabled != other.markersAnimationEnabled
+              ? markersAnimationEnabled
+              : null,
     );
   }
 
@@ -181,6 +189,8 @@ class MapConfiguration {
       indoorViewEnabled: diff.indoorViewEnabled ?? indoorViewEnabled,
       trafficEnabled: diff.trafficEnabled ?? trafficEnabled,
       buildingsEnabled: diff.buildingsEnabled ?? buildingsEnabled,
+      markersAnimationEnabled:
+          diff.markersAnimationEnabled ?? markersAnimationEnabled,
     );
   }
 
@@ -203,7 +213,8 @@ class MapConfiguration {
       padding == null &&
       indoorViewEnabled == null &&
       trafficEnabled == null &&
-      buildingsEnabled == null;
+      buildingsEnabled == null &&
+      markersAnimationEnabled == null;
 
   @override
   bool operator ==(Object other) {
@@ -232,7 +243,8 @@ class MapConfiguration {
         padding == other.padding &&
         indoorViewEnabled == other.indoorViewEnabled &&
         trafficEnabled == other.trafficEnabled &&
-        buildingsEnabled == other.buildingsEnabled;
+        buildingsEnabled == other.buildingsEnabled &&
+        markersAnimationEnabled == other.markersAnimationEnabled;
   }
 
   @override
@@ -256,5 +268,6 @@ class MapConfiguration {
         indoorViewEnabled,
         trafficEnabled,
         buildingsEnabled,
+        markersAnimationEnabled,
       );
 }

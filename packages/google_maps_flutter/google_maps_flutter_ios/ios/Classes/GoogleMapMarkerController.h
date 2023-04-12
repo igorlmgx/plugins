@@ -12,10 +12,13 @@ NS_ASSUME_NONNULL_BEGIN
 // Defines marker controllable by Flutter.
 @interface FLTGoogleMapMarkerController : NSObject
 @property(assign, nonatomic, readonly) BOOL consumeTapEvents;
+@property(assign, nonatomic, readonly) BOOL markersAnimationEnabled;
+@property(assign, nonatomic, readonly) int markersAnimationDuration;
 - (instancetype)initMarkerWithPosition:(CLLocationCoordinate2D)position
                             identifier:(NSString *)identifier
                                mapView:(GMSMapView *)mapView
-                     cozyMarkerBuilder:(CozyMarkerBuilder *)cozy;
+                     cozyMarkerBuilder:(CozyMarkerBuilder *)cozy
+                     markersAnimationEnabled:(BOOL)markersAnimationEnabled;
 - (void)showInfoWindow;
 - (void)hideInfoWindow;
 - (BOOL)isInfoWindowShown;
@@ -26,7 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
                               mapView:(GMSMapView *)mapView
                             registrar:(NSObject<FlutterPluginRegistrar> *)registrar
-                            cozyMarkerBuilder:(CozyMarkerBuilder *)cozy;
+                            cozyMarkerBuilder:(CozyMarkerBuilder *)cozy
+                            markersAnimationEnabled:(BOOL)markersAnimationEnabled;
 - (void)addMarkers:(NSArray *)markersToAdd;
 - (void)changeMarkers:(NSArray *)markersToChange;
 - (void)removeMarkersWithIdentifiers:(NSArray *)identifiers;
@@ -42,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)hideMarkerInfoWindowWithIdentifier:(NSString *)identifier result:(FlutterResult)result;
 - (void)isInfoWindowShownForMarkerWithIdentifier:(NSString *)identifier
                                           result:(FlutterResult)result;
+- (void)setMarkersAnimationEnabled:(BOOL)enabled;
 @end
 
 NS_ASSUME_NONNULL_END

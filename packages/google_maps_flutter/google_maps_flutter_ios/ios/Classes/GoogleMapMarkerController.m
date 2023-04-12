@@ -13,6 +13,8 @@
 @property(strong, nonatomic) GMSMarker *marker;
 @property(weak, nonatomic) GMSMapView *mapView;
 @property(assign, nonatomic, readwrite) BOOL consumeTapEvents;
+@property(nonatomic, assign) BOOL markersAnimationEnabled;
+@property(nonatomic, assign) int markersAnimationDuration;
 @property(strong, nonatomic) CozyMarkerBuilder *cozy;
 
 @end
@@ -22,13 +24,28 @@
 - (instancetype)initMarkerWithPosition:(CLLocationCoordinate2D)position
                             identifier:(NSString *)identifier
                                mapView:(GMSMapView *)mapView
-                            cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy {
+                            cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy
+                            markersAnimationEnabled:(BOOL)markersAnimationEnabled {
     self = [super init];
-    if (self) {
+    if (self) { 
         _cozy = cozy;
         _marker = [GMSMarker markerWithPosition:position];
         _mapView = mapView;
         _marker.userData = @[ identifier ];
+        _markersAnimationEnabled = markersAnimationEnabled;
+        _markersAnimationDuration = 100;
+    }
+    if(markersAnimationEnabled){
+        float durationInMillis = _markersAnimationDuration;
+        float durationInSeconds = durationInMillis/1000;
+
+        CABasicAnimation *fadeIn = [CABasicAnimation animationWithKeyPath:@"opacity"];
+        fadeIn.fromValue = [NSNumber numberWithFloat:0.0];
+        fadeIn.toValue = [NSNumber numberWithFloat:1.0];
+        fadeIn.duration = durationInSeconds;
+        fadeIn.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.5: 1: 0.89: 1];
+
+        [_marker.layer addAnimation:fadeIn forKey:@"fadeInAnimation"];
     }
     return self;
 }
@@ -48,7 +65,30 @@
 }
 
 - (void)removeMarker {
-    self.marker.map = nil;
+    if(self.markersAnimationEnabled){
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, self.markersAnimationDuration * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+            [CATransaction begin];
+            CABasicAnimation *fadeOut = [CABasicAnimation animationWithKeyPath:@"opacity"];
+            fadeOut.fromValue = [NSNumber numberWithFloat:1.0];
+            fadeOut.toValue = [NSNumber numberWithFloat:0.0];
+
+            float durationInMillis = self.markersAnimationDuration;
+            fadeOut.duration = durationInMillis/1000;
+            fadeOut.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.11: 0: 0.5: 0];
+            
+            fadeOut.fillMode = kCAFillModeForwards;
+            fadeOut.removedOnCompletion = NO;
+
+            [CATransaction setCompletionBlock:^{
+                self.marker.map = nil;
+            }];
+
+            [self.marker.layer addAnimation:fadeOut forKey:@"fadeOutAnimation"];
+            [CATransaction commit];
+        });
+    }else{
+        self.marker.map = nil;
+    }
 }
 
 - (void)setAlpha:(float)alpha {
@@ -253,7 +293,7 @@
 @property(weak, nonatomic) NSObject<FlutterPluginRegistrar> *registrar;
 @property(weak, nonatomic) GMSMapView *mapView;
 @property(strong, nonatomic) CozyMarkerBuilder *cozy;
-
+@property(nonatomic, assign) BOOL markersAnimationEnabled;
 
 @end
 
@@ -262,7 +302,8 @@
 - (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
                               mapView:(GMSMapView *)mapView
                             registrar:(NSObject<FlutterPluginRegistrar> *)registrar
-                            cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy {
+                            cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy
+                            markersAnimationEnabled:(BOOL)markersAnimationEnabled {
     self = [super init];
     if (self) {
         _methodChannel = methodChannel;
@@ -270,6 +311,7 @@
         _markerIdentifierToController = [[NSMutableDictionary alloc] init];
         _registrar = registrar;
         _cozy = cozy;
+        _markersAnimationEnabled = markersAnimationEnabled;
     }
     return self;
 }
@@ -283,7 +325,8 @@
         [[FLTGoogleMapMarkerController alloc] initMarkerWithPosition:position
                                                           identifier:identifier
                                                              mapView:self.mapView
-                                                    cozyMarkerBuilder:self.cozy];
+                                                    cozyMarkerBuilder:self.cozy
+                                                    markersAnimationEnabled: self.markersAnimationEnabled];
         [controller interpretMarkerOptions:marker registrar:self.registrar];
         self.markerIdentifierToController[identifier] = controller;
     }
@@ -408,6 +451,10 @@
                                    message:@"isInfoWindowShown called with invalid markerId"
                                    details:nil]);
     }
+}
+
+- (void)setMarkersAnimationEnabled:(BOOL)enabled {
+  _markersAnimationEnabled = enabled;
 }
 
 + (CLLocationCoordinate2D)getPosition:(NSDictionary *)marker {

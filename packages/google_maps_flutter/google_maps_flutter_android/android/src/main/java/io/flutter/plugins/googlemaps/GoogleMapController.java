@@ -69,6 +69,7 @@ final class GoogleMapController
   private boolean indoorEnabled = true;
   private boolean trafficEnabled = false;
   private boolean buildingsEnabled = true;
+  private boolean markersAnimationEnabled = false;
   private boolean disposed = false;
   @VisibleForTesting final float density;
   private MethodChannel.Result mapReadyResult;
@@ -936,5 +937,9 @@ final class GoogleMapController
 
   public void setMarkerCachingEnabled(boolean cachingEnabled) {
     this.cozyMarkerBuilder.setCachingEnabled(cachingEnabled);
+  }
+
+  public void setMarkersAnimationEnabled(boolean markersAnimationEnabled){
+    this.markersController.setMarkersAnimationEnabled(markersAnimationEnabled);
   }
 }
