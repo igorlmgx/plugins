@@ -62,7 +62,6 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
   Marker _createMarker() {
     if (_markerIcon != null) {
       return Marker(
-        markerType: MarkerType.count,
         label: '1',
         markerId: const MarkerId('marker_1'),
         position: _kMapCenter,
@@ -70,7 +69,6 @@ class MarkerIconsBodyState extends State<MarkerIconsBody> {
       );
     } else {
       return Marker(
-        markerType: MarkerType.count,
         label: '1',
         markerId: const MarkerId('marker_1'),
         position: _kMapCenter,

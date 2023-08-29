@@ -35,12 +35,10 @@ void main() {
     testWidgets('addMarkers', (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
         Marker(
-            markerType: MarkerType.count,
-            label: '1',
+                label: '1',
             markerId: const MarkerId('1')),
         Marker(
-            markerType: MarkerType.count,
-            label: '1',
+                label: '1',
             markerId: const MarkerId('2')),
       };
 
@@ -55,8 +53,7 @@ void main() {
     testWidgets('changeMarkers', (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
         Marker(
-            markerType: MarkerType.count,
-            label: '1',
+                label: '1',
             markerId: const MarkerId('1')),
       };
       controller.addMarkers(markers);
@@ -67,8 +64,7 @@ void main() {
       // Update the marker with radius 10
       final Set<Marker> updatedMarkers = <Marker>{
         Marker(
-            markerType: MarkerType.count,
-            label: '1',
+                label: '1',
             markerId: const MarkerId('1'),
             draggable: true),
       };
@@ -82,16 +78,13 @@ void main() {
     testWidgets('removeMarkers', (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
         Marker(
-            markerType: MarkerType.count,
-            label: '1',
+                label: '1',
             markerId: const MarkerId('1')),
         Marker(
-            markerType: MarkerType.count,
-            label: '1',
+                label: '1',
             markerId: const MarkerId('2')),
         Marker(
-            markerType: MarkerType.count,
-            label: '1',
+                label: '1',
             markerId: const MarkerId('3')),
       };
 
@@ -116,8 +109,7 @@ void main() {
     testWidgets('InfoWindow show/hide', (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
         Marker(
-          markerType: MarkerType.count,
-          label: '1',
+            label: '1',
           markerId: const MarkerId('1'),
           infoWindow: const InfoWindow(title: 'Title', snippet: 'Snippet'),
         ),
@@ -141,14 +133,12 @@ void main() {
         (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
         Marker(
-          markerType: MarkerType.count,
-          label: '1',
+            label: '1',
           markerId: const MarkerId('1'),
           infoWindow: const InfoWindow(title: 'Title', snippet: 'Snippet'),
         ),
         Marker(
-          markerType: MarkerType.count,
-          label: '1',
+            label: '1',
           markerId: const MarkerId('2'),
           infoWindow: const InfoWindow(title: 'Title', snippet: 'Snippet'),
         ),
@@ -175,8 +165,7 @@ void main() {
       final Uint8List bytes = const Base64Decoder().convert(iconImageBase64);
       final Set<Marker> markers = <Marker>{
         Marker(
-          markerType: MarkerType.count,
-          label: '1',
+            label: '1',
           markerId: const MarkerId('1'),
           icon: BitmapDescriptor.fromBytes(bytes),
         ),
@@ -204,8 +193,7 @@ void main() {
       final Uint8List bytes = const Base64Decoder().convert(iconImageBase64);
       final Set<Marker> markers = <Marker>{
         Marker(
-          markerType: MarkerType.count,
-          label: '1',
+            label: '1',
           markerId: const MarkerId('1'),
           icon: BitmapDescriptor.fromBytes(bytes, size: const Size(20, 30)),
         ),
@@ -232,8 +220,7 @@ void main() {
         (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
         Marker(
-          markerType: MarkerType.count,
-          label: '1',
+            label: '1',
           markerId: const MarkerId('1'),
           infoWindow: const InfoWindow(
             title: 'title for test',
@@ -259,8 +246,7 @@ void main() {
     testWidgets('InfoWindow content is clickable', (WidgetTester tester) async {
       final Set<Marker> markers = <Marker>{
         Marker(
-          markerType: MarkerType.count,
-          label: '1',
+            label: '1',
           markerId: const MarkerId('1'),
           infoWindow: const InfoWindow(
             title: 'title for test',

@@ -7,49 +7,11 @@ import 'dart:ui' show Offset;
 import 'package:flutter/foundation.dart'
     show immutable, ValueChanged, VoidCallback;
 
-import 'types.dart';
+import '../types.dart';
 
-Object _offsetToJson(Offset offset) {
+/// Converts offset to something serializable in JSON.
+Object offsetToJson(Offset offset) {
   return <Object>[offset.dx, offset.dy];
-}
-
-/// The type of marker icon which should be displayed.
-enum MarkerType {
-  /// A white circle with text in the middle. If chosen, an label must
-  /// be passed in the label argument.
-  cluster,
-
-  /// A white text bubble with text in the middle. The bubble adjusts itself
-  /// to the text. If chosen, an label must be passed in the label argument.
-  price,
-
-  /// A white pin with text in the middle. The shape adjusts itself
-  /// to the text. If chosen, an label must be passed in the label argument.
-  pin_cluster,
-
-  /// A grey pin with fading text in the middle. The shape adjusts itself
-  /// to the text. If chosen, an label must be passed in the label argument.
-  pin_cluster_visited,
-
-  /// A blue pin with white text in the middle. The shape adjusts itself
-  /// to the text. If chosen, an label must be passed in the label argument.
-  pin_cluster_selected,
-
-  /// A white pin with text in the middle and a tail. The shape adjusts itself
-  /// to the text. If chosen, an label must be passed in the label argument.
-  pin_price,
-
-  /// A grey pin with fading text in the middle and a tail. The shape adjusts itself
-  /// to the text. If chosen, an label must be passed in the label argument.
-  pin_price_visited,
-
-  /// A blue pin with white text in the middle and a tail. The shape adjusts itself
-  /// to the text. If chosen, an label must be passed in the label argument.
-  pin_price_selected,
-
-  /// A non-standard icon. If chosen, an icon must be passed in the icon
-  /// argument.
-  icon
 }
 
 /// Text labels for a [Marker] info window.
@@ -103,7 +65,8 @@ class InfoWindow {
     );
   }
 
-  Object _toJson() {
+  /// Converts this object to something serializable in JSON.
+  Object toJson() {
     final Map<String, Object> json = <String, Object>{};
 
     void addIfPresent(String fieldName, Object? value) {
@@ -114,7 +77,7 @@ class InfoWindow {
 
     addIfPresent('title', title);
     addIfPresent('snippet', snippet);
-    addIfPresent('anchor', _offsetToJson(anchor));
+    addIfPresent('anchor', offsetToJson(anchor));
 
     return json;
   }
@@ -165,7 +128,6 @@ class Marker implements MapsObject<Marker> {
   /// Specifies a marker that
   /// * is fully opaque; [alpha] is 1.0
   /// * uses icon bottom center to indicate map position; [anchor] is (0.5, 1.0)
-  /// * has a pre-set marker type or a customized one; [markerType] is (icon, count, rounded, price)
   /// * has a text to be added in case the marker type is count or price.
   /// * has default tap handling; [consumeTapEvents] is false
   /// * is stationary; [draggable] is false
@@ -181,7 +143,6 @@ class Marker implements MapsObject<Marker> {
   /// * reports [onDragEnd] events
   const Marker({
     required this.markerId,
-    required this.markerType,
     this.icon,
     this.alpha = 1.0,
     this.anchor = const Offset(0.5, 1.0),
@@ -199,21 +160,13 @@ class Marker implements MapsObject<Marker> {
     this.onDragStart,
     this.onDragEnd,
   }) : assert(0.0 <= alpha &&
-            alpha <= 1.0 &&
-            ((markerType != MarkerType.icon && label != null) ||
-                (markerType == MarkerType.icon && icon != null)));
+            alpha <= 1.0);
 
   /// Uniquely identifies a [Marker].
   final MarkerId markerId;
 
-  /// The text which will be shown in the icon selected from
-  /// the MarkerType enum. If a label is set, a markerType value must be
-  /// informed.
+  /// The text which will be shown in the icon selected.
   final String? label;
-
-  /// The type of icon to be displayed as the marker. If a type is given,
-  /// a label must be informed.
-  final MarkerType markerType;
 
   /// A description of the bitmap used to draw the marker icon.
   final BitmapDescriptor? icon;
@@ -299,7 +252,6 @@ class Marker implements MapsObject<Marker> {
     ValueChanged<LatLng>? onDragEndParam,
   }) {
     return Marker(
-      markerType: markerType,
       markerId: markerId,
       alpha: alphaParam ?? alpha,
       anchor: anchorParam ?? anchor,
@@ -338,19 +290,19 @@ class Marker implements MapsObject<Marker> {
     addIfPresent('markerId', markerId.value);
     addIfPresent('alpha', alpha);
     addIfPresent('label', label);
-    addIfPresent('anchor', _offsetToJson(anchor));
+    addIfPresent('anchor', offsetToJson(anchor));
     addIfPresent('consumeTapEvents', consumeTapEvents);
     addIfPresent('draggable', draggable);
     if (icon != null) {
       addIfPresent('icon', icon!.toJson());
     }
-    addIfPresent('markerType', markerType.name);
     addIfPresent('flat', flat);
-    addIfPresent('infoWindow', infoWindow._toJson());
+    addIfPresent('infoWindow', infoWindow.toJson());
     addIfPresent('position', position.toJson());
     addIfPresent('rotation', rotation);
     addIfPresent('visible', visible);
     addIfPresent('zIndex', zIndex);
+
     return json;
   }
 
@@ -364,7 +316,6 @@ class Marker implements MapsObject<Marker> {
     }
     return other is Marker &&
         markerId == other.markerId &&
-        markerType == other.markerType &&
         alpha == other.alpha &&
         anchor == other.anchor &&
         icon == other.icon &&

@@ -151,8 +151,7 @@
     if (draggable && draggable != (id)[NSNull null]) {
         [self setDraggable:[draggable boolValue]];
     }
-    NSString *markerType = data[@"markerType"];
-    
+    /*
     if(markerType != (id)[NSNull null]) {
         if([markerType isEqualToString:@"icon"]) {
             NSArray *icon = data[@"icon"];
@@ -173,7 +172,9 @@
             [self setIcon:image];
         }
         
-    }
+    }*/
+
+
     NSNumber *flat = data[@"flat"];
     if (flat && flat != (id)[NSNull null]) {
         [self setFlat:[flat boolValue]];
@@ -183,6 +184,7 @@
         [self setConsumeTapEvents:[consumeTapEvents boolValue]];
     }
     [self interpretInfoWindow:data];
+    [self interpretCozyMarkerData:data];
     NSArray *position = data[@"position"];
     if (position && position != (id)[NSNull null]) {
         [self setPosition:[FLTGoogleMapJSONConversions locationFromLatLong:position]];
@@ -213,6 +215,26 @@
         if (infoWindowAnchor && infoWindowAnchor != (id)[NSNull null]) {
             [self setInfoWindowAnchor:[FLTGoogleMapJSONConversions pointFromArray:infoWindowAnchor]];
         }
+    }
+}
+
+- (void)interpretCozyMarkerData:(NSDictionary *)data {
+    NSLog(@"interpreting cozyMarkerData");
+    NSDictionary *cozyMarkerDataDict = data[@"cozyMarkerData"];
+    if (cozyMarkerDataDict && cozyMarkerDataDict != (id)[NSNull null]) {
+        //interpret cozyMarkerData
+        NSLog(@"cozyMarkerData present");
+
+        CozyMarkerData *cozyMarkerData = [[CozyMarkerData alloc] initWithLabel:cozyMarkerDataDict[@"label"] 
+                                                                  hasPointer: [cozyMarkerDataDict[@"hasPointer"] boolValue]
+                                                                  isSelected: [cozyMarkerDataDict[@"isSelected"] boolValue]
+                                                                  isVisualized: [cozyMarkerDataDict[@"isVisualized"] boolValue]
+                                                                  state: cozyMarkerDataDict[@"state"]
+                                                                  variant: cozyMarkerDataDict[@"variant"]
+                                                                  size: cozyMarkerDataDict[@"size"]];
+
+        UIImage *image = [[self cozy] buildMarkerWithData:cozyMarkerData];
+        [self setIcon:image];
     }
 }
 

@@ -124,7 +124,6 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
     final MarkerId markerId = MarkerId(markerIdVal);
 
     final Marker marker = Marker(
-      markerType: MarkerType.count,
       label: '1',
       markerId: markerId,
       position: LatLng(
