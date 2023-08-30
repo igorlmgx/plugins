@@ -50,7 +50,6 @@ class CozyMarker extends Marker {
     bool? visibleParam,
     double? zIndexParam,
     VoidCallback? onTapParam,
-    String? labelParam,
     ValueChanged<LatLng>? onDragStartParam,
     ValueChanged<LatLng>? onDragParam,
     ValueChanged<LatLng>? onDragEndParam,
@@ -86,7 +85,6 @@ class CozyMarker extends Marker {
 
     addIfPresent('markerId', markerId.value);
     addIfPresent('alpha', alpha);
-    addIfPresent('label', label);
     addIfPresent('anchor', offsetToJson(anchor));
     addIfPresent('consumeTapEvents', consumeTapEvents);
     addIfPresent('draggable', draggable);
@@ -127,7 +125,6 @@ class CozyMarker extends Marker {
         rotation == other.rotation &&
         visible == other.visible &&
         zIndex == other.zIndex &&
-        label == other.label &&
         cozyMarkerData == other.cozyMarkerData;
   }
 
@@ -137,7 +134,7 @@ class CozyMarker extends Marker {
   @override
   String toString() {
     return 'Marker{markerId: $markerId, cozyMarkerData: $cozyMarkerData alpha: $alpha, anchor: $anchor, '
-        'consumeTapEvents: $consumeTapEvents, label: $label, draggable: $draggable, flat: $flat, '
+        'consumeTapEvents: $consumeTapEvents, draggable: $draggable, flat: $flat, '
         'infoWindow: $infoWindow, position: $position, rotation: $rotation, '
         'visible: $visible, zIndex: $zIndex, onTap: $onTap, onDragStart: $onDragStart, '
         'onDrag: $onDrag, onDragEnd: $onDragEnd, icon: $icon }';

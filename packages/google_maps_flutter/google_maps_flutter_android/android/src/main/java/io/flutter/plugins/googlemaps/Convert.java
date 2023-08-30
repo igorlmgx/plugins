@@ -414,12 +414,15 @@ class Convert {
     if (flat != null) {
       sink.setFlat(toBoolean(flat));
     }
+    final Object icon = data.get("icon");
+    if (icon != null) {
+      sink.setIcon(toBitmapDescriptor(icon));
+    }
     
     final Object cozyMarkerData = data.get("cozyMarkerData");
     if(cozyMarkerData != null){
       interpretCozyMarkerData(sink, toObjectMap(cozyMarkerData), cozyMarkerBuilder);
     }
-    //else, fallback to default marker
 
     final Object infoWindow = data.get("infoWindow");
     if (infoWindow != null) {

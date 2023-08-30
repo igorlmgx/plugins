@@ -151,29 +151,13 @@
     if (draggable && draggable != (id)[NSNull null]) {
         [self setDraggable:[draggable boolValue]];
     }
-    /*
-    if(markerType != (id)[NSNull null]) {
-        if([markerType isEqualToString:@"icon"]) {
-            NSArray *icon = data[@"icon"];
-            if (icon && icon != (id)[NSNull null]) {
-                UIImage *image = [self extractIconFromData:icon registrar:registrar];
-                [self setIcon:image];
-            }
-        } else {
-            
-            NSString *label = data[@"label"];
-            if(label == (id)[NSNull null]) {
-                @throw [NSException exceptionWithName:@"InvalidMarker"
-                                                   reason:@"label not found for icon."
-                                                 userInfo:nil];
-            }
-    
-            UIImage *image = [[self cozy] buildMarker:label withMarkerType:markerType];
-            [self setIcon:image];
-        }
-        
-    }*/
+    NSArray *icon = data[@"icon"];
+    if (icon && icon != (id)[NSNull null]) {
+        UIImage *image = [self extractIconFromData:icon registrar:registrar];
+        [self setIcon:image];
+    }
 
+    [self interpretCozyMarkerData:data];
 
     NSNumber *flat = data[@"flat"];
     if (flat && flat != (id)[NSNull null]) {
@@ -183,8 +167,9 @@
     if (consumeTapEvents && consumeTapEvents != (id)[NSNull null]) {
         [self setConsumeTapEvents:[consumeTapEvents boolValue]];
     }
+
     [self interpretInfoWindow:data];
-    [self interpretCozyMarkerData:data];
+
     NSArray *position = data[@"position"];
     if (position && position != (id)[NSNull null]) {
         [self setPosition:[FLTGoogleMapJSONConversions locationFromLatLong:position]];
@@ -219,12 +204,8 @@
 }
 
 - (void)interpretCozyMarkerData:(NSDictionary *)data {
-    NSLog(@"interpreting cozyMarkerData");
     NSDictionary *cozyMarkerDataDict = data[@"cozyMarkerData"];
     if (cozyMarkerDataDict && cozyMarkerDataDict != (id)[NSNull null]) {
-        //interpret cozyMarkerData
-        NSLog(@"cozyMarkerData present");
-
         CozyMarkerData *cozyMarkerData = [[CozyMarkerData alloc] initWithLabel:cozyMarkerDataDict[@"label"] 
                                                                   hasPointer: [cozyMarkerDataDict[@"hasPointer"] boolValue]
                                                                   isSelected: [cozyMarkerDataDict[@"isSelected"] boolValue]

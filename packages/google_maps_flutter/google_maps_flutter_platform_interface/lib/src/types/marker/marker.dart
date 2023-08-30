@@ -143,19 +143,18 @@ class Marker implements MapsObject<Marker> {
   /// * reports [onDragEnd] events
   const Marker({
     required this.markerId,
-    this.icon,
     this.alpha = 1.0,
     this.anchor = const Offset(0.5, 1.0),
     this.consumeTapEvents = false,
     this.draggable = false,
     this.flat = false,
+    this.icon = BitmapDescriptor.defaultMarker,
     this.infoWindow = InfoWindow.noText,
     this.position = const LatLng(0.0, 0.0),
     this.rotation = 0.0,
     this.visible = true,
     this.zIndex = 0.0,
     this.onTap,
-    this.label,
     this.onDrag,
     this.onDragStart,
     this.onDragEnd,
@@ -164,9 +163,6 @@ class Marker implements MapsObject<Marker> {
 
   /// Uniquely identifies a [Marker].
   final MarkerId markerId;
-
-  /// The text which will be shown in the icon selected.
-  final String? label;
 
   /// A description of the bitmap used to draw the marker icon.
   final BitmapDescriptor? icon;
@@ -246,7 +242,6 @@ class Marker implements MapsObject<Marker> {
     bool? visibleParam,
     double? zIndexParam,
     VoidCallback? onTapParam,
-    String? labelParam,
     ValueChanged<LatLng>? onDragStartParam,
     ValueChanged<LatLng>? onDragParam,
     ValueChanged<LatLng>? onDragEndParam,
@@ -261,7 +256,6 @@ class Marker implements MapsObject<Marker> {
       infoWindow: infoWindowParam ?? infoWindow,
       position: positionParam ?? position,
       rotation: rotationParam ?? rotation,
-      label: labelParam ?? label,
       icon: iconParam ?? icon,
       visible: visibleParam ?? visible,
       zIndex: zIndexParam ?? zIndex,
@@ -289,7 +283,6 @@ class Marker implements MapsObject<Marker> {
 
     addIfPresent('markerId', markerId.value);
     addIfPresent('alpha', alpha);
-    addIfPresent('label', label);
     addIfPresent('anchor', offsetToJson(anchor));
     addIfPresent('consumeTapEvents', consumeTapEvents);
     addIfPresent('draggable', draggable);
@@ -326,8 +319,7 @@ class Marker implements MapsObject<Marker> {
         position == other.position &&
         rotation == other.rotation &&
         visible == other.visible &&
-        zIndex == other.zIndex &&
-        label == other.label;
+        zIndex == other.zIndex;
   }
 
   @override
@@ -336,7 +328,7 @@ class Marker implements MapsObject<Marker> {
   @override
   String toString() {
     return 'Marker{markerId: $markerId, alpha: $alpha, anchor: $anchor, '
-        'consumeTapEvents: $consumeTapEvents, label: $label, draggable: $draggable, flat: $flat, '
+        'consumeTapEvents: $consumeTapEvents, draggable: $draggable, flat: $flat, '
         'infoWindow: $infoWindow, position: $position, rotation: $rotation, '
         'visible: $visible, zIndex: $zIndex, onTap: $onTap, onDragStart: $onDragStart, '
         'onDrag: $onDrag, onDragEnd: $onDragEnd, icon: $icon}';
