@@ -41,7 +41,6 @@ void main() {
   testWidgets('Initializing a marker', (WidgetTester tester) async {
     final Marker m1 = Marker(
         markerId: const MarkerId('marker_1'),
-        markerType: MarkerType.count,
         label: '1');
     await tester.pumpWidget(_mapWithMarkers(<Marker>{m1}));
 
@@ -58,11 +57,9 @@ void main() {
   testWidgets('Adding a marker', (WidgetTester tester) async {
     final Marker m1 = Marker(
         markerId: const MarkerId('marker_1'),
-        markerType: MarkerType.count,
         label: '1');
     final Marker m2 = Marker(
         markerId: const MarkerId('marker_2'),
-        markerType: MarkerType.count,
         label: '1');
 
     await tester.pumpWidget(_mapWithMarkers(<Marker>{m1}));
@@ -82,8 +79,6 @@ void main() {
 
   testWidgets('Removing a marker', (WidgetTester tester) async {
     final Marker m1 = Marker(
-        markerId: const MarkerId('marker_1'),
-        markerType: MarkerType.count,
         label: '1');
 
     await tester.pumpWidget(_mapWithMarkers(<Marker>{m1}));
@@ -101,12 +96,10 @@ void main() {
   testWidgets('Updating a marker', (WidgetTester tester) async {
     final Marker m1 = Marker(
         markerId: const MarkerId('marker_1'),
-        markerType: MarkerType.count,
         label: '1');
     final Marker m2 = Marker(
         markerId: const MarkerId('marker_1'),
         alpha: 0.5,
-        markerType: MarkerType.count,
         label: '1');
 
     await tester.pumpWidget(_mapWithMarkers(<Marker>{m1}));
@@ -124,12 +117,10 @@ void main() {
   testWidgets('Updating a marker', (WidgetTester tester) async {
     final Marker m1 = Marker(
         markerId: const MarkerId('marker_1'),
-        markerType: MarkerType.count,
         label: '1');
     final Marker m2 = Marker(
         markerId: const MarkerId('marker_1'),
         infoWindow: const InfoWindow(snippet: 'changed'),
-        markerType: MarkerType.count,
         label: '1');
 
     await tester.pumpWidget(_mapWithMarkers(<Marker>{m1}));
@@ -147,22 +138,18 @@ void main() {
   testWidgets('Multi Update', (WidgetTester tester) async {
     Marker m1 = Marker(
         markerId: const MarkerId('marker_1'),
-        markerType: MarkerType.count,
         label: '1');
     Marker m2 = Marker(
         markerId: const MarkerId('marker_2'),
-        markerType: MarkerType.count,
         label: '1');
     final Set<Marker> prev = <Marker>{m1, m2};
     m1 = Marker(
         markerId: const MarkerId('marker_1'),
         visible: false,
-        markerType: MarkerType.count,
         label: '1');
     m2 = Marker(
         markerId: const MarkerId('marker_2'),
         draggable: true,
-        markerType: MarkerType.count,
         label: '1');
     final Set<Marker> cur = <Marker>{m1, m2};
 
@@ -180,23 +167,19 @@ void main() {
   testWidgets('Multi Update', (WidgetTester tester) async {
     Marker m2 = Marker(
         markerId: const MarkerId('marker_2'),
-        markerType: MarkerType.count,
         label: '1');
     final Marker m3 = Marker(
         markerId: const MarkerId('marker_3'),
-        markerType: MarkerType.count,
         label: '1');
     final Set<Marker> prev = <Marker>{m2, m3};
 
     // m1 is added, m2 is updated, m3 is removed.
     final Marker m1 = Marker(
         markerId: const MarkerId('marker_1'),
-        markerType: MarkerType.count,
         label: '1');
     m2 = Marker(
         markerId: const MarkerId('marker_2'),
         draggable: true,
-        markerType: MarkerType.count,
         label: '1');
     final Set<Marker> cur = <Marker>{m1, m2};
 
@@ -218,21 +201,17 @@ void main() {
   testWidgets('Partial Update', (WidgetTester tester) async {
     final Marker m1 = Marker(
         markerId: const MarkerId('marker_1'),
-        markerType: MarkerType.count,
         label: '1');
     final Marker m2 = Marker(
         markerId: const MarkerId('marker_2'),
-        markerType: MarkerType.count,
         label: '1');
     Marker m3 = Marker(
         markerId: const MarkerId('marker_3'),
-        markerType: MarkerType.count,
         label: '1');
     final Set<Marker> prev = <Marker>{m1, m2, m3};
     m3 = Marker(
         markerId: const MarkerId('marker_3'),
         draggable: true,
-        markerType: MarkerType.count,
         label: '1');
     final Set<Marker> cur = <Marker>{m1, m2, m3};
 
@@ -250,12 +229,10 @@ void main() {
   testWidgets('Update non platform related attr', (WidgetTester tester) async {
     Marker m1 = Marker(
         markerId: const MarkerId('marker_1'),
-        markerType: MarkerType.count,
         label: '1');
     final Set<Marker> prev = <Marker>{m1};
     m1 = Marker(
         markerId: const MarkerId('marker_1'),
-        markerType: MarkerType.count,
         label: '1',
         onTap: () {},
         onDragEnd: (LatLng latLng) {});

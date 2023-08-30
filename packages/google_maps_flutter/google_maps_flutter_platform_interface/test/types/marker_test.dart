@@ -13,7 +13,6 @@ void main() {
     test('constructor defaults', () {
       final Marker marker = Marker(
         markerId: const MarkerId('ABC123'),
-        markerType: MarkerType.icon,
         icon: BitmapDescriptor.defaultMarker,
       );
 
@@ -38,7 +37,6 @@ void main() {
         Marker(
             markerId: const MarkerId('ABC123'),
             alpha: alpha,
-            markerType: MarkerType.count,
             label: '1');
       }
 
@@ -59,7 +57,6 @@ void main() {
         consumeTapEvents: true,
         draggable: true,
         flat: true,
-        markerType: MarkerType.icon,
         icon: testDescriptor,
         infoWindow: const InfoWindow(
           title: 'Test title',
@@ -85,7 +82,6 @@ void main() {
         'consumeTapEvents': true,
         'draggable': true,
         'flat': true,
-        'markerType': MarkerType.icon.name,
         'icon': testDescriptor.toJson(),
         'infoWindow': <String, Object>{
           'title': 'Test title',
@@ -101,7 +97,6 @@ void main() {
     test('clone', () {
       final Marker marker = Marker(
           markerId: const MarkerId('ABC123'),
-          markerType: MarkerType.icon,
           icon: BitmapDescriptor.defaultMarker);
       final Marker clone = marker.clone();
 
@@ -111,8 +106,7 @@ void main() {
     test('copyWith', () {
       final Marker marker = Marker(
           markerId: const MarkerId('ABC123'),
-          label: '1',
-          markerType: MarkerType.count);
+          label: '1',);
 
       final BitmapDescriptor testDescriptor =
           BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan);

@@ -916,7 +916,6 @@ void googleMapsTests() {
 
   testWidgets('testToggleInfoWindow', (WidgetTester tester) async {
     final Marker marker = Marker(
-        markerType: MarkerType.count,
         label: '1',
         markerId: const MarkerId('marker'),
         infoWindow: const InfoWindow(title: 'InfoWindow'));

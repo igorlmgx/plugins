@@ -151,29 +151,14 @@
     if (draggable && draggable != (id)[NSNull null]) {
         [self setDraggable:[draggable boolValue]];
     }
-    NSString *markerType = data[@"markerType"];
-    
-    if(markerType != (id)[NSNull null]) {
-        if([markerType isEqualToString:@"icon"]) {
-            NSArray *icon = data[@"icon"];
-            if (icon && icon != (id)[NSNull null]) {
-                UIImage *image = [self extractIconFromData:icon registrar:registrar];
-                [self setIcon:image];
-            }
-        } else {
-            
-            NSString *label = data[@"label"];
-            if(label == (id)[NSNull null]) {
-                @throw [NSException exceptionWithName:@"InvalidMarker"
-                                                   reason:@"label not found for icon."
-                                                 userInfo:nil];
-            }
-    
-            UIImage *image = [[self cozy] buildMarker:label withMarkerType:markerType];
-            [self setIcon:image];
-        }
-        
+    NSArray *icon = data[@"icon"];
+    if (icon && icon != (id)[NSNull null]) {
+        UIImage *image = [self extractIconFromData:icon registrar:registrar];
+        [self setIcon:image];
     }
+
+    [self interpretCozyMarkerData:data];
+
     NSNumber *flat = data[@"flat"];
     if (flat && flat != (id)[NSNull null]) {
         [self setFlat:[flat boolValue]];
@@ -182,7 +167,9 @@
     if (consumeTapEvents && consumeTapEvents != (id)[NSNull null]) {
         [self setConsumeTapEvents:[consumeTapEvents boolValue]];
     }
+
     [self interpretInfoWindow:data];
+
     NSArray *position = data[@"position"];
     if (position && position != (id)[NSNull null]) {
         [self setPosition:[FLTGoogleMapJSONConversions locationFromLatLong:position]];
@@ -213,6 +200,22 @@
         if (infoWindowAnchor && infoWindowAnchor != (id)[NSNull null]) {
             [self setInfoWindowAnchor:[FLTGoogleMapJSONConversions pointFromArray:infoWindowAnchor]];
         }
+    }
+}
+
+- (void)interpretCozyMarkerData:(NSDictionary *)data {
+    NSDictionary *cozyMarkerDataDict = data[@"cozyMarkerData"];
+    if (cozyMarkerDataDict && cozyMarkerDataDict != (id)[NSNull null]) {
+        CozyMarkerData *cozyMarkerData = [[CozyMarkerData alloc] initWithLabel:cozyMarkerDataDict[@"label"] 
+                                                                  hasPointer: [cozyMarkerDataDict[@"hasPointer"] boolValue]
+                                                                  isSelected: [cozyMarkerDataDict[@"isSelected"] boolValue]
+                                                                  isVisualized: [cozyMarkerDataDict[@"isVisualized"] boolValue]
+                                                                  state: cozyMarkerDataDict[@"state"]
+                                                                  variant: cozyMarkerDataDict[@"variant"]
+                                                                  size: cozyMarkerDataDict[@"size"]];
+
+        UIImage *image = [[self cozy] buildMarkerWithData:cozyMarkerData];
+        [self setIcon:image];
     }
 }
 

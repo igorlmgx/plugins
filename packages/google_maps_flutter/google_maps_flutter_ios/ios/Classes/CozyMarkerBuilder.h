@@ -4,12 +4,14 @@
 //
 //  Created by Luiz Carvalho on 16/02/23.
 //
+
 #import <Foundation/Foundation.h>
 #import <CoreText/CoreText.h>
+#import "CozyMarkerData.h"
 
 @interface CozyMarkerBuilder : NSObject
 - (instancetype) initWithCache:(BOOL)useCache;
-- (UIImage *) buildMarker:(NSString *)label withMarkerType:(NSString *)markerType;
+- (UIImage *) buildMarkerWithData:(CozyMarkerData *)data;
 
 @property(strong, nonatomic) NSCache *cache;
 @property(strong, nonatomic) NSString *fontPath;

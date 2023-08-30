@@ -288,8 +288,7 @@ void main() {
           ),
         }, markers: <Marker>{
           Marker(
-            markerType: MarkerType.count,
-            label: '1',
+                label: '1',
             markerId: const MarkerId('marker-1'),
             infoWindow: const InfoWindow(
               title: 'title for test',
@@ -365,8 +364,7 @@ void main() {
         controller = createController(
             mapObjects: MapObjects(markers: <Marker>{
           Marker(
-              markerType: MarkerType.count,
-              label: '1',
+                    label: '1',
               markerId: const MarkerId('marker-1')),
         }));
 
@@ -613,24 +611,20 @@ void main() {
 
         final Set<Marker> previous = <Marker>{
           Marker(
-              markerType: MarkerType.count,
-              label: '1',
+                    label: '1',
               markerId: const MarkerId('to-be-updated')),
           Marker(
-              markerType: MarkerType.count,
-              label: '1',
+                    label: '1',
               markerId: const MarkerId('to-be-removed')),
         };
 
         final Set<Marker> current = <Marker>{
           Marker(
-              markerType: MarkerType.count,
-              label: '1',
+                    label: '1',
               markerId: const MarkerId('to-be-updated'),
               visible: false),
           Marker(
-              markerType: MarkerType.count,
-              label: '1',
+                    label: '1',
               markerId: const MarkerId('to-be-added')),
         };
 
@@ -641,14 +635,12 @@ void main() {
         }));
         verify(mock.addMarkers(<Marker>{
           Marker(
-              markerType: MarkerType.count,
-              label: '1',
+                    label: '1',
               markerId: const MarkerId('to-be-added')),
         }));
         verify(mock.changeMarkers(<Marker>{
           Marker(
-              markerType: MarkerType.count,
-              label: '1',
+                    label: '1',
               markerId: const MarkerId('to-be-updated'),
               visible: false),
         }));

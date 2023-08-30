@@ -4,6 +4,7 @@
 
 package io.flutter.plugins.googlemaps;
 
+import android.util.Log;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
@@ -390,7 +391,7 @@ class Convert {
   }
 
   /** Returns the dartMarkerId of the interpreted marker. */
-  static String interpretMarkerOptions(Object o, MarkerOptionsSink sink, CozyMarkerBuilder cozy) {
+  static String interpretMarkerOptions(Object o, MarkerOptionsSink sink, CozyMarkerBuilder cozyMarkerBuilder) {
     final Map<?, ?> data = toMap(o);
     final Object alpha = data.get("alpha");
     if (alpha != null) {
@@ -413,38 +414,14 @@ class Convert {
     if (flat != null) {
       sink.setFlat(toBoolean(flat));
     }
-
-    final Object markerType = data.get("markerType");
-    if (markerType == null) {
-      throw new IllegalArgumentException("markerType was null");
+    final Object icon = data.get("icon");
+    if (icon != null) {
+      sink.setIcon(toBitmapDescriptor(icon));
     }
-
-    switch (markerType.toString()) {
-      case "icon":
-        final Object icon = data.get("icon");
-        if (icon == null) {
-          throw new IllegalArgumentException("markerType was icon but icon was not provided.");
-        }
-        sink.setIcon(toBitmapDescriptor(icon));
-        break;
-      case "price":
-      case "cluster":
-      case "pin_cluster":
-      case "pin_cluster_visited":
-      case "pin_cluster_selected":
-      case "pin_price":
-      case "pin_price_visited":
-      case "pin_price_selected":
-        final Object label = data.get("label");
-        if (label == null) {
-          throw new IllegalArgumentException("markerType was label but label was not provided.");
-        }
-        final Bitmap bitmap = cozy.buildMarker(markerType.toString(), label.toString());
-        sink.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
-        bitmap.recycle();
-        break;
-      default:
-        throw new IllegalArgumentException("markerType must be a pre-selected one.");
+    
+    final Object cozyMarkerData = data.get("cozyMarkerData");
+    if(cozyMarkerData != null){
+      interpretCozyMarkerData(sink, toObjectMap(cozyMarkerData), cozyMarkerBuilder);
     }
 
     final Object infoWindow = data.get("infoWindow");
@@ -473,6 +450,19 @@ class Convert {
     } else {
       return markerId;
     }
+  }
+
+  private static void interpretCozyMarkerData(MarkerOptionsSink sink, Map<String, Object> cozyMarkerData, CozyMarkerBuilder cozyMarkerBuilder) {
+    final Bitmap bitmap = cozyMarkerBuilder.buildMarker(new CozyMarkerData(
+      (String) cozyMarkerData.get("label"),
+      (boolean) cozyMarkerData.get("hasPointer"),
+      (boolean) cozyMarkerData.get("isSelected"),
+      (boolean) cozyMarkerData.get("isVisualized"),
+      (String) cozyMarkerData.get("state"),
+      (String) cozyMarkerData.get("variant"),
+      (String) cozyMarkerData.get("size")
+    ));
+    sink.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
   }
 
   private static void interpretInfoWindowOptions(
