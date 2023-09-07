@@ -56,13 +56,18 @@ public class CozyMarkerBuilder {
     }
 
     private Bitmap getIconBitmap(String svgIcon, int width, int height) {
+        if(svgIcon == null)
+            return null;
+        
         final Bitmap bitmap = markerCache.getBitmapFromMemCache(svgIcon);   
         if (bitmap != null) {
             return bitmap;
         }
 
         try{
-            SVG  svg = SVG.getFromString(svgIcon.replaceAll("width=\"24\" height=\"24\" ", ""));
+            //Needed this because svg doesn't scale if there is fixed width and height
+            String finalSvgIcon = svgIcon.replaceAll("width=\"24\" height=\"24\" ", "");
+            SVG  svg = SVG.getFromString(finalSvgIcon);
             svg.setDocumentViewBox(0,0,24,24);
 
             Bitmap iconBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -71,13 +76,16 @@ public class CozyMarkerBuilder {
 
             markerCache.addBitmapToMemoryCache(svgIcon, iconBitmap);
             return iconBitmap;
-        }catch(Exception e){
-            e.printStackTrace();   
-        }
+        }catch(Exception e){}
+
         return null;
     }
 
     private Bitmap getMarkerBitmap(CozyMarkerData markerData) {
+        String text = markerData.label;
+        boolean hasPointer = markerData.hasPointer;
+
+        /* setting colors */
         int defaultMarkerColor = Color.WHITE;
         int defaultTextColor = Color.BLACK;
         int defaultIconCircleColor = Color.rgb(248, 249, 245);
@@ -105,23 +113,14 @@ public class CozyMarkerBuilder {
             iconCircleColor = selectedIconCircleColor;
         }
 
-        String text = markerData.label;
-        boolean hasPointer = markerData.hasPointer;
-        String icon = markerData.icon;
-
-        // gets the text size based on the font
-        Rect textBounds = new Rect();
-        float textSize = getDpFromPx(12f);
-        Paint priceMarkerTextStyle = getTextPaint(textSize, textColor);
-        priceMarkerTextStyle.getTextBounds(text, 0, text.length(), textBounds);
-
+        /* setting constants */
         // setting global constants
         int paddingVertical = Math.round(getDpFromPx(12));
         int paddingHorizontal = Math.round(getDpFromPx(11.5f));
         int minMarkerWidth = Math.round(getDpFromPx(40));
         int strokeSize = Math.round(getDpFromPx(1.5f));
 
-        // setting constants for tail
+        // setting constants for pointer
         int pointerWidth = Math.round(getDpFromPx(7));
         int pointerHeight = Math.round(getDpFromPx(6));
         
@@ -130,12 +129,24 @@ public class CozyMarkerBuilder {
         int iconCircleSize =  Math.round(getDpFromPx(24));
         int iconLeftPadding =  Math.round(getDpFromPx(5));
         int iconRightPadding =  Math.round(getDpFromPx(3));
-        int iconAdditionalWidth = icon != null ? iconCircleSize + iconRightPadding : 0;
+
+        /* setting variables */
+        // gets the text size based on the font
+        Rect textBounds = new Rect();
+        float textSize = getDpFromPx(12f);
+        Paint priceMarkerTextStyle = getTextPaint(textSize, textColor);
+        priceMarkerTextStyle.getTextBounds(text, 0, text.length(), textBounds);
+
+        // getting icon bitmap
+        Bitmap iconBitmap = getIconBitmap(markerData.icon,iconSize,iconSize);
+
+        // additionalIconWidth to be used on markerWidth
+        int iconAdditionalWidth = iconBitmap != null ? iconCircleSize + iconRightPadding : 0;
 
         // pointerSize to be used on bitmap creation
         int pointerSize = (hasPointer ? pointerHeight : 0);
         
-        // markerWidth
+        // setting marker width with a minimum width in case the string size is below the minimum
         int markerWidth = textBounds.width() + (2 * paddingHorizontal) + (2 * strokeSize) + iconAdditionalWidth;
         if (markerWidth < minMarkerWidth) {
             markerWidth = minMarkerWidth;
@@ -148,11 +159,11 @@ public class CozyMarkerBuilder {
         int bubbleShapeWidth = markerWidth - strokeSize/2;
         int bubbleShapeHeight = markerHeight - strokeSize/2;
 
-        // other important constants
+        // other important variables
         float middleOfMarkerY = (bubbleShapeHeight / 2) + strokeSize/2;
 
 
-        /* Start of drawing */
+        /* start of drawing */
         // creates the marker bitmap
         Bitmap marker = Bitmap.createBitmap(markerWidth, markerHeight + pointerSize, Bitmap.Config.ARGB_8888);
         
@@ -197,7 +208,7 @@ public class CozyMarkerBuilder {
         canvas.drawText(text, dx, dy, priceMarkerTextStyle);
         
         // draws the icon if exists
-        if (icon != null) {
+        if (iconBitmap != null) {
             // Draw the bigger circle
             Paint circlePaint = new Paint();
             circlePaint.setAntiAlias(true);
@@ -209,11 +220,10 @@ public class CozyMarkerBuilder {
             float circleRadius = iconCircleSize/2;
             canvas.drawCircle(circleX, circleY, circleRadius, circlePaint);
             
-            // Load and draw the SVG icon
+            // Draw the icon itself
             float svgX = iconLeftPadding + strokeSize + (iconCircleSize - iconSize)/2;
             float svgY = (bubbleShapeHeight / 2) - (iconSize / 2) + strokeSize/2;
 
-            Bitmap iconBitmap = getIconBitmap(icon, iconSize, iconSize);
             canvas.drawBitmap(iconBitmap, svgX, svgY, null);
         }
 

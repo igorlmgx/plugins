@@ -9,7 +9,7 @@
 #import <CoreText/CoreText.h>
 #import "CozyMarkerBuilder.h"
 #import "CozyMarkerData.h"
-
+#import <SVGKit/SVGKit.h>
 
 @implementation CozyMarkerBuilder
 
@@ -18,28 +18,12 @@
     self = [super init];
     if(self) {
         _fontPath = [self loadCozyFont];
-        _markerSize = [self calculateMarkerSize];
-        _shadowWidth = 3;
         _useCache = useCache;
         if(useCache == YES) {
             _cache = [[NSCache alloc] init];
         }
     }
     return self;
-}
-
-- (CGFloat)calculateMarkerSize {
-    CGFloat baseScreenHeight = 2220;
-    CGFloat maxMarkerRadius = 155;
-    CGFloat minMarkerRadius = 60;
-    CGFloat devicePixelRatio = [UIScreen mainScreen].bounds.size.height * [UIScreen mainScreen].scale;
-    CGFloat proportionalMarkerRadius = 150 * (devicePixelRatio / baseScreenHeight);   
-    if(proportionalMarkerRadius > maxMarkerRadius) {
-        return maxMarkerRadius;
-    } else if (proportionalMarkerRadius < minMarkerRadius) {
-        return minMarkerRadius;
-    }
-    return proportionalMarkerRadius;
 }
 
 - (NSString *)loadCozyFont {
@@ -77,105 +61,156 @@ void CFSafeRelease(CFTypeRef cf) {
     }
 }
 
-- (UIImage *)pinMarkerImageWithText:(NSString *)text withMarkerColor:(UIColor *)color withTextColor:(UIColor *)textColor withTail:(BOOL)withTail {
+- (UIImage *)getIconBitmapWithSvg:(NSString *)svgIcon width:(CGFloat)width height:(CGFloat) height{
+    UIImage *cachedImage = [[self cache] objectForKey:svgIcon];
+    if(cachedImage != nil) {
+        return cachedImage;
+    }
     
+    SVGKImage *svgImage = [SVGKImage imageWithSource:[SVGKSourceString sourceFromContentsOfString:svgIcon]];
+    svgImage.size = CGSizeMake(width, height);
+    UIImage* svgImageUI = svgImage.UIImage;
+    [[self cache] setObject:svgImageUI forKey:svgIcon];
+
+    return svgImageUI;
+}
+
+- (UIImage *)getMarkerWithData:(CozyMarkerData *)cozyMarkerData {
+    NSString *text = cozyMarkerData.label;
+    NSString *icon = cozyMarkerData.icon;
+    BOOL hasPointer = cozyMarkerData.hasPointer;
+
+    /* setting colors */
+    UIColor *defaultMarkerColor = UIColor.whiteColor;
+    UIColor *defaultTextColor = UIColor.blackColor;
+    UIColor *defaultIconCircleColor = [UIColor colorWithRed:(248.0f/255.0f) green:(249.f/255.0f) blue:(245.0f/255.0f) alpha:1];
+    
+    UIColor *selectedMarkerColor = [UIColor colorWithRed:(57.0f/255.0f) green:(87.0f/255.0f) blue:(189.0f/255.0f) alpha:1];
+    UIColor *selectedTextColor = UIColor.whiteColor;
+    UIColor *selectedIconCircleColor = UIColor.whiteColor;
+    
+    UIColor *visualizedMarkerColor = [UIColor colorWithRed:(248.0f/255.0f) green:(249.0f/255.0f) blue:(245.0f/255.0f) alpha:1];
+    UIColor *visualizedTextColor = [UIColor colorWithRed:(110.0f/255.0f) green:(110.0f/255.0f) blue:(100.0f/255.0f) alpha:1];
+    UIColor *visualizedIconCircleColor = UIColor.whiteColor;
+
+    UIColor *markerColor = defaultMarkerColor;
+    UIColor *textColor = defaultTextColor;
+    UIColor *iconCircleColor = defaultIconCircleColor;
+    UIColor *strokeColor = [UIColor colorWithRed:212.0f/255.0f green:(214.0f/255.0f) blue:(202.0f/255.0f) alpha:1];
+    
+    if(cozyMarkerData.isVisualized){
+        markerColor = visualizedMarkerColor;
+        textColor = visualizedTextColor;
+        iconCircleColor = visualizedIconCircleColor;
+    }
+    if(cozyMarkerData.isSelected){
+        markerColor = selectedMarkerColor;
+        textColor = selectedTextColor;
+        iconCircleColor = selectedIconCircleColor;
+    }
+
+    /* setting constants */
+    // setting padding and stroke size
+    CGFloat paddingVertical = 10.5f;
+    CGFloat paddingHorizontal = 11;
+    CGFloat minMarkerWidth = 40;
+    CGFloat strokeSize = 3;
+
+    // setting constants for pointer
+    CGFloat pointerWidth = 6;
+    CGFloat pointerHeight = 5;
+
+    // setting constants for icon
+    CGFloat iconSize = 16;
+    CGFloat iconCircleSize = 24;
+    CGFloat iconLeftPadding = 5;
+    CGFloat iconRightPadding = 3;
+
+    /* setting variables */
     // getting font and setting its size to 3 the size of the marker size
     CGFloat fontSize = 12;
     UIFont *textFont =  [UIFont fontWithName:self.fontPath size:fontSize];
     CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
+
+    // additionalIconWidth to be used on markerWidth
+    CGFloat iconAdditionalWidth = icon != NULL ? iconCircleSize + iconRightPadding : 0;
     
-    // setting padding and stroke size
-    CGFloat paddingHorizontal = 11;
-    CGFloat paddingVertical = 12;
-    CGFloat strokeSize = 3;
-
-    // setting stroke color
-    UIColor *strokeColor = [UIColor colorWithRed:212.0f/255.0f green:(214.0f/255.0f) blue:(202.0f/255.0f) alpha:1];
-
+    // pointerSize to be used on bitmap creation
+    CGFloat pointerSize = hasPointer ? pointerHeight : 0;
+    
     // setting marker width with a minimum width in case the string size is below the minimum
-    CGFloat minMarkerWidth = 40;
-    CGFloat markerWidth = stringSize.width + (2 * paddingVertical) + (2 * strokeSize);
+    CGFloat markerWidth = stringSize.width + (2 * paddingHorizontal) + (2 * strokeSize) + iconAdditionalWidth;
     if(markerWidth < minMarkerWidth) {
         markerWidth = minMarkerWidth;
     }
-     
-    // in case a tail will be used, sets a tail size, else it becomes 0.
-    CGFloat tailSize = withTail ? 6 : 0;
     
-    // setting the marker height
-    CGFloat markerHeight = stringSize.height + (2 * paddingHorizontal) + (2 * strokeSize) + tailSize;
+    // set the marker height as the string height with space for padding and stroke
+    CGFloat markerHeight = stringSize.height + (2 * paddingVertical) + 2 * strokeSize;
 
-    
+    // gets a bubble path, centering in a space for stroke on the left and top side
+    CGFloat bubbleShapeWidth = markerWidth - strokeSize * 2;
+    CGFloat bubbleShapeHeight = markerHeight - strokeSize * 2;
+
+    // other important variables
+    CGFloat middleOfMarkerY = (bubbleShapeHeight / 2) + strokeSize;
+
+    /* start of drawing */
     // creating canvas
-    CGSize canvas = CGSizeMake(markerWidth, markerHeight);
-
+    CGSize canvas = CGSizeMake(markerWidth, markerHeight + pointerSize);
     UIGraphicsBeginImageContext(canvas);
+    
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
     UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
         
         // setting colors and stroke
         CGContextSetAlpha(rendererContext.CGContext, 1.0);
-        CGContextSetFillColorWithColor(rendererContext.CGContext, color.CGColor);
+        CGContextSetFillColorWithColor(rendererContext.CGContext, markerColor.CGColor);
         CGContextSetStrokeColorWithColor(rendererContext.CGContext, strokeColor.CGColor);
         CGContextSetLineJoin(rendererContext.CGContext, 0);
         
         // drawing bubble from point x/y, and with width and height
-        UIBezierPath *bezier = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(strokeSize, strokeSize, markerWidth - (2 * strokeSize), markerHeight - (2 * strokeSize) - tailSize) cornerRadius:20];
+        UIBezierPath *bubblePath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(strokeSize, strokeSize, bubbleShapeWidth, bubbleShapeHeight) cornerRadius:100];
         
-        // if a tail will be used, sets a point in the bottom center of the bubble,
-        // draws a triangle from this point and adds to the bubble path above
-        if(withTail) {
+        // add pointer to shape if needed
+        if(hasPointer) {
             CGFloat x = canvas.width / 2;
-            CGFloat y = markerHeight - tailSize - strokeSize;
+            CGFloat y = markerHeight - strokeSize;
             
-            UIBezierPath *tailPath = [UIBezierPath bezierPath];
-            [tailPath moveToPoint:CGPointMake(x - tailSize, y)];
-            [tailPath addLineToPoint:CGPointMake(x, y + tailSize)];
-            [tailPath addLineToPoint:CGPointMake(x + tailSize, y)];
-            [tailPath closePath];
-            [bezier appendPath:tailPath];
+            UIBezierPath *pointerPath = [UIBezierPath bezierPath];
+            [pointerPath moveToPoint:CGPointMake(x - pointerWidth, y)];
+            [pointerPath addLineToPoint:CGPointMake(x, y + pointerHeight)];
+            [pointerPath addLineToPoint:CGPointMake(x + pointerWidth, y)];
+            [pointerPath closePath];
+            [bubblePath appendPath:pointerPath];
         }
         
-        // draws the bubble with the tail, if used
-        [bezier setLineWidth: strokeSize];
-        [bezier stroke];
-        [bezier fill];
+        // draws the bubble with the pointer, if used
+        [bubblePath setLineWidth: strokeSize];
+        [bubblePath stroke];
+        [bubblePath fill];
      
         // draws the text
-        CGFloat textY = ((canvas.height - tailSize) / 2) - (stringSize.height / 2);
-        CGFloat textX = (canvas.width / 2) - (stringSize.width / 2);
+        CGFloat textY = middleOfMarkerY - (stringSize.height / 2);
+        CGFloat textX = (canvas.width / 2) - (stringSize.width / 2) + iconAdditionalWidth/2;
+        
         CGRect textRect = CGRectMake(textX, textY, stringSize.width, stringSize.height);
         [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont, NSForegroundColorAttributeName: textColor}];
         
+        if(icon != NULL){
+            CGContextSetFillColorWithColor(rendererContext.CGContext, defaultIconCircleColor.CGColor);
+            CGContextSetLineWidth(rendererContext.CGContext, 0);
+
+            CGContextBeginPath(rendererContext.CGContext);
+            CGContextAddEllipseInRect(rendererContext.CGContext, CGRectMake(strokeSize + iconLeftPadding, middleOfMarkerY - iconCircleSize/2,iconCircleSize,iconCircleSize));
+            CGContextDrawPath(rendererContext.CGContext, kCGPathFill);
+
+            UIImage *iconBitmap = [self getIconBitmapWithSvg:icon width:iconSize height:iconSize];
+            [iconBitmap drawInRect:CGRectMake(strokeSize + iconLeftPadding + (iconCircleSize - iconSize)/2, middleOfMarkerY - iconSize/2,iconSize,iconSize)];
+        }
     }];
     UIGraphicsEndImageContext();
+    
     return image;
-}
-
-- (UIImage *)getMarkerWithData:(CozyMarkerData *)cozyMarkerData {
-    UIColor *defaultMarkerColor = UIColor.whiteColor;
-    UIColor *defaultTextColor = UIColor.blackColor;
-    
-    UIColor *selectedMarkerColor = [UIColor colorWithRed:(57.0f/255.0f) green:(87.0f/255.0f) blue:(189.0f/255.0f) alpha:1];
-    UIColor *selectedTextColor = UIColor.whiteColor;
-    
-    UIColor *visualizedMarkerColor = [UIColor colorWithRed:(248.0f/255.0f) green:(249.0f/255.0f) blue:(245.0f/255.0f) alpha:1];
-    UIColor *visualizedTextColor = [UIColor colorWithRed:(110.0f/255.0f) green:(110.0f/255.0f) blue:(100.0f/255.0f) alpha:1];
-
-    UIColor *markerColor = defaultMarkerColor;
-    UIColor *textColor = defaultTextColor;
-    
-    if(cozyMarkerData.isVisualized){
-        markerColor = visualizedMarkerColor;
-        textColor = visualizedTextColor;
-    }
-    if(cozyMarkerData.isSelected){
-        markerColor = selectedMarkerColor;
-        textColor = selectedTextColor;
-    }
-    return [self pinMarkerImageWithText:cozyMarkerData.label withMarkerColor:markerColor 
-                                                             withTextColor:textColor 
-                                                             withTail:cozyMarkerData.hasPointer];
 }
 
 - (UIImage *)cacheMarkerWithData:(CozyMarkerData *)cozyMarkerData {

@@ -151,13 +151,17 @@
     if (draggable && draggable != (id)[NSNull null]) {
         [self setDraggable:[draggable boolValue]];
     }
-    NSArray *icon = data[@"icon"];
-    if (icon && icon != (id)[NSNull null]) {
-        UIImage *image = [self extractIconFromData:icon registrar:registrar];
-        [self setIcon:image];
-    }
 
-    [self interpretCozyMarkerData:data];
+    NSDictionary *cozyMarkerDataDict = data[@"cozyMarkerData"];
+    if (cozyMarkerDataDict && cozyMarkerDataDict != (id)[NSNull null]) {
+        [self interpretCozyMarkerData:cozyMarkerDataDict];
+    }else{
+        NSArray *icon = data[@"icon"];
+        if (icon && icon != (id)[NSNull null]) {
+            UIImage *image = [self extractIconFromData:icon registrar:registrar];
+            [self setIcon:image];
+        }
+    }
 
     NSNumber *flat = data[@"flat"];
     if (flat && flat != (id)[NSNull null]) {
@@ -203,20 +207,18 @@
     }
 }
 
-- (void)interpretCozyMarkerData:(NSDictionary *)data {
-    NSDictionary *cozyMarkerDataDict = data[@"cozyMarkerData"];
-    if (cozyMarkerDataDict && cozyMarkerDataDict != (id)[NSNull null]) {
-        CozyMarkerData *cozyMarkerData = [[CozyMarkerData alloc] initWithLabel:cozyMarkerDataDict[@"label"] 
-                                                                  hasPointer: [cozyMarkerDataDict[@"hasPointer"] boolValue]
-                                                                  isSelected: [cozyMarkerDataDict[@"isSelected"] boolValue]
-                                                                  isVisualized: [cozyMarkerDataDict[@"isVisualized"] boolValue]
-                                                                  state: cozyMarkerDataDict[@"state"]
-                                                                  variant: cozyMarkerDataDict[@"variant"]
-                                                                  size: cozyMarkerDataDict[@"size"]];
+- (void)interpretCozyMarkerData:(NSDictionary *)cozyMarkerDataDict {
+    CozyMarkerData *cozyMarkerData = [[CozyMarkerData alloc] initWithLabel:cozyMarkerDataDict[@"label"] 
+                                                                icon:cozyMarkerDataDict[@"icon"]
+                                                                hasPointer: [cozyMarkerDataDict[@"hasPointer"] boolValue]
+                                                                isSelected: [cozyMarkerDataDict[@"isSelected"] boolValue]
+                                                                isVisualized: [cozyMarkerDataDict[@"isVisualized"] boolValue]
+                                                                state: cozyMarkerDataDict[@"state"]
+                                                                variant: cozyMarkerDataDict[@"variant"]
+                                                                size: cozyMarkerDataDict[@"size"]];
 
-        UIImage *image = [[self cozy] buildMarkerWithData:cozyMarkerData];
-        [self setIcon:image];
-    }
+    UIImage *image = [[self cozy] buildMarkerWithData:cozyMarkerData];
+    [self setIcon:image];
 }
 
 - (UIImage *)extractIconFromData:(NSArray *)iconData

@@ -414,14 +414,15 @@ class Convert {
     if (flat != null) {
       sink.setFlat(toBoolean(flat));
     }
-    final Object icon = data.get("icon");
-    if (icon != null) {
-      sink.setIcon(toBitmapDescriptor(icon));
-    }
     
     final Object cozyMarkerData = data.get("cozyMarkerData");
     if(cozyMarkerData != null){
       interpretCozyMarkerData(sink, toObjectMap(cozyMarkerData), cozyMarkerBuilder);
+    }else{
+      final Object icon = data.get("icon");
+      if (icon != null) {
+        sink.setIcon(toBitmapDescriptor(icon));
+      }
     }
 
     final Object infoWindow = data.get("infoWindow");
@@ -455,6 +456,7 @@ class Convert {
   private static void interpretCozyMarkerData(MarkerOptionsSink sink, Map<String, Object> cozyMarkerData, CozyMarkerBuilder cozyMarkerBuilder) {
     final Bitmap bitmap = cozyMarkerBuilder.buildMarker(new CozyMarkerData(
       (String) cozyMarkerData.get("label"),
+      (String) cozyMarkerData.get("icon"),
       (boolean) cozyMarkerData.get("hasPointer"),
       (boolean) cozyMarkerData.get("isSelected"),
       (boolean) cozyMarkerData.get("isVisualized"),
