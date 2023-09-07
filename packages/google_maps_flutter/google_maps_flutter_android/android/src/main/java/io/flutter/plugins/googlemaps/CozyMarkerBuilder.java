@@ -42,7 +42,7 @@ public class CozyMarkerBuilder {
         return (markerWidth / 2f) - (rect.width() / 2f) - rect.left;
     }
 
-    private Path addTailOnMarkerCenter(Bitmap marker, int pointerWidth, int pointerHeight, int shadowSize) {
+    private Path addPointerOnMarkerCenter(Bitmap marker, int pointerWidth, int pointerHeight, int shadowSize) {
         Path pointer = new Path();
         pointer.setFillType(Path.FillType.EVEN_ODD);
         float width = marker.getWidth();
@@ -175,8 +175,8 @@ public class CozyMarkerBuilder {
 
         // add pointer to shape if needed
         if (hasPointer) {
-            Path tailPath = addTailOnMarkerCenter(marker, pointerWidth, pointerHeight, strokeSize);
-            bubblePath.op(bubblePath, tailPath, Path.Op.UNION);
+            Path pointerPath = addPointerOnMarkerCenter(marker, pointerWidth, pointerHeight, strokeSize);
+            bubblePath.op(bubblePath, pointerPath, Path.Op.UNION);
         }
 
         Paint fillPaint = new Paint();
@@ -195,11 +195,6 @@ public class CozyMarkerBuilder {
         Canvas canvas = new Canvas(marker);
         canvas.drawPath(bubblePath, fillPaint);
         canvas.drawPath(bubblePath, strokePaint);
-
-        Paint fillPaint2 = new Paint();
-        fillPaint2.setAntiAlias(true);
-        fillPaint2.setStyle(Paint.Style.FILL);
-        fillPaint2.setColor(Color.RED);
        
         // draws the text
         float dx = getTextXOffset(markerWidth, textBounds) + iconAdditionalWidth/2;

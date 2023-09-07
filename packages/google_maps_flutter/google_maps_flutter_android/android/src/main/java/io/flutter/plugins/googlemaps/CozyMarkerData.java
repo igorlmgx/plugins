@@ -21,7 +21,6 @@ public class CozyMarkerData {
         this.size = size;
     }
     
-    //TODO: add hashCode for bitmap
     @Override
     public String toString() {
         return label + icon + hasPointer + isSelected + isVisualized + state + variant + size;
