@@ -78,20 +78,20 @@ void CFSafeRelease(CFTypeRef cf) {
 - (UIImage *)getMarkerWithData:(CozyMarkerData *)cozyMarkerData {
     NSString *text = cozyMarkerData.label;
     NSString *icon = cozyMarkerData.icon;
-    BOOL hasPointer = cozyMarkerData.hasPointer;
+    BOOL hasTail = cozyMarkerData.hasTail;
 
     /* setting colors */
-    UIColor *defaultMarkerColor = UIColor.whiteColor;
-    UIColor *defaultTextColor = UIColor.blackColor;
-    UIColor *defaultIconCircleColor = [UIColor colorWithRed:(248.0f/255.0f) green:(249.f/255.0f) blue:(245.0f/255.0f) alpha:1];
+    UIColor * const defaultMarkerColor = UIColor.whiteColor;
+    UIColor * const defaultTextColor = UIColor.blackColor;
+    UIColor * const defaultIconCircleColor = [UIColor colorWithRed:(248.0f/255.0f) green:(249.f/255.0f) blue:(245.0f/255.0f) alpha:1];
     
-    UIColor *selectedMarkerColor = [UIColor colorWithRed:(57.0f/255.0f) green:(87.0f/255.0f) blue:(189.0f/255.0f) alpha:1];
-    UIColor *selectedTextColor = UIColor.whiteColor;
-    UIColor *selectedIconCircleColor = UIColor.whiteColor;
+    UIColor * const selectedMarkerColor = [UIColor colorWithRed:(57.0f/255.0f) green:(87.0f/255.0f) blue:(189.0f/255.0f) alpha:1];
+    UIColor * const selectedTextColor = UIColor.whiteColor;
+    UIColor * const selectedIconCircleColor = UIColor.whiteColor;
     
-    UIColor *visualizedMarkerColor = [UIColor colorWithRed:(248.0f/255.0f) green:(249.0f/255.0f) blue:(245.0f/255.0f) alpha:1];
-    UIColor *visualizedTextColor = [UIColor colorWithRed:(110.0f/255.0f) green:(110.0f/255.0f) blue:(100.0f/255.0f) alpha:1];
-    UIColor *visualizedIconCircleColor = UIColor.whiteColor;
+    UIColor * const visualizedMarkerColor = [UIColor colorWithRed:(248.0f/255.0f) green:(249.0f/255.0f) blue:(245.0f/255.0f) alpha:1];
+    UIColor * const visualizedTextColor = [UIColor colorWithRed:(110.0f/255.0f) green:(110.0f/255.0f) blue:(100.0f/255.0f) alpha:1];
+    UIColor * const visualizedIconCircleColor = UIColor.whiteColor;
 
     UIColor *markerColor = defaultMarkerColor;
     UIColor *textColor = defaultTextColor;
@@ -111,32 +111,32 @@ void CFSafeRelease(CFTypeRef cf) {
 
     /* setting constants */
     // setting padding and stroke size
-    CGFloat paddingVertical = 10.5f;
-    CGFloat paddingHorizontal = 11;
-    CGFloat minMarkerWidth = 40;
-    CGFloat strokeSize = 3;
+    const CGFloat paddingVertical = 10.5f;
+    const CGFloat paddingHorizontal = 11;
+    const CGFloat minMarkerWidth = 40;
+    const CGFloat strokeSize = 3;
 
-    // setting constants for pointer
-    CGFloat pointerWidth = 6;
-    CGFloat pointerHeight = 5;
+    // setting constants for tail
+    const CGFloat tailWidth = 6;
+    const CGFloat tailHeight = 5;
 
     // setting constants for icon
-    CGFloat iconSize = 16;
-    CGFloat iconCircleSize = 24;
-    CGFloat iconLeftPadding = 5;
-    CGFloat iconRightPadding = 3;
+    const CGFloat iconSize = 16;
+    const CGFloat iconCircleSize = 24;
+    const CGFloat iconLeftPadding = 5;
+    const CGFloat iconRightPadding = 3;
 
     /* setting variables */
     // getting font and setting its size to 3 the size of the marker size
-    CGFloat fontSize = 12;
+    const CGFloat fontSize = 12;
     UIFont *textFont =  [UIFont fontWithName:self.fontPath size:fontSize];
     CGSize stringSize = [text sizeWithAttributes:@{NSFontAttributeName:textFont}];
 
     // additionalIconWidth to be used on markerWidth
     CGFloat iconAdditionalWidth = icon != NULL ? iconCircleSize + iconRightPadding : 0;
     
-    // pointerSize to be used on bitmap creation
-    CGFloat pointerSize = hasPointer ? pointerHeight : 0;
+    // tailSize to be used on bitmap creation
+    CGFloat tailSize = hasTail ? tailHeight : 0;
     
     // setting marker width with a minimum width in case the string size is below the minimum
     CGFloat markerWidth = stringSize.width + (2 * paddingHorizontal) + (2 * strokeSize) + iconAdditionalWidth;
@@ -156,7 +156,7 @@ void CFSafeRelease(CFTypeRef cf) {
 
     /* start of drawing */
     // creating canvas
-    CGSize canvas = CGSizeMake(markerWidth, markerHeight + pointerSize);
+    CGSize canvas = CGSizeMake(markerWidth, markerHeight + tailSize);
     UIGraphicsBeginImageContext(canvas);
     
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
@@ -171,20 +171,20 @@ void CFSafeRelease(CFTypeRef cf) {
         // drawing bubble from point x/y, and with width and height
         UIBezierPath *bubblePath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(strokeSize, strokeSize, bubbleShapeWidth, bubbleShapeHeight) cornerRadius:100];
         
-        // add pointer to shape if needed
-        if(hasPointer) {
+        // add tail to shape if needed
+        if(hasTail) {
             CGFloat x = canvas.width / 2;
             CGFloat y = markerHeight - strokeSize;
             
-            UIBezierPath *pointerPath = [UIBezierPath bezierPath];
-            [pointerPath moveToPoint:CGPointMake(x - pointerWidth, y)];
-            [pointerPath addLineToPoint:CGPointMake(x, y + pointerHeight)];
-            [pointerPath addLineToPoint:CGPointMake(x + pointerWidth, y)];
-            [pointerPath closePath];
-            [bubblePath appendPath:pointerPath];
+            UIBezierPath *tailPath = [UIBezierPath bezierPath];
+            [tailPath moveToPoint:CGPointMake(x - tailWidth, y)];
+            [tailPath addLineToPoint:CGPointMake(x, y + tailHeight)];
+            [tailPath addLineToPoint:CGPointMake(x + tailWidth, y)];
+            [tailPath closePath];
+            [bubblePath appendPath:tailPath];
         }
         
-        // draws the bubble with the pointer, if used
+        // draws the bubble with the tail, if used
         [bubblePath setLineWidth: strokeSize];
         [bubblePath stroke];
         [bubblePath fill];

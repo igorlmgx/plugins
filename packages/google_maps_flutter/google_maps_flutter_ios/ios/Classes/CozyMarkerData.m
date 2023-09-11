@@ -11,7 +11,7 @@
 @implementation CozyMarkerData
 - (instancetype)initWithLabel:(NSString *)label
                          icon:(NSString *)icon
-                  hasPointer:(BOOL)hasPointer
+                  hasTail:(BOOL)hasTail
                    isSelected:(BOOL)isSelected
                    isVisualized:(BOOL)isVisualized
                         state:(NSString *)state
@@ -21,7 +21,7 @@
   if (self) {
     _label = label;
     _icon = icon;
-    _hasPointer = hasPointer;
+    _hasTail = hasTail;
     _isSelected = isSelected;
     _isVisualized = isVisualized;
     _state = state;
@@ -38,7 +38,7 @@
             self.state,
             self.variant,
             self.size,
-            self.hasPointer ? @"YES" : @"NO",
+            self.hasTail ? @"YES" : @"NO",
             self.isSelected ? @"YES" : @"NO",
             self.isVisualized ? @"YES" : @"NO"];
 }
