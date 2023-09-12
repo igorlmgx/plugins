@@ -2,6 +2,7 @@ package io.flutter.plugins.googlemaps;
 
 public class CozyMarkerData {
     public final String label;
+    public final String icon;
     public final boolean hasPointer;
     public final boolean isSelected;
     public final boolean isVisualized;
@@ -9,8 +10,9 @@ public class CozyMarkerData {
     public final String variant;
     public final String size;
 
-    public CozyMarkerData(String label, boolean hasPointer, boolean isSelected, boolean isVisualized, String state, String variant, String size) {
+    public CozyMarkerData(String label, String icon, boolean hasPointer, boolean isSelected, boolean isVisualized, String state, String variant, String size) {
         this.label = label;
+        this.icon = icon;
         this.hasPointer = hasPointer;
         this.isSelected = isSelected;
         this.isVisualized = isVisualized;
@@ -18,9 +20,9 @@ public class CozyMarkerData {
         this.variant = variant;
         this.size = size;
     }
-
+    
     @Override
     public String toString() {
-        return label + hasPointer + isSelected + isVisualized + state + variant + size;
+        return label + icon + hasPointer + isSelected + isVisualized + state + variant + size;
     }
 }

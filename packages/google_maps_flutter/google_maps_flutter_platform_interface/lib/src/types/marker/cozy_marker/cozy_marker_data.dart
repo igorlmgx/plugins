@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart'
     show immutable;
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 /// CozyMarkerData is the payload necessary to describe all attributes of a CozyMarker.
 /// It follows the same properties described on cozy MapPin component.
@@ -8,6 +9,7 @@ class CozyMarkerData {
   /// Creates CozyMarkerData payload.
   const CozyMarkerData({
     required this.label,
+    this.icon,
     this.isVisualized = false,
     this.isSelected = false,
     this.hasPointer = false,
@@ -18,6 +20,9 @@ class CozyMarkerData {
 
   /// Label of the marker
   final String label;
+
+  /// Icon of the marker in svg format.
+  final String? icon;
 
   /// Wether marker is in selected state or not.
   final bool isSelected;
@@ -55,7 +60,8 @@ class CozyMarkerData {
     addIfPresent('state', state.name);
     addIfPresent('variant', variant.name);
     addIfPresent('size', size.name);
-
+    addIfPresent('icon', icon);
+  
     return json;
   }
 
@@ -74,7 +80,8 @@ class CozyMarkerData {
         hasPointer == other.hasPointer &&
         state == other.state &&
         variant == other.variant &&
-        size == other.size;
+        size == other.size &&
+        icon == other.icon;
   }
 
   @override
@@ -86,11 +93,12 @@ class CozyMarkerData {
         state,
         variant,
         size,
+        icon,
       );
 
   @override
   String toString() {
-    return 'CozyMarkerData{ label: $label, isSelected: $isSelected, isVisualized: $isVisualized, hasPointer: $hasPointer, state: ${state.name}, variant: ${variant.name}, size: ${size.name} }';
+    return 'CozyMarkerData{ label: $label, isSelected: $isSelected, isVisualized: $isVisualized, hasPointer: $hasPointer, state: ${state.name}, variant: ${variant.name}, size: ${size.name}, icon: $icon }';
   }
 }
 
