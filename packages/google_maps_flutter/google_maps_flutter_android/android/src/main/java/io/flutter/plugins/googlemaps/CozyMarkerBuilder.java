@@ -203,14 +203,8 @@ public class CozyMarkerBuilder {
         strokePaint.setStrokeWidth(strokeSize);
         strokePaint.setStrokeCap(Paint.Cap.ROUND);
 
-        Paint fillPaint2 = new Paint();
-        fillPaint2.setAntiAlias(true);
-        fillPaint2.setStyle(Paint.Style.FILL);
-        fillPaint2.setColor(Color.RED);
-
         // draws the bubble
         Canvas canvas = new Canvas(marker);
-        canvas.drawRect(0, 0, markerWidth, markerHeight + pointerSize, fillPaint2);
         canvas.drawPath(bubblePath, fillPaint);
         canvas.drawPath(bubblePath, strokePaint);
        

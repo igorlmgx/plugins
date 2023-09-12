@@ -161,10 +161,6 @@ void CFSafeRelease(CFTypeRef cf) {
     
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize: canvas];
     UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
-        
-        CGContextSetAlpha(rendererContext.CGContext, 1.0);
-        CGContextSetFillColorWithColor(rendererContext.CGContext, UIColor.redColor.CGColor);
-        CGContextFillRect(rendererContext.CGContext, CGRectMake(0, 0, canvas.width, canvas.height));
 
         // setting colors and stroke
         CGContextSetAlpha(rendererContext.CGContext, 1.0);
