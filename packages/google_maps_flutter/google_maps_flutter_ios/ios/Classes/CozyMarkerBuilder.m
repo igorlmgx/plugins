@@ -94,6 +94,7 @@ void CFSafeRelease(CFTypeRef cf) {
     /* setting colors */
     UIColor * const defaultMarkerColor = UIColor.whiteColor;
     UIColor * const defaultTextColor = UIColor.blackColor;
+    UIColor * const defaultStrokeColor = [UIColor colorWithRed:217.0f/255.0f green:(219.0f/255.0f) blue:(208.0f/255.0f) alpha:1];
     UIColor * const defaultIconCircleColor = [UIColor colorWithRed:(248.0f/255.0f) green:(249.f/255.0f) blue:(245.0f/255.0f) alpha:1];
     UIColor * const defaultIconColor = UIColor.blackColor;
     
@@ -101,8 +102,9 @@ void CFSafeRelease(CFTypeRef cf) {
     UIColor * const selectedTextColor = UIColor.whiteColor;
     UIColor * const selectedIconCircleColor = UIColor.whiteColor;
     
-    UIColor * const visualizedMarkerColor = [UIColor colorWithRed:(248.0f/255.0f) green:(249.0f/255.0f) blue:(245.0f/255.0f) alpha:1];
-    UIColor * const visualizedTextColor = [UIColor colorWithRed:(110.0f/255.0f) green:(110.0f/255.0f) blue:(100.0f/255.0f) alpha:1];
+    UIColor * const visualizedMarkerColor = [UIColor colorWithRed:(217.0f/255.0f) green:(219.0f/255.0f) blue:(208.0f/255.0f) alpha:1];
+    UIColor * const visualizedTextColor = UIColor.blackColor;
+    UIColor * const visualizedStrokeColor = [UIColor colorWithRed:(197.0f/255.0f) green:(201.0f/255.0f) blue:(186.0f/255.0f) alpha:1];
     UIColor * const visualizedIconCircleColor = UIColor.whiteColor;
 
     UIColor * const specialIconCircleColor = [UIColor colorWithRed:(240.0f/255.0f) green:(243.0f/255.0f) blue:(255.0f/255.0f) alpha:1];
@@ -112,16 +114,18 @@ void CFSafeRelease(CFTypeRef cf) {
     UIColor *textColor = defaultTextColor;
     UIColor *iconCircleColor = defaultIconCircleColor;
     UIColor *iconColor = defaultIconColor;
-    UIColor *strokeColor = [UIColor colorWithRed:212.0f/255.0f green:(214.0f/255.0f) blue:(202.0f/255.0f) alpha:1];
+    UIColor *strokeColor = defaultStrokeColor;
     
     if(cozyMarkerData.isVisualized){
         markerColor = visualizedMarkerColor;
         textColor = visualizedTextColor;
+        strokeColor = visualizedStrokeColor;
         iconCircleColor = visualizedIconCircleColor;
     }
     if(cozyMarkerData.isSelected){
         markerColor = selectedMarkerColor;
         textColor = selectedTextColor;
+        strokeColor = defaultStrokeColor;
         iconCircleColor = selectedIconCircleColor;
     }
     if([cozyMarkerData.variant isEqualToString:@"special"]){
