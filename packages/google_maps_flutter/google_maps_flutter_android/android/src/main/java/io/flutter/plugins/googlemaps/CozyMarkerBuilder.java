@@ -15,6 +15,7 @@ import android.graphics.Typeface;
 import com.caverock.androidsvg.SVG;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import android.util.Log;
 
 import androidx.core.content.res.ResourcesCompat;
 
@@ -57,11 +58,12 @@ public class CozyMarkerBuilder {
         return pointer;
     }
 
-    private Bitmap getIconBitmap(String svgIcon, int width, int height) {
-        if(svgIcon == null)
+    private Bitmap getIconBitmap(String svgIcon, int width, int height, int rgbColor) {
+        String key = svgIcon + width + height + rgbColor;
+        if(key == null)
             return null;
         
-        final Bitmap bitmap = markerCache.getBitmapFromMemCache(svgIcon);   
+        final Bitmap bitmap = markerCache.getBitmapFromMemCache(key);   
         if (bitmap != null) {
             return bitmap;
         }
@@ -76,6 +78,10 @@ public class CozyMarkerBuilder {
 
             String finalSvgIcon = svgIcon.replaceAll(widthPattern, "");
             finalSvgIcon = finalSvgIcon.replaceAll(heightPattern, "");
+
+            //Recoloring svg
+            String hexColor = String.format("#%06X", (0xFFFFFF & rgbColor));
+            finalSvgIcon = finalSvgIcon.replaceAll("(fill=\")(.+?)(\")", "fill=\""+hexColor+"\"");
 
             SVG  svg = SVG.getFromString(finalSvgIcon);
             if(widthMatcher.find() && heightMatcher.find()){
@@ -101,6 +107,7 @@ public class CozyMarkerBuilder {
         final int defaultMarkerColor = Color.WHITE;
         final int defaultTextColor = Color.BLACK;
         final int defaultIconCircleColor = Color.rgb(248, 249, 245);
+        final int defaultIconColor = Color.BLACK;
 
         final int selectedMarkerColor = Color.rgb(57, 87, 189);
         final int selectedTextColor = Color.WHITE;
@@ -110,9 +117,13 @@ public class CozyMarkerBuilder {
         final int visualizedTextColor = Color.rgb(110, 110, 100);
         final int visualizedIconCircleColor = Color.WHITE;
 
+        final int specialIconCircleColor = Color.rgb(240, 243, 255);
+        final int specialIconColor = Color.rgb(57, 87, 189);
+
         int markerColor = defaultMarkerColor;
         int textColor = defaultTextColor;
         int iconCircleColor = defaultIconCircleColor;
+        int iconColor = defaultIconColor;
 
         if(markerData.isVisualized) {
             markerColor = visualizedMarkerColor;
@@ -123,6 +134,16 @@ public class CozyMarkerBuilder {
             markerColor = selectedMarkerColor;
             textColor = selectedTextColor;
             iconCircleColor = selectedIconCircleColor;
+        }
+        if(markerData.variant.equals("special")){
+            if(markerData.isVisualized){
+                iconCircleColor = visualizedIconCircleColor;
+                iconColor = defaultIconColor;
+            }
+            if(markerData.isSelected) {
+                iconCircleColor = specialIconCircleColor;
+                iconColor = specialIconColor;
+            }
         }
 
         /* setting constants */
@@ -150,7 +171,7 @@ public class CozyMarkerBuilder {
         priceMarkerTextStyle.getTextBounds(text, 0, text.length(), textBounds);
 
         // getting icon bitmap
-        Bitmap iconBitmap = getIconBitmap(markerData.icon,iconSize,iconSize);
+        Bitmap iconBitmap = getIconBitmap(markerData.icon,iconSize,iconSize, iconColor);
 
         // additionalIconWidth to be used on markerWidth
         final int iconAdditionalWidth = iconBitmap != null ? iconCircleSize + iconRightPadding : 0;
@@ -221,7 +242,7 @@ public class CozyMarkerBuilder {
             circlePaint.setAntiAlias(true);
             circlePaint.setStyle(Paint.Style.FILL);
             circlePaint.setColor(iconCircleColor);
-            
+
             float circleX = iconLeftPadding + strokeSize + iconCircleSize/2;
             float circleY = middleOfMarkerY;
             float circleRadius = iconCircleSize/2;

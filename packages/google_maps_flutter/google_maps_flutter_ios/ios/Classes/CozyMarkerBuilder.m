@@ -61,8 +61,10 @@ void CFSafeRelease(CFTypeRef cf) {
     }
 }
 
-- (UIImage *)getIconBitmapWithSvg:(NSString *)svgIcon width:(CGFloat)width height:(CGFloat) height{
-    UIImage *cachedImage = [[self cache] objectForKey:svgIcon];
+- (UIImage *)getIconBitmapWithSvg:(NSString *)svgIcon width:(CGFloat)width height:(CGFloat) height color:(UIColor *)color {
+    NSString *colorKey = color != nil ? [NSString stringWithFormat:@"%f %f %f %f", CGColorGetComponents(color.CGColor)[0], CGColorGetComponents(color.CGColor)[1], CGColorGetComponents(color.CGColor)[2], CGColorGetComponents(color.CGColor)[3]] : @"";
+    NSString *key = [NSString stringWithFormat:@"%@ %f %f %@", svgIcon,width,height,colorKey];
+    UIImage *cachedImage = [[self cache] objectForKey:key];
     if(cachedImage != nil) {
         return cachedImage;
     }
@@ -70,7 +72,16 @@ void CFSafeRelease(CFTypeRef cf) {
     SVGKImage *svgImage = [SVGKImage imageWithSource:[SVGKSourceString sourceFromContentsOfString:svgIcon]];
     svgImage.size = CGSizeMake(width, height);
     UIImage* svgImageUI = svgImage.UIImage;
-    [[self cache] setObject:svgImageUI forKey:svgIcon];
+
+    if(color != nil){
+        svgImageUI = [svgImageUI imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        UIGraphicsBeginImageContextWithOptions(svgImageUI.size, NO, svgImageUI.scale);
+        [color set];
+        [svgImageUI drawInRect:CGRectMake(0, 0, svgImageUI.size.width, svgImageUI.size.height)];
+        svgImageUI = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+    }
+    [[self cache] setObject:svgImageUI forKey:key];
 
     return svgImageUI;
 }
@@ -84,6 +95,7 @@ void CFSafeRelease(CFTypeRef cf) {
     UIColor * const defaultMarkerColor = UIColor.whiteColor;
     UIColor * const defaultTextColor = UIColor.blackColor;
     UIColor * const defaultIconCircleColor = [UIColor colorWithRed:(248.0f/255.0f) green:(249.f/255.0f) blue:(245.0f/255.0f) alpha:1];
+    UIColor * const defaultIconColor = UIColor.blackColor;
     
     UIColor * const selectedMarkerColor = [UIColor colorWithRed:(57.0f/255.0f) green:(87.0f/255.0f) blue:(189.0f/255.0f) alpha:1];
     UIColor * const selectedTextColor = UIColor.whiteColor;
@@ -93,9 +105,13 @@ void CFSafeRelease(CFTypeRef cf) {
     UIColor * const visualizedTextColor = [UIColor colorWithRed:(110.0f/255.0f) green:(110.0f/255.0f) blue:(100.0f/255.0f) alpha:1];
     UIColor * const visualizedIconCircleColor = UIColor.whiteColor;
 
+    UIColor * const specialIconCircleColor = [UIColor colorWithRed:(240.0f/255.0f) green:(243.0f/255.0f) blue:(255.0f/255.0f) alpha:1];
+    UIColor * const specialIconColor = [UIColor colorWithRed:(57.0f/255.0f) green:(87.0f/255.0f) blue:(189.0f/255.0f) alpha:1];
+
     UIColor *markerColor = defaultMarkerColor;
     UIColor *textColor = defaultTextColor;
     UIColor *iconCircleColor = defaultIconCircleColor;
+    UIColor *iconColor = defaultIconColor;
     UIColor *strokeColor = [UIColor colorWithRed:212.0f/255.0f green:(214.0f/255.0f) blue:(202.0f/255.0f) alpha:1];
     
     if(cozyMarkerData.isVisualized){
@@ -107,6 +123,16 @@ void CFSafeRelease(CFTypeRef cf) {
         markerColor = selectedMarkerColor;
         textColor = selectedTextColor;
         iconCircleColor = selectedIconCircleColor;
+    }
+    if([cozyMarkerData.variant isEqualToString:@"special"]){
+        if(cozyMarkerData.isVisualized){
+            iconCircleColor = visualizedIconCircleColor;
+            iconColor = defaultIconColor;
+        }
+        if(cozyMarkerData.isSelected) {
+            iconCircleColor = specialIconCircleColor;
+            iconColor = specialIconColor;
+        }
     }
 
     /* setting constants */
@@ -197,14 +223,14 @@ void CFSafeRelease(CFTypeRef cf) {
         [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont, NSForegroundColorAttributeName: textColor}];
         
         if(icon != NULL){
-            CGContextSetFillColorWithColor(rendererContext.CGContext, defaultIconCircleColor.CGColor);
+            CGContextSetFillColorWithColor(rendererContext.CGContext, iconCircleColor.CGColor);
             CGContextSetLineWidth(rendererContext.CGContext, 0);
 
             CGContextBeginPath(rendererContext.CGContext);
             CGContextAddEllipseInRect(rendererContext.CGContext, CGRectMake(strokeSize + iconLeftPadding, middleOfMarkerY - iconCircleSize/2,iconCircleSize,iconCircleSize));
             CGContextDrawPath(rendererContext.CGContext, kCGPathFill);
 
-            UIImage *iconBitmap = [self getIconBitmapWithSvg:icon width:iconSize height:iconSize];
+            UIImage *iconBitmap = [self getIconBitmapWithSvg:icon width:iconSize height:iconSize color:iconColor];
             [iconBitmap drawInRect:CGRectMake(strokeSize + iconLeftPadding + (iconCircleSize - iconSize)/2, middleOfMarkerY - iconSize/2,iconSize,iconSize)];
         }
     }];
