@@ -12,7 +12,7 @@ class CozyMarkerData {
     this.icon,
     this.isVisualized = false,
     this.isSelected = false,
-    this.hasTail = false,
+    this.hasPointer = false,
     this.state = CozyMarkerState.defaultState,
     this.variant = CozyMarkerVariant.defaultVariant,
     this.size = CozyMarkerSize.small,
@@ -30,8 +30,8 @@ class CozyMarkerData {
   /// Wether marker is visualized or not.
   final bool isVisualized;
 
-  /// Wether marker has a little tail below it or not.
-  final bool hasTail;
+  /// Wether marker has a little pointer below it or not.
+  final bool hasPointer;
 
   /// State of the marker
   /// It can have either default or pressed state.
@@ -56,7 +56,7 @@ class CozyMarkerData {
     addIfPresent('label', label);
     addIfPresent('isSelected', isSelected);
     addIfPresent('isVisualized', isVisualized);
-    addIfPresent('hasTail', hasTail);
+    addIfPresent('hasPointer', hasPointer);
     addIfPresent('state', state.name);
     addIfPresent('variant', variant.name);
     addIfPresent('size', size.name);
@@ -77,7 +77,7 @@ class CozyMarkerData {
         label == other.label &&
         isSelected == other.isSelected &&
         isVisualized == other.isVisualized &&
-        hasTail == other.hasTail &&
+        hasPointer == other.hasPointer &&
         state == other.state &&
         variant == other.variant &&
         size == other.size &&
@@ -89,7 +89,7 @@ class CozyMarkerData {
         label,
         isSelected,
         isVisualized,
-        hasTail,
+        hasPointer,
         state,
         variant,
         size,
@@ -98,7 +98,7 @@ class CozyMarkerData {
 
   @override
   String toString() {
-    return 'CozyMarkerData{ label: $label, isSelected: $isSelected, isVisualized: $isVisualized, hasTail: $hasTail, state: ${state.name}, variant: ${variant.name}, size: ${size.name}, icon: $icon }';
+    return 'CozyMarkerData{ label: $label, isSelected: $isSelected, isVisualized: $isVisualized, hasPointer: $hasPointer, state: ${state.name}, variant: ${variant.name}, size: ${size.name}, icon: $icon }';
   }
 }
 

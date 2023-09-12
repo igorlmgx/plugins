@@ -44,17 +44,17 @@ public class CozyMarkerBuilder {
         return (markerWidth / 2f) - (rect.width() / 2f) - rect.left;
     }
 
-    private Path addTailOnMarkerCenter(Bitmap marker, int tailWidth, int tailHeight, int shadowSize) {
-        Path tail = new Path();
-        tail.setFillType(Path.FillType.EVEN_ODD);
+    private Path addPointerOnMarkerCenter(Bitmap marker, int pointerWidth, int pointerHeight, int shadowSize) {
+        Path pointer = new Path();
+        pointer.setFillType(Path.FillType.EVEN_ODD);
         float width = marker.getWidth();
-        float height = marker.getHeight() - tailHeight - shadowSize;
-        tail.moveTo(width / 2f - tailWidth, height);
-        tail.lineTo(width / 2f + tailWidth, height);
-        tail.lineTo(width / 2f, height + tailHeight);
-        tail.lineTo(width / 2f - tailWidth, height);
-        tail.close();
-        return tail;
+        float height = marker.getHeight() - pointerHeight - shadowSize;
+        pointer.moveTo(width / 2f - pointerWidth, height);
+        pointer.lineTo(width / 2f + pointerWidth, height);
+        pointer.lineTo(width / 2f, height + pointerHeight);
+        pointer.lineTo(width / 2f - pointerWidth, height);
+        pointer.close();
+        return pointer;
     }
 
     private Bitmap getIconBitmap(String svgIcon, int width, int height) {
@@ -95,7 +95,7 @@ public class CozyMarkerBuilder {
 
     private Bitmap getMarkerBitmap(CozyMarkerData markerData) {
         String text = markerData.label;
-        boolean hasTail = markerData.hasTail;
+        boolean hasPointer = markerData.hasPointer;
 
         /* setting colors */
         final int defaultMarkerColor = Color.WHITE;
@@ -132,9 +132,9 @@ public class CozyMarkerBuilder {
         final int minMarkerWidth = Math.round(getDpFromPx(40));
         final int strokeSize = Math.round(getDpFromPx(1.5f));
 
-        // setting constants for tail
-        final int tailWidth = Math.round(getDpFromPx(7));
-        final int tailHeight = Math.round(getDpFromPx(6));
+        // setting constants for pointer
+        final int pointerWidth = Math.round(getDpFromPx(7));
+        final int pointerHeight = Math.round(getDpFromPx(6));
         
         // setting constants for icon
         final int iconSize =  Math.round(getDpFromPx(16));
@@ -155,8 +155,8 @@ public class CozyMarkerBuilder {
         // additionalIconWidth to be used on markerWidth
         final int iconAdditionalWidth = iconBitmap != null ? iconCircleSize + iconRightPadding : 0;
 
-        // tailSize to be used on bitmap creation
-        final int tailSize = (hasTail ? tailHeight : 0);
+        // pointerSize to be used on bitmap creation
+        final int pointerSize = (hasPointer ? pointerHeight : 0);
         
         // setting marker width with a minimum width in case the string size is below the minimum
         int markerWidth = textBounds.width() + (2 * paddingHorizontal) + (2 * strokeSize) + iconAdditionalWidth;
@@ -177,7 +177,7 @@ public class CozyMarkerBuilder {
 
         /* start of drawing */
         // creates the marker bitmap
-        Bitmap marker = Bitmap.createBitmap(markerWidth, markerHeight + tailSize, Bitmap.Config.ARGB_8888);
+        Bitmap marker = Bitmap.createBitmap(markerWidth, markerHeight + pointerSize, Bitmap.Config.ARGB_8888);
         
         // create the bubble shape
         RectF bubbleShape = new RectF(strokeSize/2, strokeSize/2, bubbleShapeWidth, bubbleShapeHeight);
@@ -185,10 +185,10 @@ public class CozyMarkerBuilder {
         Path bubblePath = new Path();
         bubblePath.addRoundRect(bubbleShape, shapeBorderRadius, shapeBorderRadius, Path.Direction.CW);
 
-        // add tail to shape if needed
-        if (hasTail) {
-            Path tailPath = addTailOnMarkerCenter(marker, tailWidth, tailHeight, strokeSize);
-            bubblePath.op(bubblePath, tailPath, Path.Op.UNION);
+        // add pointer to shape if needed
+        if (hasPointer) {
+            Path pointerPath = addPointerOnMarkerCenter(marker, pointerWidth, pointerHeight, strokeSize);
+            bubblePath.op(bubblePath, pointerPath, Path.Op.UNION);
         }
 
         Paint fillPaint = new Paint();
@@ -203,8 +203,14 @@ public class CozyMarkerBuilder {
         strokePaint.setStrokeWidth(strokeSize);
         strokePaint.setStrokeCap(Paint.Cap.ROUND);
 
+        Paint fillPaint2 = new Paint();
+        fillPaint2.setAntiAlias(true);
+        fillPaint2.setStyle(Paint.Style.FILL);
+        fillPaint2.setColor(Color.RED);
+
         // draws the bubble
         Canvas canvas = new Canvas(marker);
+        canvas.drawRect(0, 0, markerWidth, markerHeight + pointerSize, fillPaint2);
         canvas.drawPath(bubblePath, fillPaint);
         canvas.drawPath(bubblePath, strokePaint);
        

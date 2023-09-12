@@ -8,7 +8,7 @@
 @interface CozyMarkerData : NSObject
 - (instancetype)initWithLabel:(NSString *)label
                          icon:(NSString *)icon
-                  hasTail:(BOOL)hasTail
+                  hasPointer:(BOOL)hasPointer
                    isSelected:(BOOL)isSelected
                    isVisualized:(BOOL)isVisualized
                         state:(NSString *)state
@@ -20,7 +20,7 @@
 @property (nonatomic, strong) NSString *state;
 @property (nonatomic, strong) NSString *variant;
 @property (nonatomic, strong) NSString *size;
-@property (nonatomic, assign) BOOL hasTail;
+@property (nonatomic, assign) BOOL hasPointer;
 @property (nonatomic, assign) BOOL isSelected;
 @property (nonatomic, assign) BOOL isVisualized;
 @end
