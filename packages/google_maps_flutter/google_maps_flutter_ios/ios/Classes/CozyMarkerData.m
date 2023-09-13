@@ -32,9 +32,9 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ %@ %@ %@ %@ %@ %@ %@",
+    return [NSString stringWithFormat:@"%@ %d %@ %@ %@ %@ %@ %@",
             self.label,
-            self.icon,
+            [self.icon hash],
             self.state,
             self.variant,
             self.size,

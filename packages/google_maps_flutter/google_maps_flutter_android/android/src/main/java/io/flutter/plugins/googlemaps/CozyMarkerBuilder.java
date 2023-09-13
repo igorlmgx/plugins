@@ -59,8 +59,12 @@ public class CozyMarkerBuilder {
     }
 
     private Bitmap getIconBitmap(String svgIcon, int width, int height, int rgbColor) {
-        String key = svgIcon + width + height + rgbColor;
-        if(key == null)
+        if (svgIcon == null)
+            return null;
+        
+        String key = String.format("%d%d%d%d", svgIcon.hashCode(), width, height, rgbColor);
+
+        if (key == null)
             return null;
         
         final Bitmap bitmap = markerCache.getBitmapFromMemCache(key);   
@@ -79,9 +83,7 @@ public class CozyMarkerBuilder {
             String finalSvgIcon = svgIcon.replaceAll(widthPattern, "");
             finalSvgIcon = finalSvgIcon.replaceAll(heightPattern, "");
 
-            //Recoloring svg
-            String hexColor = String.format("#%06X", (0xFFFFFF & rgbColor));
-            finalSvgIcon = finalSvgIcon.replaceAll("(fill=\")(.+?)(\")", "fill=\""+hexColor+"\"");
+            finalSvgIcon = recolorSvg(finalSvgIcon, rgbColor);
 
             SVG  svg = SVG.getFromString(finalSvgIcon);
             if(widthMatcher.find() && heightMatcher.find()){
@@ -94,9 +96,14 @@ public class CozyMarkerBuilder {
 
             markerCache.addBitmapToMemoryCache(svgIcon, iconBitmap);
             return iconBitmap;
-        }catch(Exception e){}
+        }catch (Exception e) {}
 
         return null;
+    }
+
+    private String recolorSvg(String originalSvg, int rgbColor) {
+        String hexColor = String.format("#%06X", (0xFFFFFF & rgbColor));
+        return originalSvg.replaceAll("(fill=\")(.+?)(\")", "fill=\""+hexColor+"\"");
     }
 
     private Bitmap getMarkerBitmap(CozyMarkerData markerData) {
@@ -128,24 +135,24 @@ public class CozyMarkerBuilder {
         int iconCircleColor = defaultIconCircleColor;
         int iconColor = defaultIconColor;
 
-        if(markerData.isVisualized) {
+        if (markerData.isVisualized) {
             markerColor = visualizedMarkerColor;
             textColor = visualizedTextColor;
             strokeColor = visualizedStrokeColor;
             iconCircleColor = visualizedIconCircleColor;
         }
-        if(markerData.isSelected) {
+        if (markerData.isSelected) {
             markerColor = selectedMarkerColor;
             textColor = selectedTextColor;
             strokeColor = defaultStrokeColor;
             iconCircleColor = selectedIconCircleColor;   
         }
-        if(markerData.variant.equals("special")){
-            if(markerData.isVisualized){
+        if (markerData.variant.equals("special")){
+            if (markerData.isVisualized){
                 iconCircleColor = visualizedIconCircleColor;
                 iconColor = defaultIconColor;
             }
-            if(markerData.isSelected) {
+            if (markerData.isSelected) {
                 iconCircleColor = specialIconCircleColor;
                 iconColor = specialIconColor;
             }

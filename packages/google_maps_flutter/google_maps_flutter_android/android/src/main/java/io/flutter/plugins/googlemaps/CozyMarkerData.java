@@ -23,6 +23,6 @@ public class CozyMarkerData {
     
     @Override
     public String toString() {
-        return label + icon + hasPointer + isSelected + isVisualized + state + variant + size;
+        return label + (icon != null ? icon.hashCode() : "") + hasPointer + isSelected + isVisualized + state + variant + size;
     }
 }
