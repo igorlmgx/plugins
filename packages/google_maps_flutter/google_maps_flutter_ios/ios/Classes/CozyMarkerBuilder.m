@@ -62,10 +62,12 @@ void CFSafeRelease(CFTypeRef cf) {
 }
 
 - (UIImage *)getIconBitmapWithSvg:(NSString *)svgIcon width:(CGFloat)width height:(CGFloat) height color:(UIColor *)color {
+
     NSString *colorKey = color != nil ? [NSString stringWithFormat:@"%f %f %f %f", CGColorGetComponents(color.CGColor)[0], CGColorGetComponents(color.CGColor)[1], CGColorGetComponents(color.CGColor)[2], CGColorGetComponents(color.CGColor)[3]] : @"";
-    NSString *key = [NSString stringWithFormat:@"%@ %f %f %@", svgIcon,width,height,colorKey];
-    UIImage *cachedImage = [[self cache] objectForKey:key];
-    if(cachedImage != nil) {
+    NSString *key = [NSString stringWithFormat:@"%d %f %f %@", [svgIcon hash],width,height,colorKey];
+   
+   UIImage *cachedImage = [[self cache] objectForKey:key];
+    if (cachedImage != nil) {
         return cachedImage;
     }
     
@@ -73,7 +75,7 @@ void CFSafeRelease(CFTypeRef cf) {
     svgImage.size = CGSizeMake(width, height);
     UIImage* svgImageUI = svgImage.UIImage;
 
-    if(color != nil){
+    if (color != nil){
         svgImageUI = [svgImageUI imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         UIGraphicsBeginImageContextWithOptions(svgImageUI.size, NO, svgImageUI.scale);
         [color set];
@@ -114,22 +116,22 @@ void CFSafeRelease(CFTypeRef cf) {
     UIColor *iconColor = defaultIconColor;
     UIColor *strokeColor = [UIColor colorWithRed:212.0f/255.0f green:(214.0f/255.0f) blue:(202.0f/255.0f) alpha:1];
     
-    if(cozyMarkerData.isVisualized){
+    if (cozyMarkerData.isVisualized){
         markerColor = visualizedMarkerColor;
         textColor = visualizedTextColor;
         iconCircleColor = visualizedIconCircleColor;
     }
-    if(cozyMarkerData.isSelected){
+    if (cozyMarkerData.isSelected){
         markerColor = selectedMarkerColor;
         textColor = selectedTextColor;
         iconCircleColor = selectedIconCircleColor;
     }
-    if([cozyMarkerData.variant isEqualToString:@"special"]){
-        if(cozyMarkerData.isVisualized){
+    if ([cozyMarkerData.variant isEqualToString:@"special"]){
+        if (cozyMarkerData.isVisualized){
             iconCircleColor = visualizedIconCircleColor;
             iconColor = defaultIconColor;
         }
-        if(cozyMarkerData.isSelected) {
+        if (cozyMarkerData.isSelected) {
             iconCircleColor = specialIconCircleColor;
             iconColor = specialIconColor;
         }
@@ -198,7 +200,7 @@ void CFSafeRelease(CFTypeRef cf) {
         UIBezierPath *bubblePath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(strokeSize, strokeSize, bubbleShapeWidth, bubbleShapeHeight) cornerRadius:100];
         
         // add pointer to shape if needed
-        if(hasPointer) {
+        if (hasPointer) {
             CGFloat x = canvas.width / 2;
             CGFloat y = markerHeight - strokeSize;
             
@@ -222,7 +224,7 @@ void CFSafeRelease(CFTypeRef cf) {
         CGRect textRect = CGRectMake(textX, textY, stringSize.width, stringSize.height);
         [text drawInRect:CGRectIntegral(textRect) withAttributes:@{NSFontAttributeName:textFont, NSForegroundColorAttributeName: textColor}];
         
-        if(icon != NULL){
+        if (icon != NULL){
             CGContextSetFillColorWithColor(rendererContext.CGContext, iconCircleColor.CGColor);
             CGContextSetLineWidth(rendererContext.CGContext, 0);
 
