@@ -130,15 +130,9 @@ void CFSafeRelease(CFTypeRef cf) {
         strokeColor = defaultStrokeColor;
         iconCircleColor = selectedIconCircleColor;
     }
-    if ([cozyMarkerData.variant isEqualToString:@"special"]){
-        if (cozyMarkerData.isVisualized){
-            iconCircleColor = visualizedIconCircleColor;
-            iconColor = defaultIconColor;
-        }
-        if (cozyMarkerData.isSelected) {
-            iconCircleColor = specialIconCircleColor;
-            iconColor = specialIconColor;
-        }
+    if ([cozyMarkerData.variant isEqualToString:@"special"] && !cozyMarkerData.isVisualized){
+        iconCircleColor = specialIconCircleColor;
+        iconColor = specialIconColor;
     }
 
     /* setting constants */

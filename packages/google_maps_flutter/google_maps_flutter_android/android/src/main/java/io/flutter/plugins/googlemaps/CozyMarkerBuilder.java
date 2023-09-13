@@ -147,15 +147,9 @@ public class CozyMarkerBuilder {
             strokeColor = defaultStrokeColor;
             iconCircleColor = selectedIconCircleColor;   
         }
-        if (markerData.variant.equals("special")){
-            if (markerData.isVisualized){
-                iconCircleColor = visualizedIconCircleColor;
-                iconColor = defaultIconColor;
-            }
-            if (markerData.isSelected) {
-                iconCircleColor = specialIconCircleColor;
-                iconColor = specialIconColor;
-            }
+        if (markerData.variant.equals("special") && !markerData.isVisualized){
+            iconCircleColor = specialIconCircleColor;
+            iconColor = specialIconColor;
         }
 
         /* setting constants */
