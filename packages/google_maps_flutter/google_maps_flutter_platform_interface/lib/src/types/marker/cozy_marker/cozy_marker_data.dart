@@ -116,14 +116,13 @@ enum CozyMarkerState {
 
 /// Variant of the marker. Can be:
 /// - defaultVariant
-/// - specialVariant
+/// - special
 enum CozyMarkerVariant {
   /// Default variant of the marker.
   defaultVariant,
 
   /// Special variant of the marker.
-  // TODO(pietroid): Disabled because it is not implemented on native side yet. Need to implement it on the future.
-  // specialVariant,
+  special,
 }
 
 /// Size of the marker. Can be:
