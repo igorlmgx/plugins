@@ -62,7 +62,7 @@ public class CozyMarkerBuilder {
         if (svgIcon == null)
             return null;
         
-        String key = "" + svgIcon.hashCode() + width + height + rgbColor;
+        String key = String.format("%d%d%d%d", svgIcon.hashCode(), width, height, rgbColor);
 
         if (key == null)
             return null;
@@ -101,7 +101,7 @@ public class CozyMarkerBuilder {
         return null;
     }
 
-    private String recolorSvg (String originalSvg, int rgbColor) {
+    private String recolorSvg(String originalSvg, int rgbColor) {
         String hexColor = String.format("#%06X", (0xFFFFFF & rgbColor));
         return originalSvg.replaceAll("(fill=\")(.+?)(\")", "fill=\""+hexColor+"\"");
     }
