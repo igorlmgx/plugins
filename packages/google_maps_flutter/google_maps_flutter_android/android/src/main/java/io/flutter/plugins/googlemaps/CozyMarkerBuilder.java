@@ -113,6 +113,7 @@ public class CozyMarkerBuilder {
         /* setting colors */
         final int defaultMarkerColor = Color.WHITE;
         final int defaultTextColor = Color.BLACK;
+        final int defaultStrokeColor = Color.rgb(217, 219, 208);
         final int defaultIconCircleColor = Color.rgb(248, 249, 245);
         final int defaultIconColor = Color.BLACK;
 
@@ -120,8 +121,9 @@ public class CozyMarkerBuilder {
         final int selectedTextColor = Color.WHITE;
         final int selectedIconCircleColor = Color.WHITE;
 
-        final int visualizedMarkerColor = Color.rgb(248, 249, 245);
-        final int visualizedTextColor = Color.rgb(110, 110, 100);
+        final int visualizedMarkerColor = Color.rgb(217, 219, 208);
+        final int visualizedTextColor = Color.BLACK;
+        final int visualizedStrokeColor = Color.rgb(197, 201, 186);
         final int visualizedIconCircleColor = Color.WHITE;
 
         final int specialIconCircleColor = Color.rgb(240, 243, 255);
@@ -129,18 +131,21 @@ public class CozyMarkerBuilder {
 
         int markerColor = defaultMarkerColor;
         int textColor = defaultTextColor;
+        int strokeColor = defaultStrokeColor;
         int iconCircleColor = defaultIconCircleColor;
         int iconColor = defaultIconColor;
 
         if (markerData.isVisualized) {
             markerColor = visualizedMarkerColor;
             textColor = visualizedTextColor;
+            strokeColor = visualizedStrokeColor;
             iconCircleColor = visualizedIconCircleColor;
         }
         if (markerData.isSelected) {
             markerColor = selectedMarkerColor;
             textColor = selectedTextColor;
-            iconCircleColor = selectedIconCircleColor;
+            strokeColor = defaultStrokeColor;
+            iconCircleColor = selectedIconCircleColor;   
         }
         if (markerData.variant.equals("special")){
             if (markerData.isVisualized){
@@ -227,7 +232,7 @@ public class CozyMarkerBuilder {
         Paint strokePaint = new Paint();
         strokePaint.setAntiAlias(true);
         strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setColor(Color.parseColor("#D9DBD0"));
+        strokePaint.setColor(strokeColor);
         strokePaint.setStrokeWidth(strokeSize);
         strokePaint.setStrokeCap(Paint.Cap.ROUND);
 
