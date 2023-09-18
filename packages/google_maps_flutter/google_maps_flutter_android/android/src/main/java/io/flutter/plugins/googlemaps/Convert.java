@@ -293,6 +293,26 @@ class Convert {
     return new Point(toPixels(data.get(0), density), toPixels(data.get(1), density));
   }
 
+  public static CozyMarkerData toCozyMarkerData(Object o){
+    final Map<?, ?> data = toMap(o);
+    final Object cozyMarkerDataObject = data.get("cozyMarkerData");
+    if(cozyMarkerDataObject != null){
+      final Map<String, Object> cozyMarkerData = toObjectMap(cozyMarkerDataObject);
+      return new CozyMarkerData(
+        (String) cozyMarkerData.get("label"),
+        (String) cozyMarkerData.get("icon"),
+        (boolean) cozyMarkerData.get("hasPointer"),
+        (boolean) cozyMarkerData.get("isSelected"),
+        (boolean) cozyMarkerData.get("isVisualized"),
+        (String) cozyMarkerData.get("state"),
+        (String) cozyMarkerData.get("variant"),
+        (String) cozyMarkerData.get("size"),
+        (boolean) cozyMarkerData.get("isAnimated")
+      );
+    }
+    return null;
+  }
+
   private static String toString(Object o) {
     return (String) o;
   }
@@ -390,8 +410,7 @@ class Convert {
     }
   }
 
-  /** Returns the dartMarkerId of the interpreted marker. */
-  static String interpretMarkerOptions(Object o, MarkerOptionsSink sink, CozyMarkerBuilder cozyMarkerBuilder) {
+  static String interpretMarkerOptionsWithoutIcon(Object o, MarkerOptionsSink sink) {
     final Map<?, ?> data = toMap(o);
     final Object alpha = data.get("alpha");
     if (alpha != null) {
@@ -414,17 +433,6 @@ class Convert {
     if (flat != null) {
       sink.setFlat(toBoolean(flat));
     }
-    
-    final Object cozyMarkerData = data.get("cozyMarkerData");
-    if(cozyMarkerData != null){
-      interpretCozyMarkerData(sink, toObjectMap(cozyMarkerData), cozyMarkerBuilder);
-    }else{
-      final Object icon = data.get("icon");
-      if (icon != null) {
-        sink.setIcon(toBitmapDescriptor(icon));
-      }
-    }
-
     final Object infoWindow = data.get("infoWindow");
     if (infoWindow != null) {
       interpretInfoWindowOptions(sink, toObjectMap(infoWindow));
@@ -453,17 +461,25 @@ class Convert {
     }
   }
 
-  private static void interpretCozyMarkerData(MarkerOptionsSink sink, Map<String, Object> cozyMarkerData, CozyMarkerBuilder cozyMarkerBuilder) {
-    final Bitmap bitmap = cozyMarkerBuilder.buildMarker(new CozyMarkerData(
-      (String) cozyMarkerData.get("label"),
-      (String) cozyMarkerData.get("icon"),
-      (boolean) cozyMarkerData.get("hasPointer"),
-      (boolean) cozyMarkerData.get("isSelected"),
-      (boolean) cozyMarkerData.get("isVisualized"),
-      (String) cozyMarkerData.get("state"),
-      (String) cozyMarkerData.get("variant"),
-      (String) cozyMarkerData.get("size")
-    ));
+  /** Returns the dartMarkerId of the interpreted marker. */
+  static String interpretMarkerOptions(Object o, MarkerOptionsSink sink, CozyMarkerBuilder cozyMarkerBuilder) {
+    final String markerId = interpretMarkerOptionsWithoutIcon(o, sink);
+    final Map<?, ?> data = toMap(o);
+
+    final CozyMarkerData cozyMarkerData = toCozyMarkerData(o);
+    if(cozyMarkerData != null){
+      interpretCozyMarkerData(sink, cozyMarkerData, cozyMarkerBuilder);
+    }else{
+      final Object icon = data.get("icon");
+      if (icon != null) {
+        sink.setIcon(toBitmapDescriptor(icon));
+      }
+    }
+    return markerId;
+  }
+
+  private static void interpretCozyMarkerData(MarkerOptionsSink sink, CozyMarkerData cozyMarkerData, CozyMarkerBuilder cozyMarkerBuilder) {
+    final Bitmap bitmap = cozyMarkerBuilder.buildMarker(cozyMarkerData);
     sink.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
   }
 

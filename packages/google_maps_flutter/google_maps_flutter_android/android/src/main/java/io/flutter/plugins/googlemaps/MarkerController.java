@@ -11,14 +11,27 @@ import com.google.android.gms.maps.model.Marker;
 /** Controller of a single Marker on the map. */
 class MarkerController implements MarkerOptionsSink {
 
-  private final Marker marker;
+  Marker marker;
   private final String googleMapsMarkerId;
   private boolean consumeTapEvents;
+  public CozyMarkerData cozyMarkerData;
 
   MarkerController(Marker marker, boolean consumeTapEvents) {
     this.marker = marker;
     this.consumeTapEvents = consumeTapEvents;
     this.googleMapsMarkerId = marker.getId();
+    this.cozyMarkerData = null;
+  }
+
+  MarkerController(Marker marker, boolean consumeTapEvents, CozyMarkerData cozyMarkerData) {
+    this.marker = marker;
+    this.consumeTapEvents = consumeTapEvents;
+    this.googleMapsMarkerId = marker.getId();
+    this.cozyMarkerData = cozyMarkerData;
+  }
+
+  void replace(Marker newMarker) {
+    marker = newMarker;
   }
 
   void remove() {

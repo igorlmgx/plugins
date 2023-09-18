@@ -9,6 +9,7 @@ import android.animation.ValueAnimator;
 import android.animation.ObjectAnimator;
 import android.view.animation.Interpolator;
 import androidx.core.view.animation.PathInterpolatorCompat;
+import android.util.Log;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -16,10 +17,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import com.google.android.gms.maps.model.BitmapDescriptor;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import java.util.*;
+import android.os.*;
 
 import io.flutter.plugin.common.MethodChannel;
 
@@ -189,11 +195,12 @@ class MarkersController {
     }
     MarkerBuilder markerBuilder = new MarkerBuilder();
     String markerId = Convert.interpretMarkerOptions(marker, markerBuilder, cozyMarkerBuilder);
+    CozyMarkerData cozyMarkerData = Convert.toCozyMarkerData(marker);
     MarkerOptions options = markerBuilder.build();
-    addMarker(markerId, options, markerBuilder.consumeTapEvents());
+    addMarker(markerId, options, markerBuilder.consumeTapEvents(), cozyMarkerData);
   }
 
-  private void addMarker(String markerId, MarkerOptions markerOptions, boolean consumeTapEvents) {
+  private void addMarker(String markerId, MarkerOptions markerOptions, boolean consumeTapEvents, CozyMarkerData cozyMarkerData) {
     final Marker marker = googleMap
             .addMarker(markerOptions);
     if (this.markersAnimationEnabled) {
@@ -210,20 +217,100 @@ class MarkersController {
       fadeIn.setInterpolator(fadeInInterpolator);
       fadeIn.start();
     }
-    MarkerController controller = new MarkerController(marker, consumeTapEvents);
+    MarkerController controller = new MarkerController(marker, consumeTapEvents, cozyMarkerData);
     markerIdToController.put(markerId, controller);
     googleMapsMarkerIdToDartMarkerId.put(marker.getId(), markerId);
   }
 
-  private void changeMarker(Object marker) {
-    if (marker == null) {
+  private void changeMarker(Object newMarker) {
+    if (newMarker == null) {
       return;
     }
-    String markerId = getMarkerId(marker);
+    String markerId = getMarkerId(newMarker);
     MarkerController markerController = markerIdToController.get(markerId);
     if (markerController != null) {
-      Convert.interpretMarkerOptions(marker, markerController, cozyMarkerBuilder);
+      Log.d("markersController", "markerController not null");
+      final CozyMarkerData lastCozyMarkerData = Convert.toCozyMarkerData(newMarker);
+      final CozyMarkerData firstCozyMarkerData = markerController.cozyMarkerData;
+      final boolean isTheSameMarker = Objects.equals(firstCozyMarkerData, lastCozyMarkerData);
+
+      Log.d("isTheSameMarker", "" + isTheSameMarker);
+      Log.d("isAnimated", "" + firstCozyMarkerData.isAnimated);
+
+      if(firstCozyMarkerData != null && 
+         firstCozyMarkerData.isAnimated && 
+         lastCozyMarkerData != null &&
+         !isTheSameMarker){
+        animateMarkerTransition(markerController, newMarker, firstCozyMarkerData, lastCozyMarkerData);
+      }else{
+        Convert.interpretMarkerOptions(newMarker, markerController, cozyMarkerBuilder);
+      }
     }
+  }
+
+  private void animateMarkerTransition(MarkerController markerController, Object newMarker, CozyMarkerData firstMarkerData, CozyMarkerData lastMarkerData){
+    Log.d("animatedTransitionStarted", "");
+    final List<BitmapDescriptor> bitmapsForFrame = new ArrayList<BitmapDescriptor>();
+    final Deque<Marker> markersQueue = new ArrayDeque<Marker>();
+
+    final int totalNumberOfMarkers = 3;
+    final int framesNumber = 30;
+
+    for(int i = 1; i <= framesNumber; i++){
+      //TODO: add time factor to buildMarker
+      final BitmapDescriptor markerIconFrame = BitmapDescriptorFactory.fromBitmap(cozyMarkerBuilder.buildAnimatedMarker(firstMarkerData, lastMarkerData, (i*1.0f)/(framesNumber*1.0f)));
+      bitmapsForFrame.add(markerIconFrame);
+    }
+
+    // templateMarkerOptions to be used as template repeatedly on all frames
+    MarkerBuilder templateMarkerBuilder = new MarkerBuilder();
+    //TODO: markerId?
+    Convert.interpretMarkerOptionsWithoutIcon(newMarker, templateMarkerBuilder);
+    MarkerOptions templateMarkerOptions = templateMarkerBuilder.build();
+    markersQueue.add(markerController.marker);
+
+    // animation itself    
+    final Handler handler = new Handler(Looper.getMainLooper());
+    ValueAnimator transitionAnimator = ValueAnimator.ofFloat(0f, 1f);
+    //TODO: set custom duration
+    transitionAnimator.setDuration(1000);
+    transitionAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            int animationIndex = (int) ((float) animation.getAnimatedValue() * framesNumber);
+            //Log.d("animationIndex", String.valueOf(animationIndex));
+            if(animationIndex > 0 && animationIndex <= framesNumber){
+              templateMarkerOptions.icon(bitmapsForFrame.get(animationIndex - 1));
+              Marker newMarker = googleMap.addMarker(templateMarkerOptions);
+              markersQueue.add(newMarker);
+            }
+
+            if(markersQueue.
+              size() > totalNumberOfMarkers){
+                Marker markerToRemove = markersQueue.remove();
+                markerToRemove.remove();
+            }
+
+            if((float) animation.getAnimatedValue() == 1f){
+                handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                  Log.d("removingAllMarkers", String.valueOf(markersQueue.size()));
+                  while(markersQueue.size() > 1){
+                            Marker markerToRemove = markersQueue.remove();
+                            markerToRemove.remove();
+                          }
+                  //TODO fix bug with tapping
+                  markerController.replace(markersQueue.remove());
+                  markerController.cozyMarkerData = lastMarkerData;
+                }
+              }, 100);
+            }
+        }
+    });
+   // Interpolator transitionInterpolator = PathInterpolatorCompat.create(0.11f, 0f, 0.5f, 0f);
+   // transitionAnimator.setInterpolator(transitionInterpolator);
+    transitionAnimator.start();
   }
 
   @SuppressWarnings("unchecked")
