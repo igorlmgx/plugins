@@ -27,13 +27,14 @@ public class CozyMarkerBuilder {
         font = ResourcesCompat.getFont(context, R.font.oatmealpro2_semibold);
     }
 
-    private Paint getTextPaint(float size, int color) {
+    private Paint getTextPaint(float size, int color, float alpha) {
         Paint paint = new Paint();
         paint.setColor(color);
         paint.setTypeface(font);
         paint.setTextSize(size);
         paint.setAntiAlias(true);
         paint.setTextAlign(Paint.Align.LEFT);
+        paint.setAlpha((int) (alpha * 255));
         return paint;
     }
 
@@ -174,7 +175,7 @@ public class CozyMarkerBuilder {
         // gets the text size based on the font
         Rect textBounds = new Rect();
         float textSize = getDpFromPx(12f);
-        Paint priceMarkerTextStyle = getTextPaint(textSize, textColor);
+        Paint priceMarkerTextStyle = getTextPaint(textSize, textColor, 1.0f);
         priceMarkerTextStyle.getTextBounds(text, 0, text.length(), textBounds);
 
         // getting icon bitmap
@@ -284,7 +285,6 @@ public class CozyMarkerBuilder {
         final CozyMarkerObject pointer = cozyObjects.pointer;
 
         final Bitmap iconBitmap = (Bitmap) icon.data;
-        final String text = (String) label.data;
 
         final float strokeSize = getDpFromPx(1.5f);
         
@@ -339,8 +339,27 @@ public class CozyMarkerBuilder {
         // draws the text
         // TODO: use the clipRect: https://stackoverflow.com/questions/25147347/android-canvas-draw-text-partial
         // uses different strategy for text
-        Paint priceMarkerTextStyle = getTextPaint(label.bounds.height(), label.fillColor);
-        canvas.drawText(text, label.bounds.left, label.bounds.top, priceMarkerTextStyle);
+        if (label.data instanceof String){
+            String text = (String) label.data;
+            Paint priceMarkerTextStyle = getTextPaint(label.bounds.height(), label.fillColor, 1.0f);
+
+            canvas.drawText(text, label.bounds.left, label.bounds.top, priceMarkerTextStyle);
+
+        }else if (label.data instanceof InterpolatedText){
+            InterpolatedText interpolatedText = (InterpolatedText) label.data;
+            Paint startTextStyle = getTextPaint(label.bounds.height(), label.fillColor, 1.0f - interpolatedText.step);
+            Paint endTextStyle = getTextPaint(label.bounds.height(), label.fillColor, interpolatedText.step);
+
+            int startTextCharactersNumber = startTextStyle.breakText(interpolatedText.startText, true, label.bounds.width() * 1.f, null);
+            int endTextCharactersNumber = endTextStyle.breakText(interpolatedText.endText, true, label.bounds.width() * 1.1f, null);
+
+            Log.d("drawText step", "" + interpolatedText.step);
+            Log.d("drawText", "" + startTextCharactersNumber);
+            Log.d("drawText", "" + endTextCharactersNumber);
+
+            canvas.drawText(interpolatedText.startText.substring(0, startTextCharactersNumber), label.bounds.left, label.bounds.top, startTextStyle);
+            canvas.drawText(interpolatedText.endText.substring(0, endTextCharactersNumber), label.bounds.left, label.bounds.top, endTextStyle);
+        }
         
         // draws the icon if exists
         if (icon.alpha > 0) {
@@ -366,6 +385,23 @@ public class CozyMarkerBuilder {
         return marker;
     }
 
+    private Object interpolateText(String startText, String endText, float step){
+        if(startText.equals(endText)){
+            return startText;
+        }
+        return new InterpolatedText(startText, endText, step);
+    }
+    
+    private Bitmap interpolateIcons(Bitmap startIcon, Bitmap endIcon, float step){
+        if(startIcon != null){
+            return startIcon;
+        }
+        if(endIcon != null){
+            return endIcon;
+        }
+        return null;
+    }
+
     private Bitmap getMarkerBitmap(CozyMarkerData cozyMarkerData) {
         CozyMarkerObjects cozyMarkerObjects = cozyObjectsFromData(cozyMarkerData);
         return getMarkerBitmapFromObjects(cozyMarkerObjects);
@@ -383,6 +419,9 @@ public class CozyMarkerBuilder {
         CozyMarkerObject interpolatedIconCircle = interpolateCozyMarkerObject(startCozyMarkerObjects.iconCircle, endCozyMarkerObjects.iconCircle, step);
         CozyMarkerObject interpolatedPointer = interpolateCozyMarkerObject(startCozyMarkerObjects.pointer, endCozyMarkerObjects.pointer, step);
 
+        interpolatedLabel.data = interpolateText((String) startCozyMarkerObjects.label.data, (String) endCozyMarkerObjects.label.data, step);
+        interpolatedIcon.data = interpolateIcons((Bitmap) startCozyMarkerObjects.icon.data, (Bitmap) endCozyMarkerObjects.icon.data, step);
+
         CozyMarkerObjects interpolatedCozyMarkerObjects = new CozyMarkerObjects(interpolatedCanvas, interpolatedBubble, interpolatedLabel, interpolatedIcon, interpolatedIconCircle, interpolatedPointer);
         return getMarkerBitmapFromObjects(interpolatedCozyMarkerObjects);
     }
@@ -398,10 +437,7 @@ public class CozyMarkerBuilder {
         int interpolatedStrokeColor = interpolateColor(startCozyMarkerObject.strokeColor, endCozyMarkerObject.strokeColor, step);
         float interpolatedAlpha = interpolate(startCozyMarkerObject.alpha, endCozyMarkerObject.alpha, step);
 
-        //TODO review that
-        Object interpolatedData = startCozyMarkerObject.data == null ? endCozyMarkerObject.data : startCozyMarkerObject.data;
-
-        return new CozyMarkerObject(interpolatedBounds, interpolatedFillColor, interpolatedStrokeColor, interpolatedAlpha, interpolatedData);
+        return new CozyMarkerObject(interpolatedBounds, interpolatedFillColor, interpolatedStrokeColor, interpolatedAlpha);
     }
 
     private float interpolate(float start, float end, float step) {

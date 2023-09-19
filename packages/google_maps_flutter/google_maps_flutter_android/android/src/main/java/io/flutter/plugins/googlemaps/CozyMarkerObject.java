@@ -7,7 +7,7 @@ public class CozyMarkerObject {
     public final int fillColor;
     public final int strokeColor;
     public final float alpha;
-    public final Object data;
+    public Object data;
 
     public CozyMarkerObject(RectF bounds, int fillColor, int strokeColor, float alpha, Object data) {
         this.bounds = bounds;
