@@ -3,15 +3,15 @@ package io.flutter.plugins.googlemaps;
 public class CozyMarkerObjects {
     public final CozyMarkerObject canvas;
     public final CozyMarkerObject bubble;
-    public final CozyMarkerObject label;
+    public final CozyMarkerObject[] labels;
     public final CozyMarkerObject icon;
     public final CozyMarkerObject iconCircle;
     public final CozyMarkerObject pointer;
 
-    public CozyMarkerObjects(CozyMarkerObject canvas, CozyMarkerObject bubble, CozyMarkerObject label, CozyMarkerObject icon, CozyMarkerObject iconCircle, CozyMarkerObject pointer) {
+    public CozyMarkerObjects(CozyMarkerObject canvas, CozyMarkerObject bubble, CozyMarkerObject[] labels, CozyMarkerObject icon, CozyMarkerObject iconCircle, CozyMarkerObject pointer) {
         this.canvas = canvas;
         this.bubble = bubble;
-        this.label = label;
+        this.labels = labels;
         this.icon = icon;
         this.iconCircle = iconCircle;
         this.pointer = pointer;
@@ -19,6 +19,6 @@ public class CozyMarkerObjects {
 
     @Override
     public String toString() {
-        return canvas.toString() + bubble.toString() + label.toString() + icon.toString() + iconCircle.toString() + pointer.toString();
+        return canvas.toString() + bubble.toString() + labels.toString() + icon.toString() + iconCircle.toString() + pointer.toString();
     }
 }

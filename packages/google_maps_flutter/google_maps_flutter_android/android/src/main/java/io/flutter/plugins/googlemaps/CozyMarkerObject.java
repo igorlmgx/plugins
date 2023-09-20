@@ -21,6 +21,18 @@ public class CozyMarkerObject {
         this(bounds, fillColor, strokeColor, alpha, null);
     }
 
+    public CozyMarkerObject(RectF bounds, int fillColor, float alpha) {
+        this(bounds, fillColor, 0, alpha, null);
+    }
+
+    public CozyMarkerObject(RectF bounds, float alpha) {
+        this(bounds, fillColor, strokeColor, alpha, null);
+    }
+
+    public CozyMarkerObject(RectF bounds) {
+        this(bounds, fillColor, strokeColor, alpha, null);
+    }
+
     @Override
     public String toString() {
         return bounds.toString() + fillColor + strokeColor + alpha + data.toString();
