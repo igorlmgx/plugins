@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.flutter.plugins.googlemaps.cozy.*;
+
 /** Controller of a single GoogleMaps MapView instance. */
 final class GoogleMapController
     implements DefaultLifecycleObserver,
@@ -933,10 +935,6 @@ final class GoogleMapController
 
   public void setBuildingsEnabled(boolean buildingsEnabled) {
     this.buildingsEnabled = buildingsEnabled;
-  }
-
-  public void setMarkerCachingEnabled(boolean cachingEnabled) {
-    this.cozyMarkerBuilder.setCachingEnabled(cachingEnabled);
   }
 
   public void setMarkersAnimationEnabled(boolean markersAnimationEnabled){

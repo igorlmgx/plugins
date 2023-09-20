@@ -8,6 +8,8 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
+import io.flutter.plugins.googlemaps.cozy.CozyMarkerData;
+
 /** Controller of a single Marker on the map. */
 class MarkerController implements MarkerOptionsSink {
 

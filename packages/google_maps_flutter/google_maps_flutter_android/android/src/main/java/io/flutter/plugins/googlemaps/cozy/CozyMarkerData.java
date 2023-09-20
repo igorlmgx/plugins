@@ -1,4 +1,4 @@
-package io.flutter.plugins.googlemaps;
+package io.flutter.plugins.googlemaps.cozy;
 
 public class CozyMarkerData {
     public final String label;

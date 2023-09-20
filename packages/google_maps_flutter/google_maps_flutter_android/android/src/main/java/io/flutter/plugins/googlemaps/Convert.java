@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.flutter.plugins.googlemaps.cozy.*;
+
 /** Conversions between JSON-like values and GoogleMaps data types. */
 class Convert {
 
@@ -399,10 +401,6 @@ class Convert {
     final Object buildingsEnabled = data.get("buildingsEnabled");
     if (buildingsEnabled != null) {
       sink.setBuildingsEnabled(toBoolean(buildingsEnabled));
-    }
-    final Object enableMarkerCaching = data.get("enableMarkerCaching");
-    if (enableMarkerCaching != null) {
-      sink.setMarkerCachingEnabled(toBoolean(enableMarkerCaching));
     }
     final Object markersAnimationEnabled = data.get("markersAnimationEnabled");
     if (markersAnimationEnabled != null) {

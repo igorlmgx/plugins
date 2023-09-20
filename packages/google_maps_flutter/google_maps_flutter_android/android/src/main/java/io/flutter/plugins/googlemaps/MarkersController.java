@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.*;
 import android.os.*;
 
+import io.flutter.plugins.googlemaps.cozy.*;
 import io.flutter.plugin.common.MethodChannel;
 
 class MarkersController {
