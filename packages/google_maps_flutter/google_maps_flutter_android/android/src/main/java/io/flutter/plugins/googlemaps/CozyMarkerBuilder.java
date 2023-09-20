@@ -233,23 +233,18 @@ public class CozyMarkerBuilder {
             // Canvas
             new CozyMarkerObject(
                 new RectF(0, 0, markerWidth, markerHeight + pointerSize),
-                0,
-                0,
-                1.0f
             ),
             // Bubble
             new CozyMarkerObject(
                 new RectF(bubbleShapeX, bubbleShapeY, bubbleShapeX + bubbleShapeWidth, bubbleShapeY + bubbleShapeHeight),
                 markerColor,
                 strokeColor,
-                1.0f
             ),
             // Label
             new CozyMarkerObject[]{
                 new CozyMarkerObject(
                     new RectF(textDx, textDy, textDx + textWidth, textDy + textHeight),
                     textColor,
-                    0,
                     1.0f,
                     text
                 ),
@@ -258,7 +253,6 @@ public class CozyMarkerBuilder {
             new CozyMarkerObject(
                 new RectF(iconX, iconY, iconX + svgWidth, iconY + svgHeight),
                 iconColor,
-                0,
                 iconBitmap == null ? 0.0f : 1.0f,
                 iconBitmap == null ? null : iconBitmap
             ),
@@ -266,7 +260,6 @@ public class CozyMarkerBuilder {
             new CozyMarkerObject(
                 new RectF(circleX, circleY, circleX + circleWidth, circleY + circleHeight),
                 iconCircleColor,
-                0,
                 iconBitmap == null ? 0.0f : 1.0f
             ),
             // Pointer
@@ -274,7 +267,6 @@ public class CozyMarkerBuilder {
                 new RectF(pointerX, pointerY, pointerX + 2 * pointerWidth, pointerY + pointerHeight),
                 markerColor,
                 strokeColor,
-                1.0f
             )
         );
     }
@@ -295,23 +287,23 @@ public class CozyMarkerBuilder {
         
         // create the bubble shape
         RectF bubbleShape = bubble.bounds;
-
-        Log.d("CozyMarkerBuilder", "bubbleShape: " + bubbleShape.width() + " " + bubbleShape.height());
         final int shapeBorderRadius = Math.round(getDpFromPx(50));
 
         Path bubblePath = new Path();
         bubblePath.addRoundRect(bubbleShape, shapeBorderRadius, shapeBorderRadius, Path.Direction.CW);
 
         // create the pointer shape
-        Path pointerPath = new Path();
-        pointerPath.setFillType(Path.FillType.EVEN_ODD);
+        if(pointer.width() > 0){
+            Path pointerPath = new Path();
+            pointerPath.setFillType(Path.FillType.EVEN_ODD);
 
-        pointerPath.moveTo(pointer.bounds.left, pointer.bounds.top);
-        pointerPath.lineTo(pointer.bounds.right, pointer.bounds.top);
-        pointerPath.lineTo(pointer.bounds.centerX(), pointer.bounds.bottom);
-        pointerPath.lineTo(pointer.bounds.left, pointer.bounds.top);
-        pointerPath.close();
-        bubblePath.op(bubblePath, pointerPath, Path.Op.UNION);
+            pointerPath.moveTo(pointer.bounds.left, pointer.bounds.top);
+            pointerPath.lineTo(pointer.bounds.right, pointer.bounds.top);
+            pointerPath.lineTo(pointer.bounds.centerX(), pointer.bounds.bottom);
+            pointerPath.lineTo(pointer.bounds.left, pointer.bounds.top);
+            pointerPath.close();
+            bubblePath.op(bubblePath, pointerPath, Path.Op.UNION);
+        }
 
         Paint fillPaint = new Paint();
         fillPaint.setAntiAlias(true);
@@ -325,15 +317,8 @@ public class CozyMarkerBuilder {
         strokePaint.setStrokeWidth(strokeSize);
         strokePaint.setStrokeCap(Paint.Cap.ROUND);
 
-        Paint fillPaint2 = new Paint();
-        fillPaint2.setAntiAlias(true);
-        fillPaint2.setStyle(Paint.Style.FILL);
-        fillPaint2.setColor(Color.RED);
-
-        // draws the bubble
+        // draws the bubble with the pointer
         Canvas canvas = new Canvas(marker);
-
-        //canvas.drawRect(canvasObject.bounds, fillPaint2);
         canvas.drawPath(bubblePath, fillPaint);
         canvas.drawPath(bubblePath, strokePaint);
 
