@@ -39,6 +39,7 @@ class MarkersController {
   private final CozyMarkerBuilder cozyMarkerBuilder;
   private boolean markersAnimationEnabled;
   private final int markersAnimationDuration = 100;
+  private final int markersTransitionAnimationDuration = 400;
 
   MarkersController(MethodChannel methodChannel, CozyMarkerBuilder cozyMarkerBuilder) {
     this.markerIdToController = new HashMap<>();
@@ -230,65 +231,61 @@ class MarkersController {
     String markerId = getMarkerId(newMarker);
     MarkerController markerController = markerIdToController.get(markerId);
     if (markerController != null) {
-      Log.d("markersController", "markerController not null");
-      final CozyMarkerData lastCozyMarkerData = Convert.toCozyMarkerData(newMarker);
-      final CozyMarkerData firstCozyMarkerData = markerController.cozyMarkerData;
-      final boolean isTheSameMarker = Objects.equals(firstCozyMarkerData, lastCozyMarkerData);
+      final CozyMarkerData startCozyMarkerData = markerController.currentCozyMarkerData;
+      final CozyMarkerData endCozyMarkerData = Convert.toCozyMarkerData(newMarker);
+      final boolean isTheSameMarker = Objects.equals(startCozyMarkerData, endCozyMarkerData);
 
-      Log.d("isTheSameMarker", "" + isTheSameMarker);
-      Log.d("isAnimated", "" + firstCozyMarkerData.isAnimated);
-
-      if(firstCozyMarkerData != null && 
-         firstCozyMarkerData.isAnimated && 
-         lastCozyMarkerData != null &&
+      if(startCozyMarkerData != null && 
+         endCozyMarkerData != null &&
+         endCozyMarkerData.isAnimated && 
          !isTheSameMarker){
-        animateMarkerTransition(markerController, newMarker, firstCozyMarkerData, lastCozyMarkerData);
+
+        animateMarkerTransition(markerController, newMarker, startCozyMarkerData, endCozyMarkerData);
       }else{
         Convert.interpretMarkerOptions(newMarker, markerController, cozyMarkerBuilder);
       }
     }
   }
 
-  private void animateMarkerTransition(MarkerController markerController, Object newMarker, CozyMarkerData firstMarkerData, CozyMarkerData lastMarkerData){
-    Log.d("animatedTransitionStarted", "");
+  private void animateMarkerTransition(MarkerController markerController, Object newMarker, CozyMarkerData startMarkerData, CozyMarkerData endMarkerData){
     final List<BitmapDescriptor> bitmapsForFrame = new ArrayList<BitmapDescriptor>();
     final Deque<Marker> markersQueue = new ArrayDeque<Marker>();
 
-    final int totalNumberOfMarkers = 3;
-    final int framesNumber = 30;
+    final int totalNumberOfSimultaneousMarkers = 3;
+    final int expectedFps = 60;
+    final int framesNumber = (int) (expectedFps * ((float) markersTransitionAnimationDuration / 1000));
 
     for(int i = 1; i <= framesNumber; i++){
-      //TODO: add time factor to buildMarker
-      final BitmapDescriptor markerIconFrame = BitmapDescriptorFactory.fromBitmap(cozyMarkerBuilder.buildAnimatedMarker(firstMarkerData, lastMarkerData, (i*1.0f)/(framesNumber*1.0f)));
+      final BitmapDescriptor markerIconFrame = BitmapDescriptorFactory.fromBitmap(cozyMarkerBuilder.buildAnimatedMarker(startMarkerData, endMarkerData, (i*1.0f)/(framesNumber*1.0f)));
       bitmapsForFrame.add(markerIconFrame);
     }
 
     // templateMarkerOptions to be used as template repeatedly on all frames
     MarkerBuilder templateMarkerBuilder = new MarkerBuilder();
-    //TODO: markerId?
-    Convert.interpretMarkerOptionsWithoutIcon(newMarker, templateMarkerBuilder);
+    String markerId = Convert.interpretMarkerOptionsWithoutIcon(newMarker, templateMarkerBuilder);
     MarkerOptions templateMarkerOptions = templateMarkerBuilder.build();
     markersQueue.add(markerController.marker);
 
-    // animation itself    
+    // Animation itself    
     final Handler handler = new Handler(Looper.getMainLooper());
     ValueAnimator transitionAnimator = ValueAnimator.ofFloat(0f, 1f);
-    //TODO: set custom duration
-    transitionAnimator.setDuration(1000);
+    transitionAnimator.setDuration(markersTransitionAnimationDuration);
     transitionAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
         @Override
         public void onAnimationUpdate(ValueAnimator animation) {
             int animationIndex = (int) ((float) animation.getAnimatedValue() * framesNumber);
-            //Log.d("animationIndex", String.valueOf(animationIndex));
+
             if(animationIndex > 0 && animationIndex <= framesNumber){
               templateMarkerOptions.icon(bitmapsForFrame.get(animationIndex - 1));
               Marker newMarker = googleMap.addMarker(templateMarkerOptions);
               markersQueue.add(newMarker);
+              googleMapsMarkerIdToDartMarkerId.put(newMarker.getId(), markerId);
             }
 
             if(markersQueue.
-              size() > totalNumberOfMarkers){
+              size() > totalNumberOfSimultaneousMarkers){
                 Marker markerToRemove = markersQueue.remove();
+                googleMapsMarkerIdToDartMarkerId.remove(markerToRemove.getId());
                 markerToRemove.remove();
             }
 
@@ -296,21 +293,21 @@ class MarkersController {
                 handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                  Log.d("removingAllMarkers", String.valueOf(markersQueue.size()));
                   while(markersQueue.size() > 1){
                             Marker markerToRemove = markersQueue.remove();
                             markerToRemove.remove();
                           }
-                  //TODO fix bug with tapping
                   markerController.replace(markersQueue.remove());
-                  markerController.cozyMarkerData = lastMarkerData;
+                  markerController.currentCozyMarkerData = endMarkerData;
                 }
               }, 100);
             }
         }
     });
-   // Interpolator transitionInterpolator = PathInterpolatorCompat.create(0.11f, 0f, 0.5f, 0f);
-   // transitionAnimator.setInterpolator(transitionInterpolator);
+
+    // Ease-out interpolation: https://easings.net/#easeOutQuart 
+    Interpolator transitionInterpolator = PathInterpolatorCompat.create(0.33f, 1f, 0.68f, 1f);
+    transitionAnimator.setInterpolator(transitionInterpolator);
     transitionAnimator.start();
   }
 

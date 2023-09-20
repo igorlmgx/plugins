@@ -14,26 +14,24 @@ import io.flutter.plugins.googlemaps.cozy.CozyMarkerData;
 class MarkerController implements MarkerOptionsSink {
 
   Marker marker;
-  private final String googleMapsMarkerId;
+  private String googleMapsMarkerId;
   private boolean consumeTapEvents;
-  public CozyMarkerData cozyMarkerData;
-
-  MarkerController(Marker marker, boolean consumeTapEvents) {
-    this.marker = marker;
-    this.consumeTapEvents = consumeTapEvents;
-    this.googleMapsMarkerId = marker.getId();
-    this.cozyMarkerData = null;
-  }
+  public CozyMarkerData currentCozyMarkerData;
 
   MarkerController(Marker marker, boolean consumeTapEvents, CozyMarkerData cozyMarkerData) {
     this.marker = marker;
     this.consumeTapEvents = consumeTapEvents;
     this.googleMapsMarkerId = marker.getId();
-    this.cozyMarkerData = cozyMarkerData;
+    this.currentCozyMarkerData = cozyMarkerData;
+  }
+
+  MarkerController(Marker marker, boolean consumeTapEvents) {
+    this(marker, consumeTapEvents, null);
   }
 
   void replace(Marker newMarker) {
     marker = newMarker;
+    googleMapsMarkerId = newMarker.getId();
   }
 
   void remove() {
