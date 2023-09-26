@@ -16,7 +16,9 @@
                    isVisualized:(BOOL)isVisualized
                         state:(NSString *)state
                       variant:(NSString *)variant
-                         size:(NSString *)size {
+                         size:(NSString *)size
+                   isAnimated:(BOOL)isAnimated
+                          {
   self = [super init];
   if (self) {
     _label = label;
@@ -27,12 +29,13 @@
     _state = state;
     _variant = variant;
     _size = size;
+    _isAnimated = isAnimated;
   }
   return self;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ %d %@ %@ %@ %@ %@ %@",
+    return [NSString stringWithFormat:@"%@ %d %@ %@ %@ %@ %@ %@ %@",
             self.label,
             [self.icon hash],
             self.state,
@@ -40,6 +43,12 @@
             self.size,
             self.hasPointer ? @"YES" : @"NO",
             self.isSelected ? @"YES" : @"NO",
-            self.isVisualized ? @"YES" : @"NO"];
+            self.isVisualized ? @"YES" : @"NO",
+            self.isAnimated ? @"YES" : @"NO"
+            ];
+}
+
+- (BOOL)isEqual:(CozyMarkerData *)other {
+    return [[self description] isEqualToString:[other description]];
 }
 @end

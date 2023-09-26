@@ -8,15 +8,19 @@
 #import <Foundation/Foundation.h>
 #import <CoreText/CoreText.h>
 #import "CozyMarkerData.h"
+#import "CozyMarkerElementsBuilder.h"
+#import "CozyMarkerInterpolator.h"
+#import "CozyMarkerElements.h"
 
 @interface CozyMarkerBuilder : NSObject
-- (instancetype) initWithCache:(BOOL)useCache;
 - (UIImage *) buildMarkerWithData:(CozyMarkerData *)data;
+- (UIImage *) buildInterpolatedMarkerWithData:(CozyMarkerElements *)startMarkerData endMarkerData:(CozyMarkerElements *)endMarkerData step:(CGFloat)step;
 
 @property(strong, nonatomic) NSCache *cache;
 @property(strong, nonatomic) NSString *fontPath;
-@property(nonatomic, assign) CGFloat markerSize;
-@property(nonatomic, assign) CGFloat shadowWidth;
+@property(strong, nonatomic) CozyMarkerElementsBuilder *cozyMarkerElementsBuilder;
+@property(strong, nonatomic) CozyMarkerInterpolator *cozyMarkerInterpolator;
+@property(nonatomic, assign) CGFloat strokeSize;
 @property(nonatomic, assign) BOOL useCache;
 @end
 

@@ -13,7 +13,8 @@
                    isVisualized:(BOOL)isVisualized
                         state:(NSString *)state
                       variant:(NSString *)variant
-                         size:(NSString *)size;
+                         size:(NSString *)size
+                         isAnimated:(BOOL)isAnimated;
 
 @property (nonatomic, strong) NSString *label;
 @property (nonatomic, strong) NSString *icon;
@@ -23,4 +24,5 @@
 @property (nonatomic, assign) BOOL hasPointer;
 @property (nonatomic, assign) BOOL isSelected;
 @property (nonatomic, assign) BOOL isVisualized;
+@property (nonatomic, assign) BOOL isAnimated;
 @end

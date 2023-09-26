@@ -7,10 +7,12 @@
 #import "UIKit/UIGraphics.h"
 #import <CoreGraphics/CoreGraphics.h>
 #import <CoreText/CoreText.h>
+#import "CozyMarkerData.h"
 
 @interface FLTGoogleMapMarkerController ()
 
 @property(strong, nonatomic) GMSMarker *marker;
+@property(strong, nonatomic) CozyMarkerData *cozyMarkerData;
 @property(weak, nonatomic) GMSMapView *mapView;
 @property(assign, nonatomic, readwrite) BOOL consumeTapEvents;
 @property(nonatomic, assign) BOOL markersAnimationEnabled;
@@ -111,6 +113,10 @@
     self.marker.icon = icon;
 }
 
+- (void)setIconView:(UIImageView *)iconView {
+    self.marker.iconView = iconView;
+}
+
 - (void)setInfoWindowAnchor:(CGPoint)anchor {
     self.marker.infoWindowAnchor = anchor;
 }
@@ -154,7 +160,11 @@
 
     NSDictionary *cozyMarkerDataDict = data[@"cozyMarkerData"];
     if (cozyMarkerDataDict && cozyMarkerDataDict != (id)[NSNull null]) {
-        [self interpretCozyMarkerData:cozyMarkerDataDict];
+        CozyMarkerData *cozyMarkerData = [self interpretCozyMarkerData:data];
+        self.cozyMarkerData = cozyMarkerData;
+
+        UIImage *image = [[self cozy] buildMarkerWithData:cozyMarkerData];
+        [self setIcon:image];
     }else{
         NSArray *icon = data[@"icon"];
         if (icon && icon != (id)[NSNull null]) {
@@ -207,7 +217,8 @@
     }
 }
 
-- (void)interpretCozyMarkerData:(NSDictionary *)cozyMarkerDataDict {
+- (CozyMarkerData *)interpretCozyMarkerData:(NSDictionary *)data {
+    NSDictionary *cozyMarkerDataDict = data[@"cozyMarkerData"];
     CozyMarkerData *cozyMarkerData = [[CozyMarkerData alloc] initWithLabel:cozyMarkerDataDict[@"label"] 
                                                                 icon:cozyMarkerDataDict[@"icon"]
                                                                 hasPointer: [cozyMarkerDataDict[@"hasPointer"] boolValue]
@@ -215,10 +226,9 @@
                                                                 isVisualized: [cozyMarkerDataDict[@"isVisualized"] boolValue]
                                                                 state: cozyMarkerDataDict[@"state"]
                                                                 variant: cozyMarkerDataDict[@"variant"]
-                                                                size: cozyMarkerDataDict[@"size"]];
-
-    UIImage *image = [[self cozy] buildMarkerWithData:cozyMarkerData];
-    [self setIcon:image];
+                                                                size: cozyMarkerDataDict[@"size"]
+                                                                isAnimated: [cozyMarkerDataDict[@"isAnimated"] boolValue]];
+    return cozyMarkerData;
 }
 
 - (UIImage *)extractIconFromData:(NSArray *)iconData
@@ -344,8 +354,38 @@
         if (!controller) {
             continue;
         }
-        [controller interpretMarkerOptions:marker registrar:self.registrar];
+
+        CozyMarkerData *startCozyMarkerData = controller.cozyMarkerData;
+        CozyMarkerData *endCozyMarkerData = [controller interpretCozyMarkerData:marker];
+        if(startCozyMarkerData != nil && endCozyMarkerData != nil && ![startCozyMarkerData isEqual:endCozyMarkerData] && endCozyMarkerData.isAnimated){
+            [self animateMarker:controller withStartCozyMarkerData:startCozyMarkerData withEndCozyMarkerData:endCozyMarkerData];
+        }else{
+            [controller interpretMarkerOptions:marker registrar:self.registrar];
+        }
     }
+}
+
+- (void) animateMarker:(FLTGoogleMapMarkerController *)controller withStartCozyMarkerData:(CozyMarkerData *)startCozyMarkerData withEndCozyMarkerData:(CozyMarkerData *)endCozyMarkerData {
+    NSMutableArray *animationImages = [NSMutableArray array];
+    //TODO: add variable number of frames
+    for (int i = 0; i <= 30; i++) {
+        CGFloat step = i / 30.0;
+        UIImage *frameImage = [[self cozy] buildInterpolatedMarkerWithData:startCozyMarkerData endMarkerData:endCozyMarkerData step: step];
+        [animationImages addObject:frameImage];
+    }
+
+    //TODO: scale all images the same size
+    UIImageView *animatedImageView = [[UIImageView alloc] initWithImage:[animationImages firstObject]];
+    animatedImageView.animationImages = animationImages;
+    animatedImageView.animationRepeatCount = 1;
+    animatedImageView.animationDuration = 1.0f;
+    animatedImageView.image = [animationImages lastObject];
+    controller.cozyMarkerData = endCozyMarkerData;
+
+    //TODO: add ease-out
+
+    [controller setIconView:animatedImageView];
+    [animatedImageView startAnimating];
 }
 
 - (void)removeMarkersWithIdentifiers:(NSArray *)identifiers {
