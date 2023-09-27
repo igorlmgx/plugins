@@ -309,6 +309,7 @@
 @property(weak, nonatomic) GMSMapView *mapView;
 @property(strong, nonatomic) CozyMarkerBuilder *cozy;
 @property(nonatomic, assign) BOOL markersAnimationEnabled;
+@property(nonatomic, assign) int markersTransitionAnimationDuration;
 
 @end
 
@@ -327,6 +328,7 @@
         _registrar = registrar;
         _cozy = cozy;
         _markersAnimationEnabled = markersAnimationEnabled;
+        _markersTransitionAnimationDuration = 400;
     }
     return self;
 }
@@ -369,10 +371,14 @@
     NSMutableArray *animationImages = [NSMutableArray array];
     CGFloat maxWidth = 0.0;
     CGFloat maxHeight = 0.0;
-    //TODO: add variable number of frames
-    for (int i = 0; i <= 30; i++) {
-        CGFloat step = i / 30.0;
-        UIImage *frameImage = [[self cozy] buildInterpolatedMarkerWithData:startCozyMarkerData endMarkerData:endCozyMarkerData step: step];
+
+    int numberOfFrames = [UIScreen mainScreen].maximumFramesPerSecond * self.markersTransitionAnimationDuration / 1000;
+    for (int i = 0; i <= numberOfFrames; i++) {
+        CGFloat linearStep = i * 1.0 / numberOfFrames;
+        // Ease-out interpolation: https://easings.net/#easeOutCubic 
+        CGFloat easeOutStep = 1 - pow(1 - linearStep, 3.0);
+
+        UIImage *frameImage = [[self cozy] buildInterpolatedMarkerWithData:startCozyMarkerData endMarkerData:endCozyMarkerData step: easeOutStep];
         [animationImages addObject:frameImage];
 
         if(frameImage.size.width > maxWidth){
@@ -387,11 +393,9 @@
     animatedImageView.contentMode = UIViewContentModeCenter;
     animatedImageView.animationImages = animationImages;
     animatedImageView.animationRepeatCount = 1;
-    animatedImageView.animationDuration = 1.0f;
+    animatedImageView.animationDuration = self.markersTransitionAnimationDuration / 1000.0;
     animatedImageView.image = [animationImages lastObject];
     controller.cozyMarkerData = endCozyMarkerData;
-
-    //TODO: add ease-out
 
     [controller setIconView:animatedImageView];
     [animatedImageView startAnimating];
