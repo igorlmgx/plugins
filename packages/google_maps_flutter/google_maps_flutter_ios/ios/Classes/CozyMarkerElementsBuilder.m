@@ -160,13 +160,13 @@
                                             initWithBounds:CGRectMake(iconX, iconY, iconWidth, iconHeight) 
                                             fillColor:iconColor 
                                             strokeColor:nil 
-                                            alpha:1 
+                                            alpha: icon == NULL ? 0 : 1
                                             data: icon]
                                         iconCircle:[[CozyMarkerElement alloc] 
                                             initWithBounds:CGRectMake(iconCircleX, iconCircleY, iconCircleWidth, iconCircleHeight) 
                                             fillColor:iconCircleColor 
                                             strokeColor:nil 
-                                            alpha:1 
+                                            alpha: icon == NULL ? 0 : 1
                                             data:nil]
                                         pointer:[[CozyMarkerElement alloc] 
                                             initWithBounds:CGRectMake(pointerX, pointerY, 2 * pointerWidth, pointerHeight) 

@@ -284,13 +284,16 @@ void CFSafeRelease(CFTypeRef cf) {
         [bubblePath fill];
         
         const CGFloat fontSize = 12;
+        NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
+        paragraphStyle.lineBreakMode = NSLineBreakByCharWrapping;
         UIFont *textFont =  [UIFont fontWithName:self.fontPath size:fontSize];
      
         // draws the text
         for (CozyMarkerElement *label in labels) {
+            
             NSString* text = label.data;
             //TODO: understand why text is not with correct alpha
-            [text drawInRect:CGRectIntegral(label.bounds) withAttributes:@{NSFontAttributeName:textFont, NSForegroundColorAttributeName: [label.fillColor colorWithAlphaComponent:label.alpha]}];
+            [text drawInRect:CGRectIntegral(label.bounds) withAttributes:@{NSFontAttributeName:textFont, NSParagraphStyleAttributeName: paragraphStyle, NSForegroundColorAttributeName: [label.fillColor colorWithAlphaComponent:label.alpha]}];
         }
         
         // draws the icon

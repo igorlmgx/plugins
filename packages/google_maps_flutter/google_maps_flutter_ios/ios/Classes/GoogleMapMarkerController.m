@@ -367,15 +367,24 @@
 
 - (void) animateMarker:(FLTGoogleMapMarkerController *)controller withStartCozyMarkerData:(CozyMarkerData *)startCozyMarkerData withEndCozyMarkerData:(CozyMarkerData *)endCozyMarkerData {
     NSMutableArray *animationImages = [NSMutableArray array];
+    CGFloat maxWidth = 0.0;
+    CGFloat maxHeight = 0.0;
     //TODO: add variable number of frames
     for (int i = 0; i <= 30; i++) {
         CGFloat step = i / 30.0;
         UIImage *frameImage = [[self cozy] buildInterpolatedMarkerWithData:startCozyMarkerData endMarkerData:endCozyMarkerData step: step];
         [animationImages addObject:frameImage];
+
+        if(frameImage.size.width > maxWidth){
+            maxWidth = frameImage.size.width;
+        }
+        if(frameImage.size.height > maxHeight){
+            maxHeight = frameImage.size.height;
+        }
     }
 
-    //TODO: scale all images the same size
-    UIImageView *animatedImageView = [[UIImageView alloc] initWithImage:[animationImages firstObject]];
+    UIImageView *animatedImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, maxWidth, maxHeight)];
+    animatedImageView.contentMode = UIViewContentModeCenter;
     animatedImageView.animationImages = animationImages;
     animatedImageView.animationRepeatCount = 1;
     animatedImageView.animationDuration = 1.0f;
