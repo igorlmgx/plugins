@@ -7,7 +7,5 @@
 #import "CozyMarkerElements.h"
 
 @interface CozyMarkerInterpolator : NSObject
-// @property UIFont *font;
-// - (instancetype)initWithFont:(UIFont *)font;
 - (CozyMarkerElements *)getInterpolatedMarkerElementsWithStart:(CozyMarkerElements *)start end:(CozyMarkerElements *)end step:(CGFloat)step;
 @end

@@ -369,10 +369,11 @@
 
 - (void) animateMarker:(FLTGoogleMapMarkerController *)controller withStartCozyMarkerData:(CozyMarkerData *)startCozyMarkerData withEndCozyMarkerData:(CozyMarkerData *)endCozyMarkerData {
     NSMutableArray *animationImages = [NSMutableArray array];
+
     CGFloat maxWidth = 0.0;
     CGFloat maxHeight = 0.0;
-
     int numberOfFrames = [UIScreen mainScreen].maximumFramesPerSecond * self.markersTransitionAnimationDuration / 1000;
+    
     for (int i = 0; i <= numberOfFrames; i++) {
         CGFloat linearStep = i * 1.0 / numberOfFrames;
         // Ease-out interpolation: https://easings.net/#easeOutCubic 

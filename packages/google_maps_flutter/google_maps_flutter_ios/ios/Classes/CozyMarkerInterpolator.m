@@ -10,13 +10,6 @@
 #import "CozyMarkerElements.h"
 
 @implementation CozyMarkerInterpolator
-// - (instancetype)initWithFont:(UIFont *)font {
-//     self = [super init];
-//     // if (self) {
-//     //     _font = font;
-//     // }
-//     return self;
-// }
 
 - (CozyMarkerElements *)getInterpolatedMarkerElementsWithStart:(CozyMarkerElements *)start end:(CozyMarkerElements *)end step:(CGFloat)step {
     CozyMarkerElement *interpolatedCanvas = [self interpolateCozyMarkerElementWithStart:start.canvas end:end.canvas step:step];
@@ -72,19 +65,6 @@
             [[CozyMarkerElement alloc] initWithBounds:interpolatedLabel.bounds fillColor:interpolatedLabel.fillColor strokeColor:interpolatedLabel.strokeColor alpha:interpolatedLabel.alpha data:startText]
         ];
     }
-
-    // UIFont *textFont = self.font;
-    // CGFloat textFontSize = interpolatedLabel.bounds.size.height;
-    // NSDictionary *attributes = @{
-    //     NSFontAttributeName: textFont,
-    //     NSForegroundColorAttributeName: interpolatedLabel.fillColor
-    // };
-
-    // CGSize labelSize = interpolatedLabel.bounds.size;
-    // CGFloat labelWidth = labelSize.width * 1.2;
-    
-    // NSString *clippedStartText = [self clipText:startText withFont:textFont fontSize:textFontSize maxWidth:labelWidth];
-    // NSString *clippedEndText = [self clipText:endText withFont:textFont fontSize:textFontSize maxWidth:labelWidth];
     
     CGFloat startTextAlpha = 1.0 - step;
     CGFloat endTextAlpha = step;
@@ -94,23 +74,6 @@
     
     return @[startLabelElement, endLabelElement];
 }
-
-// - (NSString *)clipText:(NSString *)text withFont:(UIFont *)font fontSize:(CGFloat)fontSize maxWidth:(CGFloat)maxWidth {
-//     CGSize textSize = [text sizeWithAttributes:@{NSFontAttributeName: font}];
-//     if (textSize.width <= maxWidth) {
-//         return text;
-//     }
-    
-//     NSMutableString *clippedText = [NSMutableString stringWithString:text];
-    
-//     while ([clippedText sizeWithAttributes:@{NSFontAttributeName: font}].width > maxWidth) {
-//         [clippedText deleteCharactersInRange:NSMakeRange([clippedText length] - 1, 1)];
-//     }
-    
-//     [clippedText appendString:@"..."];
-    
-//     return clippedText;
-// }
 
 - (NSString *)interpolateIconsWithStart:(NSString *)startIcon end:(NSString *)endIcon step:(CGFloat)step {
     if (startIcon) {
