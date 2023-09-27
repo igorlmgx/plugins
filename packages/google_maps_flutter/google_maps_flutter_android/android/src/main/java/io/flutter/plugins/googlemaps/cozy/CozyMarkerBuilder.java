@@ -72,7 +72,6 @@ public class CozyMarkerBuilder {
 
         // create the pointer shape
         if(pointer.bounds.height() > 0){
-            Log.d("CozyMarkerBuilder", pointer.bounds.height() + "");
             Path pointerPath = new Path();
             pointerPath.setFillType(Path.FillType.EVEN_ODD);
 
