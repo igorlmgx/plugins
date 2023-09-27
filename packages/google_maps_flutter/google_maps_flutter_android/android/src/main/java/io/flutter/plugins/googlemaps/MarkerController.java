@@ -11,25 +11,25 @@ import com.google.android.gms.maps.model.Marker;
 import io.flutter.plugins.googlemaps.cozy.CozyMarkerData;
 
 /** Controller of a single Marker on the map. */
-class MarkerController implements MarkerOptionsSink {
+public class MarkerController implements MarkerOptionsSink {
 
-  Marker marker;
+  public Marker marker;
   private String googleMapsMarkerId;
   private boolean consumeTapEvents;
   public CozyMarkerData currentCozyMarkerData;
 
-  MarkerController(Marker marker, boolean consumeTapEvents, CozyMarkerData cozyMarkerData) {
+  public MarkerController(Marker marker, boolean consumeTapEvents, CozyMarkerData cozyMarkerData) {
     this.marker = marker;
     this.consumeTapEvents = consumeTapEvents;
     this.googleMapsMarkerId = marker.getId();
     this.currentCozyMarkerData = cozyMarkerData;
   }
 
-  MarkerController(Marker marker, boolean consumeTapEvents) {
+  public MarkerController(Marker marker, boolean consumeTapEvents) {
     this(marker, consumeTapEvents, null);
   }
 
-  void replace(Marker newMarker) {
+  public void replace(Marker newMarker) {
     marker = newMarker;
     googleMapsMarkerId = newMarker.getId();
   }

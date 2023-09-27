@@ -36,7 +36,7 @@ import java.util.Map;
 import io.flutter.plugins.googlemaps.cozy.*;
 
 /** Conversions between JSON-like values and GoogleMaps data types. */
-class Convert {
+public class Convert {
 
   // TODO(hamdikahloun): FlutterMain has been deprecated and should be replaced
   // with FlutterLoader
@@ -408,7 +408,7 @@ class Convert {
     }
   }
 
-  static String interpretMarkerOptionsWithoutIcon(Object o, MarkerOptionsSink sink) {
+  public static String interpretMarkerOptionsWithoutIcon(Object o, MarkerOptionsSink sink) {
     final Map<?, ?> data = toMap(o);
     final Object alpha = data.get("alpha");
     if (alpha != null) {
@@ -465,9 +465,9 @@ class Convert {
     final Map<?, ?> data = toMap(o);
 
     final CozyMarkerData cozyMarkerData = toCozyMarkerData(o);
-    if(cozyMarkerData != null){
+    if (cozyMarkerData != null) {
       interpretCozyMarkerData(sink, cozyMarkerData, cozyMarkerBuilder);
-    }else{
+    } else {
       final Object icon = data.get("icon");
       if (icon != null) {
         sink.setIcon(toBitmapDescriptor(icon));

@@ -49,13 +49,13 @@ public class CozyMarkerBuilder {
         return paint;
     }
 
-    private Bitmap getMarkerBitmapFromElements(CozyMarkerElements cozyObjects){
-        final CozyMarkerElement canvasObject = cozyObjects.canvas;
-        final CozyMarkerElement bubble = cozyObjects.bubble;
-        final CozyMarkerElement[] labels = cozyObjects.labels;
-        final CozyMarkerElement icon = cozyObjects.icon;
-        final CozyMarkerElement iconCircle = cozyObjects.iconCircle;
-        final CozyMarkerElement pointer = cozyObjects.pointer;
+    private Bitmap getMarkerBitmapFromElements(CozyMarkerElements cozyElements){
+        final CozyMarkerElement canvasObject = cozyElements.canvas;
+        final CozyMarkerElement bubble = cozyElements.bubble;
+        final CozyMarkerElement[] labels = cozyElements.labels;
+        final CozyMarkerElement icon = cozyElements.icon;
+        final CozyMarkerElement iconCircle = cozyElements.iconCircle;
+        final CozyMarkerElement pointer = cozyElements.pointer;
 
         final Bitmap iconBitmap = (Bitmap) icon.data;
         
@@ -71,7 +71,8 @@ public class CozyMarkerBuilder {
         bubblePath.addRoundRect(bubbleShape, shapeBorderRadius, shapeBorderRadius, Path.Direction.CW);
 
         // create the pointer shape
-        if(pointer.bounds.width() > 0){
+        if(pointer.bounds.height() > 0){
+            Log.d("CozyMarkerBuilder", pointer.bounds.height() + "");
             Path pointerPath = new Path();
             pointerPath.setFillType(Path.FillType.EVEN_ODD);
 
@@ -110,7 +111,7 @@ public class CozyMarkerBuilder {
         }
         
         // draws the icon if exists
-        if (icon.alpha > 0) {
+        if (icon.alpha > 0 && icon != null) {
             // Draw the bigger circle
             Paint circlePaint = new Paint();
             circlePaint.setAntiAlias(true);
@@ -152,7 +153,7 @@ public class CozyMarkerBuilder {
         return bitmap.copy(bitmap.getConfig(), true);
     }
 
-    private Bitmap bitmapWithCache(CozyMarkerData cozyMarkerData) {
+    public Bitmap buildMarker(CozyMarkerData cozyMarkerData) {
         String key = cozyMarkerData.toString();
         final Bitmap bitmap = markerCache.getBitmapFromMemCache(key);
         if (bitmap != null) {
@@ -160,20 +161,17 @@ public class CozyMarkerBuilder {
         }
         Bitmap marker = getMarkerBitmap(cozyMarkerData);
         markerCache.addBitmapToMemoryCache(key, marker);
-        return marker;
-    }
-
-    public Bitmap buildMarker(CozyMarkerData cozyMarkerData) {
-        if (markerCache != null) {
-            final Bitmap marker = bitmapWithCache(cozyMarkerData);
-            return copyOnlyBitmapProperties(marker);
-        }
-        final Bitmap marker = getMarkerBitmap(cozyMarkerData);
         return copyOnlyBitmapProperties(marker);
     }
 
     public Bitmap buildAnimatedMarker(CozyMarkerData startMarkerData, CozyMarkerData endMarkerData, float step) {
+        String key = startMarkerData.toString() + endMarkerData.toString() + step;
+        final Bitmap bitmap = markerCache.getBitmapFromMemCache(key);
+        if (bitmap != null) {
+            return bitmap;
+        }
         final Bitmap marker = getInterpolatedMarkerBitmap(startMarkerData, endMarkerData, step);
+        markerCache.addBitmapToMemoryCache(key, marker);
         return copyOnlyBitmapProperties(marker);
     }
 }

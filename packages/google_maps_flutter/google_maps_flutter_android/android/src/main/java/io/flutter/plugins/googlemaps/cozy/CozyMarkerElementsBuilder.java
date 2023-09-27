@@ -243,7 +243,7 @@ class CozyMarkerElementsBuilder {
             ),
             // Pointer
             new CozyMarkerElement(
-                new RectF(pointerX, pointerY, pointerX + 2 * pointerWidth, pointerY + pointerHeight),
+                new RectF(pointerX, pointerY, pointerX + 2 * pointerWidth, pointerY + pointerSize),
                 markerColor,
                 strokeColor
             )

@@ -83,6 +83,7 @@ final class GoogleMapController
   private final CirclesController circlesController;
   private final TileOverlaysController tileOverlaysController;
   private final CozyMarkerBuilder cozyMarkerBuilder;
+  private final CozyMarkerAnimator cozyMarkerAnimator;
   private List<Object> initialMarkers;
   private List<Object> initialPolygons;
   private List<Object> initialPolylines;
@@ -101,13 +102,14 @@ final class GoogleMapController
     this.context = context;
     this.options = options;
     this.cozyMarkerBuilder = new CozyMarkerBuilder(context);
+    this.cozyMarkerAnimator = new CozyMarkerAnimator(context, cozyMarkerBuilder);
     this.mapView = new MapView(context, options);
     this.density = context.getResources().getDisplayMetrics().density;
     methodChannel =
         new MethodChannel(binaryMessenger, "plugins.flutter.dev/google_maps_android_" + id);
     methodChannel.setMethodCallHandler(this);
     this.lifecycleProvider = lifecycleProvider;
-    this.markersController = new MarkersController(methodChannel, this.cozyMarkerBuilder);
+    this.markersController = new MarkersController(methodChannel, this.cozyMarkerBuilder, this.cozyMarkerAnimator);
     this.polygonsController = new PolygonsController(methodChannel, density);
     this.polylinesController = new PolylinesController(methodChannel, density);
     this.circlesController = new CirclesController(methodChannel, density);

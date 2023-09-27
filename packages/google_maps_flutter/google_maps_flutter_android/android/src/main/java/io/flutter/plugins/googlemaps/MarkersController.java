@@ -37,15 +37,17 @@ class MarkersController {
   private final MethodChannel methodChannel;
   private GoogleMap googleMap;
   private final CozyMarkerBuilder cozyMarkerBuilder;
+  private final CozyMarkerAnimator cozyMarkerAnimator;
   private boolean markersAnimationEnabled;
   private final int markersAnimationDuration = 100;
   private final int markersTransitionAnimationDuration = 400;
 
-  MarkersController(MethodChannel methodChannel, CozyMarkerBuilder cozyMarkerBuilder) {
+  MarkersController(MethodChannel methodChannel, CozyMarkerBuilder cozyMarkerBuilder, CozyMarkerAnimator cozyMarkerAnimator) {
     this.markerIdToController = new HashMap<>();
     this.googleMapsMarkerIdToDartMarkerId = new HashMap<>();
     this.methodChannel = methodChannel;
     this.cozyMarkerBuilder = cozyMarkerBuilder;
+    this.cozyMarkerAnimator = cozyMarkerAnimator;
   }
 
   public void setMarkersAnimationEnabled(boolean markersAnimationEnabled){
@@ -240,75 +242,11 @@ class MarkersController {
          endCozyMarkerData.isAnimated && 
          !isTheSameMarker){
 
-        animateMarkerTransition(markerController, newMarker, startCozyMarkerData, endCozyMarkerData);
+        cozyMarkerAnimator.animateMarkerTransition(markerController, newMarker, startCozyMarkerData, endCozyMarkerData, googleMap, googleMapsMarkerIdToDartMarkerId);
       }else{
         Convert.interpretMarkerOptions(newMarker, markerController, cozyMarkerBuilder);
       }
     }
-  }
-
-  private void animateMarkerTransition(MarkerController markerController, Object newMarker, CozyMarkerData startMarkerData, CozyMarkerData endMarkerData){
-    final List<BitmapDescriptor> bitmapsForFrame = new ArrayList<BitmapDescriptor>();
-    final Deque<Marker> markersQueue = new ArrayDeque<Marker>();
-
-    final int totalNumberOfSimultaneousMarkers = 3;
-    final int expectedFps = 60;
-    final int framesNumber = (int) (expectedFps * ((float) markersTransitionAnimationDuration / 1000));
-
-    for(int i = 1; i <= framesNumber; i++){
-      final BitmapDescriptor markerIconFrame = BitmapDescriptorFactory.fromBitmap(cozyMarkerBuilder.buildAnimatedMarker(startMarkerData, endMarkerData, (i*1.0f)/(framesNumber*1.0f)));
-      bitmapsForFrame.add(markerIconFrame);
-    }
-
-    // templateMarkerOptions to be used as template repeatedly on all frames
-    MarkerBuilder templateMarkerBuilder = new MarkerBuilder();
-    String markerId = Convert.interpretMarkerOptionsWithoutIcon(newMarker, templateMarkerBuilder);
-    MarkerOptions templateMarkerOptions = templateMarkerBuilder.build();
-    markersQueue.add(markerController.marker);
-
-    // Animation itself    
-    final Handler handler = new Handler(Looper.getMainLooper());
-    ValueAnimator transitionAnimator = ValueAnimator.ofFloat(0f, 1f);
-    transitionAnimator.setDuration(markersTransitionAnimationDuration);
-    transitionAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-        @Override
-        public void onAnimationUpdate(ValueAnimator animation) {
-            int animationIndex = (int) ((float) animation.getAnimatedValue() * framesNumber);
-
-            if(animationIndex > 0 && animationIndex <= framesNumber){
-              templateMarkerOptions.icon(bitmapsForFrame.get(animationIndex - 1));
-              Marker newMarker = googleMap.addMarker(templateMarkerOptions);
-              markersQueue.add(newMarker);
-              googleMapsMarkerIdToDartMarkerId.put(newMarker.getId(), markerId);
-            }
-
-            if(markersQueue.
-              size() > totalNumberOfSimultaneousMarkers){
-                Marker markerToRemove = markersQueue.remove();
-                googleMapsMarkerIdToDartMarkerId.remove(markerToRemove.getId());
-                markerToRemove.remove();
-            }
-
-            if((float) animation.getAnimatedValue() == 1f){
-                handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                  while(markersQueue.size() > 1){
-                            Marker markerToRemove = markersQueue.remove();
-                            markerToRemove.remove();
-                          }
-                  markerController.replace(markersQueue.remove());
-                  markerController.currentCozyMarkerData = endMarkerData;
-                }
-              }, 100);
-            }
-        }
-    });
-
-    // Ease-out interpolation: https://easings.net/#easeOutQuart 
-    Interpolator transitionInterpolator = PathInterpolatorCompat.create(0.33f, 1f, 0.68f, 1f);
-    transitionAnimator.setInterpolator(transitionInterpolator);
-    transitionAnimator.start();
   }
 
   @SuppressWarnings("unchecked")
