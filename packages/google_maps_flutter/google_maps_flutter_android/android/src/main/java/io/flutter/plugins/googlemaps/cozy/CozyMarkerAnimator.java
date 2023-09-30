@@ -79,8 +79,8 @@ public class CozyMarkerAnimator {
         
         final String markerId;
 
-        AnimatorManager(MarkerController markerController, MarkerOptions templateMarkerOptions, String markerId){
-            this.markersQueue = new ArrayDeque<Marker>();
+        AnimatorManager(Deque<Marker> markersQueue, MarkerController markerController, MarkerOptions templateMarkerOptions, String markerId){
+            this.markersQueue = markersQueue;
             this.markerController = markerController;
             this.templateMarkerOptions = templateMarkerOptions;
             this.markerId = markerId;
@@ -133,6 +133,7 @@ public class CozyMarkerAnimator {
         markersQueue.add(markerController.marker);
 
         final AnimatorManager animatorManager = new AnimatorManager(
+            markersQueue,
             markerController, 
             templateMarkerOptions,
             markerId
