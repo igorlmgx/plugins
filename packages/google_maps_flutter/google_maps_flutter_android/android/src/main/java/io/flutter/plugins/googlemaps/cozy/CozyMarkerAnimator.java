@@ -33,16 +33,30 @@ import io.flutter.plugins.googlemaps.Convert;
 import io.flutter.plugins.googlemaps.MarkerController;
 
 public class CozyMarkerAnimator {
+    // Needed simultaneous markers because when switching frames it could have a gap between the previous and the next frame, causing glitch
+    private final int totalNumberOfSimultaneousMarkers = 3;
+    private final int markersTransitionAnimationDuration = 2000;
 
-    int lastAnimationIndex = -1;
+    private GoogleMap googleMap;
+    private Map<String, String> googleMapsMarkerIdToDartMarkerId;
 
-    final float deviceFPS;
-    final int markersTransitionAnimationDuration = 2000;
-    final CozyMarkerBuilder cozyMarkerBuilder;
-
+    private final int framesNumber;
+    private final float deviceFPS;
+    private final CozyMarkerBuilder cozyMarkerBuilder;
+    private final Map<String,Integer> lastAnimationIndexForMarkerId = new HashMap<String,Integer>();
+    
     public CozyMarkerAnimator(Context context, CozyMarkerBuilder cozyMarkerBuilder){
         this.cozyMarkerBuilder = cozyMarkerBuilder;
         deviceFPS = getDeviceFPS(context);
+        framesNumber = (int) (deviceFPS * ((float) markersTransitionAnimationDuration / 1000)) - 1;
+    }
+
+    public void setGoogleMap(GoogleMap googleMap) {
+        this.googleMap = googleMap;
+    }
+
+    public void setGoogleMapsMarkerIdToDartMarkerId(Map<String, String> googleMapsMarkerIdToDartMarkerId){
+        this.googleMapsMarkerIdToDartMarkerId = googleMapsMarkerIdToDartMarkerId;
     }
 
     private float getDeviceFPS(Context context){
@@ -58,24 +72,83 @@ public class CozyMarkerAnimator {
         return display.getRefreshRate();
     }
 
-    public void animateMarkerTransition(MarkerController markerController, Object newMarker, CozyMarkerData startMarkerData, CozyMarkerData endMarkerData, GoogleMap googleMap, Map<String, String> googleMapsMarkerIdToDartMarkerId){
+    private class AnimatorManager {
+        final Deque<Marker> markersQueue;
+        final MarkerController markerController;
+        final MarkerOptions templateMarkerOptions;
+        
+        final String markerId;
+
+        AnimatorManager(MarkerController markerController, MarkerOptions templateMarkerOptions, String markerId){
+            this.markersQueue = new ArrayDeque<Marker>();
+            this.markerController = markerController;
+            this.templateMarkerOptions = templateMarkerOptions;
+            this.markerId = markerId;
+        }
+
+        private void addFrame(BitmapDescriptor frameBitmapDescriptor, float zIndex){
+            templateMarkerOptions.icon(frameBitmapDescriptor);
+            templateMarkerOptions.zIndex(zIndex);
+            Marker newMarker = googleMap.addMarker(templateMarkerOptions);
+            markersQueue.add(newMarker);
+        }
+
+        protected void removeLatestFrame(){
+            Marker markerToRemove = markersQueue.remove();
+            markerToRemove.remove();
+        }
+
+        protected void addFrameBelow(BitmapDescriptor frameBitmapDescriptor, int index){
+            final float zIndex = markerController.marker.getZIndex() - (float) index/framesNumber;
+            addFrame(frameBitmapDescriptor, index);
+        }
+
+        protected void addFrameAbove(BitmapDescriptor frameBitmapDescriptor){
+            final float zIndex = markerController.marker.getZIndex();
+            googleMapsMarkerIdToDartMarkerId.remove(markersQueue.peek().getId());
+            addFrame(frameBitmapDescriptor, zIndex);
+            googleMapsMarkerIdToDartMarkerId.put(markersQueue.peek().getId(), markerId);
+        }
+
+        protected void removeLatestFrameBelow(){
+            removeLatestFrame();
+        }
+
+        protected void removeLatestFrameAbove(){
+            googleMapsMarkerIdToDartMarkerId.remove(markersQueue.peek().getId());
+            removeLatestFrame();
+            googleMapsMarkerIdToDartMarkerId.put(markersQueue.peek().getId(), markerId);
+        }
+        
+    }
+
+    public void animateMarkerTransition(MarkerController markerController, Object newMarker, CozyMarkerData startMarkerData, CozyMarkerData endMarkerData){
         final List<BitmapDescriptor> bitmapsForFrame = new ArrayList<BitmapDescriptor>();
         final Deque<Marker> markersQueue = new ArrayDeque<Marker>();
 
-        // Needed simultaneous markers because when switching frames it could have a gap between the previous and the next frame, causing glitch
-        final int totalNumberOfSimultaneousMarkers = 3;
-        final int framesNumber = (int) (2 * ((float) markersTransitionAnimationDuration / 1000)) - 1;
+        // templateMarkerOptions to be used as template repeatedly on all frames
+        MarkerBuilder templateMarkerBuilder = new MarkerBuilder();
+        String markerId = Convert.interpretMarkerOptionsWithoutIcon(newMarker, templateMarkerBuilder);
+        MarkerOptions templateMarkerOptions = templateMarkerBuilder.build();
+        markersQueue.add(markerController.marker);
 
+        final AnimatorManager animatorManager = new AnimatorManager(
+            markerController, 
+            templateMarkerOptions,
+            markerId
+        );
+
+        // getting all frames
         float markerInitialBitmapArea = 0;
         float markerFinalBitmapArea = 0;
 
-        for(int i = 1; i <= framesNumber; i++){
+        for (int i = 1; i <= framesNumber; i++){
             float step = (float) i/framesNumber;
             final Bitmap frameBitmap = cozyMarkerBuilder.buildAnimatedMarker(startMarkerData, endMarkerData, step);
-            if(i == 1){
+            if (i == 1){
                 markerInitialBitmapArea = frameBitmap.getWidth() * frameBitmap.getHeight();
             }
-            if(i == framesNumber){
+            if (i == framesNumber){
                 markerFinalBitmapArea = frameBitmap.getWidth() * frameBitmap.getHeight();
             }
 
@@ -86,18 +159,10 @@ public class CozyMarkerAnimator {
         // check if marker grows or shrinks
         boolean isMarkerShrinking = markerFinalBitmapArea < markerInitialBitmapArea;
 
-        // templateMarkerOptions to be used as template repeatedly on all frames
-        MarkerBuilder templateMarkerBuilder = new MarkerBuilder();
-        String markerId = Convert.interpretMarkerOptionsWithoutIcon(newMarker, templateMarkerBuilder);
-        MarkerOptions templateMarkerOptions = templateMarkerBuilder.build();
-        markersQueue.add(markerController.marker);
-
-        if(isMarkerShrinking){
-            for (int i=1; i<totalNumberOfSimultaneousMarkers; i++){
-                templateMarkerOptions.icon(bitmapsForFrame.get(i - 1));
-                templateMarkerOptions.zIndex(markerController.marker.getZIndex() - (float) i/framesNumber);
-                Marker newMapMarker = googleMap.addMarker(templateMarkerOptions);
-                markersQueue.add(newMapMarker);
+        // if isMarkerShrinking it adds the markers in reverse order, so it begins with markers stacked already
+        if (isMarkerShrinking){
+            for (int i = 1; i < totalNumberOfSimultaneousMarkers; i++){
+                animatorManager.addFrameBelow(bitmapsForFrame.get(i - 1), i);
             }
         }
 
@@ -105,80 +170,65 @@ public class CozyMarkerAnimator {
         final Handler handler = new Handler(Looper.getMainLooper());
         ValueAnimator transitionAnimator = ValueAnimator.ofFloat(0f, 1f);
         transitionAnimator.setDuration(markersTransitionAnimationDuration);
-        lastAnimationIndex = -1;
+        lastAnimationIndexForMarkerId.put(markerId, -1);
+
         transitionAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 int animationIndex = (int) ((float) animation.getAnimatedValue() * framesNumber);
-                if(animationIndex == lastAnimationIndex){
+                if(animationIndex == lastAnimationIndexForMarkerId.get(markerId)){
                     return;
                 }
-                lastAnimationIndex = animationIndex;
+                lastAnimationIndexForMarkerId.put(markerId, animationIndex);
                 Log.d("CozyMarkerAnimator", "animationIndex: " + animationIndex);
 
                 if(isMarkerShrinking){
                     int nextAnimationIndex = animationIndex + totalNumberOfSimultaneousMarkers - 1;
                     Log.d("CozyMarkerAnimator", "nextAnimationIndex: " + nextAnimationIndex);
-                    if(animationIndex > 0 && nextAnimationIndex <= framesNumber){
-                        Log.d("CozyMarkerAnimator", "adding marker");
-                        templateMarkerOptions.icon(bitmapsForFrame.get(nextAnimationIndex - 1));
-                        templateMarkerOptions.zIndex(markerController.marker.getZIndex() - (float) nextAnimationIndex/framesNumber);
-                        Marker newMarker = googleMap.addMarker(templateMarkerOptions);
-                        markersQueue.add(newMarker);
+                    if (animationIndex > 0 && nextAnimationIndex <= framesNumber) {
+                        animatorManager.addFrameBelow(bitmapsForFrame.get(animationIndex - 1), nextAnimationIndex);
                     }
 
-                    if(markersQueue.
-                        size() > totalNumberOfSimultaneousMarkers || nextAnimationIndex > framesNumber){
-                            Log.d("CozyMarkerAnimator", "removing marker");
-                        Marker markerToRemove = markersQueue.remove();
-                        googleMapsMarkerIdToDartMarkerId.remove(markerToRemove.getId());
-                        markerToRemove.remove();
-
-                        googleMapsMarkerIdToDartMarkerId.remove(markerToRemove.getId());
-                        googleMapsMarkerIdToDartMarkerId.put(markersQueue.peek().getId(), markerId);
+                    if (markersQueue.size() > totalNumberOfSimultaneousMarkers || 
+                        nextAnimationIndex > framesNumber &&
+                        markersQueue.size() > 1
+                    ) {
+                        animatorManager.removeLatestFrameAbove();
                     }
 
-                    // // After some time, remove all exceeding markers
+                    // After some time, remove all exceeding markers
                     if((float) animation.getAnimatedValue() == 1f){
-                        markerController.replace(markersQueue.peek());
-                        markerController.currentCozyMarkerData = endMarkerData;
-
+                        animatorManager.addFrameAbove(bitmapsForFrame.get(bitmapsForFrame.size() - 1));
                         handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            while(markersQueue.size() > 1){
-                                Marker markerToRemove = markersQueue.remove();
-                                markerToRemove.remove();
+                            @Override
+                            public void run() {
+                                animatorManager.removeLatestFrameAbove();
+
+                                markerController.replace(markersQueue.remove());
+                                markerController.currentCozyMarkerData = endMarkerData;
                             }
-                        }});
+                        }, 100);
                     }
                 }else{
                     if(animationIndex > 0 && animationIndex <= framesNumber){
-                        templateMarkerOptions.icon(bitmapsForFrame.get(animationIndex - 1));
-                        Marker newMarker = googleMap.addMarker(templateMarkerOptions);
-                        markersQueue.add(newMarker);
-                        googleMapsMarkerIdToDartMarkerId.put(newMarker.getId(), markerId);
+                        animatorManager.addFrameAbove(bitmapsForFrame.get(animationIndex - 1));
                     }
 
-                    if(markersQueue.
-                        size() > totalNumberOfSimultaneousMarkers){
-                        Marker markerToRemove = markersQueue.remove();
-                        googleMapsMarkerIdToDartMarkerId.remove(markerToRemove.getId());
-                        markerToRemove.remove();
+                    if(markersQueue.size() > totalNumberOfSimultaneousMarkers){
+                        animatorManager.removeLatestFrameBelow();
                     }
 
                     // After some time, remove all exceeding markers
                     if((float) animation.getAnimatedValue() == 1f){
                         handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            while(markersQueue.size() > 1){
-                                    Marker markerToRemove = markersQueue.remove();
-                                    markerToRemove.remove();
-                                    }
-                            markerController.replace(markersQueue.remove());
-                            markerController.currentCozyMarkerData = endMarkerData;
-                        }
+                            @Override
+                            public void run() {
+                                while(markersQueue.size() > 1){
+                                    animatorManager.removeLatestFrameBelow();
+                                }
+                                markerController.replace(markersQueue.remove());
+                                markerController.currentCozyMarkerData = endMarkerData;
+                            }
                         }, 100);
                     }
                 }
@@ -190,4 +240,5 @@ public class CozyMarkerAnimator {
         // transitionAnimator.setInterpolator(transitionInterpolator);
         transitionAnimator.start();
     }
+
 }

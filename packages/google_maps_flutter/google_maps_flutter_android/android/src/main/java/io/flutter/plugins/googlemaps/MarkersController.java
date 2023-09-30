@@ -48,17 +48,20 @@ class MarkersController {
     this.methodChannel = methodChannel;
     this.cozyMarkerBuilder = cozyMarkerBuilder;
     this.cozyMarkerAnimator = cozyMarkerAnimator;
+
+    cozyMarkerAnimator.setGoogleMapsMarkerIdToDartMarkerId(googleMapsMarkerIdToDartMarkerId);
   }
 
   public void setMarkersAnimationEnabled(boolean markersAnimationEnabled){
     this.markersAnimationEnabled = markersAnimationEnabled;
   }
 
-  void setGoogleMap(GoogleMap googleMap) {
+  public void setGoogleMap(GoogleMap googleMap) {
     this.googleMap = googleMap;
+    cozyMarkerAnimator.setGoogleMap(googleMap);
   }
 
-  void addMarkers(List<Object> markersToAdd) {
+  public void addMarkers(List<Object> markersToAdd) {
     if (markersToAdd != null) {
       for (Object markerToAdd : markersToAdd) {
         addMarker(markerToAdd);
@@ -241,8 +244,7 @@ class MarkersController {
          endCozyMarkerData != null &&
          endCozyMarkerData.isAnimated && 
          !isTheSameMarker){
-
-        cozyMarkerAnimator.animateMarkerTransition(markerController, newMarker, startCozyMarkerData, endCozyMarkerData, googleMap, googleMapsMarkerIdToDartMarkerId);
+        cozyMarkerAnimator.animateMarkerTransition(markerController, newMarker, startCozyMarkerData, endCozyMarkerData);
       }else{
         Convert.interpretMarkerOptions(newMarker, markerController, cozyMarkerBuilder);
       }
