@@ -56,7 +56,5 @@ interface GoogleMapOptionsSink {
 
   void setInitialTileOverlays(List<Map<String, ?>> initialTileOverlays);
 
-  void setMarkerCachingEnabled(boolean toBoolean);
-
   void setMarkersAnimationEnabled(boolean markersAnimationEnabled);
 }

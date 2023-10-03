@@ -9,6 +9,7 @@ import android.animation.ValueAnimator;
 import android.animation.ObjectAnimator;
 import android.view.animation.Interpolator;
 import androidx.core.view.animation.PathInterpolatorCompat;
+import android.util.Log;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -16,11 +17,17 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import com.google.android.gms.maps.model.BitmapDescriptor;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import java.util.*;
+import android.os.*;
+
+import io.flutter.plugins.googlemaps.cozy.*;
 import io.flutter.plugin.common.MethodChannel;
 
 class MarkersController {
@@ -30,25 +37,31 @@ class MarkersController {
   private final MethodChannel methodChannel;
   private GoogleMap googleMap;
   private final CozyMarkerBuilder cozyMarkerBuilder;
+  private final CozyMarkerAnimator cozyMarkerAnimator;
   private boolean markersAnimationEnabled;
   private final int markersAnimationDuration = 100;
+  private final int markersTransitionAnimationDuration = 400;
 
-  MarkersController(MethodChannel methodChannel, CozyMarkerBuilder cozyMarkerBuilder) {
+  MarkersController(MethodChannel methodChannel, CozyMarkerBuilder cozyMarkerBuilder, CozyMarkerAnimator cozyMarkerAnimator) {
     this.markerIdToController = new HashMap<>();
     this.googleMapsMarkerIdToDartMarkerId = new HashMap<>();
     this.methodChannel = methodChannel;
     this.cozyMarkerBuilder = cozyMarkerBuilder;
+    this.cozyMarkerAnimator = cozyMarkerAnimator;
+
+    cozyMarkerAnimator.setGoogleMapsMarkerIdToDartMarkerId(googleMapsMarkerIdToDartMarkerId);
   }
 
   public void setMarkersAnimationEnabled(boolean markersAnimationEnabled){
     this.markersAnimationEnabled = markersAnimationEnabled;
   }
 
-  void setGoogleMap(GoogleMap googleMap) {
+  public void setGoogleMap(GoogleMap googleMap) {
     this.googleMap = googleMap;
+    cozyMarkerAnimator.setGoogleMap(googleMap);
   }
 
-  void addMarkers(List<Object> markersToAdd) {
+  public void addMarkers(List<Object> markersToAdd) {
     if (markersToAdd != null) {
       for (Object markerToAdd : markersToAdd) {
         addMarker(markerToAdd);
@@ -189,11 +202,12 @@ class MarkersController {
     }
     MarkerBuilder markerBuilder = new MarkerBuilder();
     String markerId = Convert.interpretMarkerOptions(marker, markerBuilder, cozyMarkerBuilder);
+    CozyMarkerData cozyMarkerData = Convert.toCozyMarkerData(marker);
     MarkerOptions options = markerBuilder.build();
-    addMarker(markerId, options, markerBuilder.consumeTapEvents());
+    addMarker(markerId, options, markerBuilder.consumeTapEvents(), cozyMarkerData);
   }
 
-  private void addMarker(String markerId, MarkerOptions markerOptions, boolean consumeTapEvents) {
+  private void addMarker(String markerId, MarkerOptions markerOptions, boolean consumeTapEvents, CozyMarkerData cozyMarkerData) {
     final Marker marker = googleMap
             .addMarker(markerOptions);
     if (this.markersAnimationEnabled) {
@@ -210,19 +224,30 @@ class MarkersController {
       fadeIn.setInterpolator(fadeInInterpolator);
       fadeIn.start();
     }
-    MarkerController controller = new MarkerController(marker, consumeTapEvents);
+    MarkerController controller = new MarkerController(marker, consumeTapEvents, cozyMarkerData);
     markerIdToController.put(markerId, controller);
     googleMapsMarkerIdToDartMarkerId.put(marker.getId(), markerId);
   }
 
-  private void changeMarker(Object marker) {
-    if (marker == null) {
+  private void changeMarker(Object newMarker) {
+    if (newMarker == null) {
       return;
     }
-    String markerId = getMarkerId(marker);
+    String markerId = getMarkerId(newMarker);
     MarkerController markerController = markerIdToController.get(markerId);
     if (markerController != null) {
-      Convert.interpretMarkerOptions(marker, markerController, cozyMarkerBuilder);
+      final CozyMarkerData startCozyMarkerData = markerController.currentCozyMarkerData;
+      final CozyMarkerData endCozyMarkerData = Convert.toCozyMarkerData(newMarker);
+      final boolean isTheSameMarker = Objects.equals(startCozyMarkerData, endCozyMarkerData);
+
+      if(startCozyMarkerData != null && 
+         endCozyMarkerData != null &&
+         endCozyMarkerData.isAnimated && 
+         !isTheSameMarker){
+        cozyMarkerAnimator.animateMarkerTransition(markerController, newMarker, startCozyMarkerData, endCozyMarkerData);
+      }else{
+        Convert.interpretMarkerOptions(newMarker, markerController, cozyMarkerBuilder);
+      }
     }
   }
 

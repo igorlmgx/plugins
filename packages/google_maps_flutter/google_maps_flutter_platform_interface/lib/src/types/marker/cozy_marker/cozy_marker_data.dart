@@ -16,6 +16,7 @@ class CozyMarkerData {
     this.state = CozyMarkerState.defaultState,
     this.variant = CozyMarkerVariant.defaultVariant,
     this.size = CozyMarkerSize.small,
+    this.isAnimated = false,
   });
 
   /// Label of the marker
@@ -43,6 +44,9 @@ class CozyMarkerData {
   /// Size can be small or big.
   final CozyMarkerSize size;
 
+  /// Wether marker has animated transitions or not.
+  final bool isAnimated;
+
   /// Converts this object to something serializable in JSON.
   Object toJson() {
     final Map<String, Object> json = <String, Object>{};
@@ -61,6 +65,7 @@ class CozyMarkerData {
     addIfPresent('variant', variant.name);
     addIfPresent('size', size.name);
     addIfPresent('icon', icon);
+    addIfPresent('isAnimated', isAnimated);
   
     return json;
   }
@@ -81,7 +86,8 @@ class CozyMarkerData {
         state == other.state &&
         variant == other.variant &&
         size == other.size &&
-        icon == other.icon;
+        icon == other.icon &&
+        isAnimated == other.isAnimated;
   }
 
   @override
@@ -94,11 +100,12 @@ class CozyMarkerData {
         variant,
         size,
         icon,
+        isAnimated
       );
 
   @override
   String toString() {
-    return 'CozyMarkerData{ label: $label, isSelected: $isSelected, isVisualized: $isVisualized, hasPointer: $hasPointer, state: ${state.name}, variant: ${variant.name}, size: ${size.name}, icon: $icon }';
+    return 'CozyMarkerData{ label: $label, isSelected: $isSelected, isVisualized: $isVisualized, hasPointer: $hasPointer, state: ${state.name}, variant: ${variant.name}, size: ${size.name}, icon: $icon, isAnimated: $isAnimated }';
   }
 }
 

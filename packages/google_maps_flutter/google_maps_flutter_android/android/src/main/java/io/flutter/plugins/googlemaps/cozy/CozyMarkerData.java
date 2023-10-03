@@ -1,4 +1,4 @@
-package io.flutter.plugins.googlemaps;
+package io.flutter.plugins.googlemaps.cozy;
 
 public class CozyMarkerData {
     public final String label;
@@ -9,8 +9,9 @@ public class CozyMarkerData {
     public final String state;
     public final String variant;
     public final String size;
+    public final boolean isAnimated;
 
-    public CozyMarkerData(String label, String icon, boolean hasPointer, boolean isSelected, boolean isVisualized, String state, String variant, String size) {
+    public CozyMarkerData(String label, String icon, boolean hasPointer, boolean isSelected, boolean isVisualized, String state, String variant, String size, boolean isAnimated) {
         this.label = label;
         this.icon = icon;
         this.hasPointer = hasPointer;
@@ -19,10 +20,16 @@ public class CozyMarkerData {
         this.state = state;
         this.variant = variant;
         this.size = size;
+        this.isAnimated = isAnimated;
     }
     
     @Override
     public String toString() {
-        return label + (icon != null ? icon.hashCode() : "") + hasPointer + isSelected + isVisualized + state + variant + size;
+        return label + (icon != null ? icon.hashCode() : "") + hasPointer + isSelected + isVisualized + state + variant + size + isAnimated;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this.toString().equals(o.toString());
     }
 }

@@ -8,17 +8,30 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
+import io.flutter.plugins.googlemaps.cozy.CozyMarkerData;
+
 /** Controller of a single Marker on the map. */
-class MarkerController implements MarkerOptionsSink {
+public class MarkerController implements MarkerOptionsSink {
 
-  private final Marker marker;
-  private final String googleMapsMarkerId;
+  public Marker marker;
+  private String googleMapsMarkerId;
   private boolean consumeTapEvents;
+  public CozyMarkerData currentCozyMarkerData;
 
-  MarkerController(Marker marker, boolean consumeTapEvents) {
+  public MarkerController(Marker marker, boolean consumeTapEvents, CozyMarkerData cozyMarkerData) {
     this.marker = marker;
     this.consumeTapEvents = consumeTapEvents;
     this.googleMapsMarkerId = marker.getId();
+    this.currentCozyMarkerData = cozyMarkerData;
+  }
+
+  public MarkerController(Marker marker, boolean consumeTapEvents) {
+    this(marker, consumeTapEvents, null);
+  }
+
+  public void replace(Marker newMarker) {
+    marker = newMarker;
+    googleMapsMarkerId = newMarker.getId();
   }
 
   void remove() {
