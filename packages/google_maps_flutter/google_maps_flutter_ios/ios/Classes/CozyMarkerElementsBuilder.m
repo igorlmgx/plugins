@@ -65,7 +65,8 @@
         strokeColor = defaultStrokeColor;
         iconCircleColor = selectedIconCircleColor;
     }
-    if ([cozyMarkerData.variant isEqualToString:@"special"] && !cozyMarkerData.isVisualized){
+    if ([cozyMarkerData.variant isEqualToString:@"special"] && 
+        (!cozyMarkerData.isVisualized || cozyMarkerData.isSelected)){
         iconCircleColor = specialIconCircleColor;
         iconColor = specialIconColor;
     }

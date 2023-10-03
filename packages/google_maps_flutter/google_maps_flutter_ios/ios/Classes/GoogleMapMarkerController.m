@@ -142,21 +142,10 @@
     self.marker.zIndex = zIndex;
 }
 
-
 - (void)interpretMarkerOptions:(NSDictionary *)data
                      registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
-    NSNumber *alpha = data[@"alpha"];
-    if (alpha && alpha != (id)[NSNull null]) {
-        [self setAlpha:[alpha floatValue]];
-    }
-    NSArray *anchor = data[@"anchor"];
-    if (anchor && anchor != (id)[NSNull null]) {
-        [self setAnchor:[FLTGoogleMapJSONConversions pointFromArray:anchor]];
-    }
-    NSNumber *draggable = data[@"draggable"];
-    if (draggable && draggable != (id)[NSNull null]) {
-        [self setDraggable:[draggable boolValue]];
-    }
+
+    [self interpretMarkerOptionsWithoutIcon:data];
 
     NSDictionary *cozyMarkerDataDict = data[@"cozyMarkerData"];
     if (cozyMarkerDataDict && cozyMarkerDataDict != (id)[NSNull null]) {
@@ -171,6 +160,21 @@
             UIImage *image = [self extractIconFromData:icon registrar:registrar];
             [self setIcon:image];
         }
+    }
+}
+
+- (void)interpretMarkerOptionsWithoutIcon:(NSDictionary *)data {
+    NSNumber *alpha = data[@"alpha"];
+    if (alpha && alpha != (id)[NSNull null]) {
+        [self setAlpha:[alpha floatValue]];
+    }
+    NSArray *anchor = data[@"anchor"];
+    if (anchor && anchor != (id)[NSNull null]) {
+        [self setAnchor:[FLTGoogleMapJSONConversions pointFromArray:anchor]];
+    }
+    NSNumber *draggable = data[@"draggable"];
+    if (draggable && draggable != (id)[NSNull null]) {
+        [self setDraggable:[draggable boolValue]];
     }
 
     NSNumber *flat = data[@"flat"];
@@ -360,6 +364,7 @@
         CozyMarkerData *startCozyMarkerData = controller.cozyMarkerData;
         CozyMarkerData *endCozyMarkerData = [controller interpretCozyMarkerData:marker];
         if(startCozyMarkerData != nil && endCozyMarkerData != nil && ![startCozyMarkerData isEqual:endCozyMarkerData] && endCozyMarkerData.isAnimated){
+            [controller interpretMarkerOptionsWithoutIcon:marker];
             [self animateMarker:controller withStartCozyMarkerData:startCozyMarkerData withEndCozyMarkerData:endCozyMarkerData];
         }else{
             [controller interpretMarkerOptions:marker registrar:self.registrar];
