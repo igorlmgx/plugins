@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FLTMarkersController : NSObject
+@property(assign, nonatomic, readonly) int markersTransitionAnimationDuration;
 - (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
                               mapView:(GMSMapView *)mapView
                             registrar:(NSObject<FlutterPluginRegistrar> *)registrar

@@ -111,7 +111,7 @@
     _markersController = [[FLTMarkersController alloc] initWithMethodChannel:_channel
                                                                      mapView:_mapView
                                                                    registrar:registrar
-                                                           cozyMarkerBuilder:[[CozyMarkerBuilder alloc] initWithCache:_enableMarkerCaching]
+                                                           cozyMarkerBuilder:[[CozyMarkerBuilder alloc] init]
                                                            markersAnimationEnabled:self.markersAnimationEnabled];
     _polygonsController = [[FLTPolygonsController alloc] init:_channel
                                                       mapView:_mapView
