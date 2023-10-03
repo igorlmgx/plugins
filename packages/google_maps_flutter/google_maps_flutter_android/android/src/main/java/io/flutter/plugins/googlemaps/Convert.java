@@ -449,7 +449,10 @@ public class Convert {
     }
     final Object zIndex = data.get("zIndex");
     if (zIndex != null) {
-      sink.setZIndex(toFloat(zIndex));
+      // needed this offset because of the animations
+      // but it doesn't change anything on flutter side as the relative distance keeps the same
+      final float zIndexOffset = 1.0f;
+      sink.setZIndex(toFloat(zIndex) + zIndexOffset);
     }
     final String markerId = (String) data.get("markerId");
     if (markerId == null) {

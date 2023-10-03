@@ -230,12 +230,14 @@ class CozyMarkerElementsBuilder {
                 ),
             },
             // Icon
-            new CozyMarkerElement(
-                new RectF(iconX, iconY, iconX + iconWidth, iconY + iconHeight),
-                iconColor,
-                iconBitmap == null ? 0.0f : 1.0f,
-                iconBitmap == null ? null : iconBitmap
-            ),
+            new CozyMarkerElement[]{
+                new CozyMarkerElement(
+                    new RectF(iconX, iconY, iconX + iconWidth, iconY + iconHeight),
+                    iconColor,
+                    iconBitmap == null ? 0.0f : 1.0f,
+                    iconBitmap == null ? null : iconBitmap
+                ),
+            },
             // IconCircle
             new CozyMarkerElement(
                 new RectF(circleX, circleY, circleX + circleWidth, circleY + circleHeight),

@@ -17,16 +17,16 @@ class CozyMarkerInterpolator {
         // interpolate geometry
         CozyMarkerElement interpolatedCanvas = interpolateCozyMarkerElement(startCozyMarkerElements.canvas, endCozyMarkerElements.canvas, step);
         CozyMarkerElement interpolatedBubble = interpolateCozyMarkerElement(startCozyMarkerElements.bubble, endCozyMarkerElements.bubble, step);
-        CozyMarkerElement interpolatedIcon = interpolateCozyMarkerElement(startCozyMarkerElements.icon, endCozyMarkerElements.icon, step);
+        CozyMarkerElement interpolatedIcon = interpolateCozyMarkerElement(startCozyMarkerElements.icons[0], endCozyMarkerElements.icons[0], step);
         CozyMarkerElement interpolatedIconCircle = interpolateCozyMarkerElement(startCozyMarkerElements.iconCircle, endCozyMarkerElements.iconCircle, step);
         CozyMarkerElement interpolatedPointer = interpolateCozyMarkerElement(startCozyMarkerElements.pointer, endCozyMarkerElements.pointer, step);
 
         CozyMarkerElement interpolatedLabel = interpolateCozyMarkerElement(startCozyMarkerElements.labels[0], endCozyMarkerElements.labels[0], step);
 
         CozyMarkerElement[] interpolatedLabels = interpolateLabel(interpolatedLabel, (String) startCozyMarkerElements.labels[0].data, (String) endCozyMarkerElements.labels[0].data, step);
-        interpolatedIcon.data = interpolateIcons((Bitmap) startCozyMarkerElements.icon.data, (Bitmap) endCozyMarkerElements.icon.data, step);
+        CozyMarkerElement[] interpolatedIcons = interpolateIcons(interpolatedIcon, (Bitmap) startCozyMarkerElements.icons[0].data, (Bitmap) endCozyMarkerElements.icons[0].data, step);
 
-        return new CozyMarkerElements(interpolatedCanvas, interpolatedBubble, interpolatedLabels, interpolatedIcon, interpolatedIconCircle, interpolatedPointer);
+        return new CozyMarkerElements(interpolatedCanvas, interpolatedBubble, interpolatedLabels, interpolatedIcons, interpolatedIconCircle, interpolatedPointer);
     }
 
     private CozyMarkerElement[] interpolateLabel(CozyMarkerElement interpolatedLabel, String startText, String endText, float step){
@@ -76,14 +76,59 @@ class CozyMarkerInterpolator {
         };
     }
     
-    private Bitmap interpolateIcons(Bitmap startIcon, Bitmap endIcon, float step){
-        if(startIcon != null){
-            return startIcon;
+    private CozyMarkerElement[] interpolateIcons(CozyMarkerElement interpolatedIcon, Bitmap startIcon, Bitmap endIcon, float step){
+        if(startIcon == null && endIcon == null){
+            return new CozyMarkerElement[]{interpolatedIcon};
         }
-        if(endIcon != null){
-            return endIcon;
+        if(startIcon == null){
+            return new CozyMarkerElement[]{
+                new CozyMarkerElement(
+                    interpolatedIcon.bounds,
+                    interpolatedIcon.fillColor,
+                    interpolatedIcon.strokeColor,
+                    interpolatedIcon.alpha,
+                    endIcon
+                )
+            };
         }
-        return null;
+        if(endIcon == null){
+            return new CozyMarkerElement[]{
+                new CozyMarkerElement(
+                    interpolatedIcon.bounds,
+                    interpolatedIcon.fillColor,
+                    interpolatedIcon.strokeColor,
+                    interpolatedIcon.alpha,
+                    startIcon
+                )
+            };
+        }
+        if(startIcon.sameAs(endIcon)){
+            return new CozyMarkerElement[]{
+                new CozyMarkerElement(
+                    interpolatedIcon.bounds,
+                    interpolatedIcon.fillColor,
+                    interpolatedIcon.strokeColor,
+                    interpolatedIcon.alpha,
+                    startIcon
+                )
+            };
+        }
+        return new CozyMarkerElement[]{
+            new CozyMarkerElement(
+                interpolatedIcon.bounds,
+                interpolatedIcon.fillColor,
+                interpolatedIcon.strokeColor,
+                interpolatedIcon.alpha * (1.0f - step),
+                startIcon
+            ),
+            new CozyMarkerElement(
+                interpolatedIcon.bounds,
+                interpolatedIcon.fillColor,
+                interpolatedIcon.strokeColor,
+                interpolatedIcon.alpha * step,
+                endIcon
+            )
+        };   
     }
 
     private CozyMarkerElement interpolateCozyMarkerElement(CozyMarkerElement startCozyMarkerElement, CozyMarkerElement endCozyMarkerElement, float step) {

@@ -53,11 +53,9 @@ public class CozyMarkerBuilder {
         final CozyMarkerElement canvasObject = cozyElements.canvas;
         final CozyMarkerElement bubble = cozyElements.bubble;
         final CozyMarkerElement[] labels = cozyElements.labels;
-        final CozyMarkerElement icon = cozyElements.icon;
+        final CozyMarkerElement[] icons = cozyElements.icons;
         final CozyMarkerElement iconCircle = cozyElements.iconCircle;
         final CozyMarkerElement pointer = cozyElements.pointer;
-
-        final Bitmap iconBitmap = (Bitmap) icon.data;
         
         /* start of drawing */
         // creates the marker bitmap
@@ -108,10 +106,9 @@ public class CozyMarkerBuilder {
             Paint priceMarkerTextStyle = getTextPaint(label.bounds.height(), label.fillColor, label.alpha);
             canvas.drawText(text, label.bounds.left, label.bounds.top, priceMarkerTextStyle);
         }
-        
-        // draws the icon if exists
-        if (icon.alpha > 0 && icon != null) {
-            // Draw the bigger circle
+
+        // Draw the bigger circle of icon
+        if(iconCircle.alpha > 0){
             Paint circlePaint = new Paint();
             circlePaint.setAntiAlias(true);
             circlePaint.setStyle(Paint.Style.FILL);
@@ -122,12 +119,18 @@ public class CozyMarkerBuilder {
             float circleY = iconCircle.bounds.centerY();
             float circleRadius = iconCircle.bounds.width()/2;
             canvas.drawCircle(circleX, circleY, circleRadius, circlePaint);
+        }
+        
+        // draws the icon if exists
+        for (CozyMarkerElement iconElement : cozyElements.icons){
+            if(iconElement.alpha > 0 && iconElement.data != null){
+                Bitmap iconBitmap = (Bitmap) iconElement.data;
+                Paint iconPaint = new Paint();
+                iconPaint.setAlpha((int) (iconElement.alpha * 255));
 
-            Paint iconPaint = new Paint();
-            iconPaint.setAlpha((int) (icon.alpha * 255));
-            
-            // Draw the icon itself
-            canvas.drawBitmap(iconBitmap, icon.bounds.left, icon.bounds.top, iconPaint);
+                canvas.drawBitmap(iconBitmap, iconElement.bounds.left, iconElement.bounds.top, iconPaint);
+            }
+           
         }
 
         return marker;
