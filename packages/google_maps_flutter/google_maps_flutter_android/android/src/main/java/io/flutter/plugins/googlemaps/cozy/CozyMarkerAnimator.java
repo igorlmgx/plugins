@@ -94,7 +94,6 @@ public class CozyMarkerAnimator {
         }
 
         private Marker addFrame(BitmapDescriptor frameBitmapDescriptor, float zIndex){
-            Log.d("addFrame", "zIndex: " + zIndex);
             templateMarkerOptions.zIndex(zIndex);
             templateMarkerOptions.icon(frameBitmapDescriptor);
             Marker newMarker = googleMap.addMarker(templateMarkerOptions);
@@ -108,7 +107,6 @@ public class CozyMarkerAnimator {
         }
 
         protected void addFrameBelow(BitmapDescriptor frameBitmapDescriptor, int index){
-            Log.d("addFrameBelow", "index: " + index);
             final float zIndex = this.initialZIndex - deltaZIndex * (float) index/framesNumber;
             addFrame(frameBitmapDescriptor, zIndex);
         }
