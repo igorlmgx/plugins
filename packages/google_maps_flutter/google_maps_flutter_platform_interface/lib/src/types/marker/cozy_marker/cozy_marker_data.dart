@@ -44,7 +44,7 @@ class CozyMarkerData {
   /// Size can be small or big.
   final CozyMarkerSize size;
 
-  /// Wether marker is animated or not.
+  /// Wether marker has animated transitions or not.
   final bool isAnimated;
 
   /// Converts this object to something serializable in JSON.
@@ -86,7 +86,7 @@ class CozyMarkerData {
         state == other.state &&
         variant == other.variant &&
         size == other.size &&
-        icon == other.icon && 
+        icon == other.icon &&
         isAnimated == other.isAnimated;
   }
 
@@ -100,7 +100,7 @@ class CozyMarkerData {
         variant,
         size,
         icon,
-        isAnimated,
+        isAnimated
       );
 
   @override

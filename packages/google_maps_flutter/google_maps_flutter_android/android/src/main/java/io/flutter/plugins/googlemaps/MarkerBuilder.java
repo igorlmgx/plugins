@@ -8,15 +8,15 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-class MarkerBuilder implements MarkerOptionsSink {
+public class MarkerBuilder implements MarkerOptionsSink {
   private final MarkerOptions markerOptions;
   private boolean consumeTapEvents;
 
-  MarkerBuilder() {
+  public MarkerBuilder() {
     this.markerOptions = new MarkerOptions();
   }
 
-  MarkerOptions build() {
+  public MarkerOptions build() {
     return markerOptions;
   }
 
