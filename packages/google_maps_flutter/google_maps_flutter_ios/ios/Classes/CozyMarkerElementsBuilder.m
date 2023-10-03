@@ -170,7 +170,7 @@
                                             alpha: icon == NULL ? 0 : 1
                                             data:nil]
                                         pointer:[[CozyMarkerElement alloc] 
-                                            initWithBounds:CGRectMake(pointerX, pointerY, 2 * pointerWidth, pointerHeight) 
+                                            initWithBounds:CGRectMake(pointerX, pointerY, 2 * pointerWidth, pointerSize) 
                                             fillColor:markerColor 
                                             strokeColor:markerColor 
                                             alpha:1 
