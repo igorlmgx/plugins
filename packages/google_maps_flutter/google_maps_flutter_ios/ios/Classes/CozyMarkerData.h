@@ -7,16 +7,18 @@
 
 @interface CozyMarkerData : NSObject
 - (instancetype)initWithLabel:(NSString *)label
+                      counter:(NSString *)counter
                          icon:(NSString *)icon
-                  hasPointer:(BOOL)hasPointer
+                   hasPointer:(BOOL)hasPointer
                    isSelected:(BOOL)isSelected
-                   isVisualized:(BOOL)isVisualized
+                 isVisualized:(BOOL)isVisualized
                         state:(NSString *)state
                       variant:(NSString *)variant
                          size:(NSString *)size
-                         isAnimated:(BOOL)isAnimated;
+                   isAnimated:(BOOL)isAnimated;
 
 @property (nonatomic, strong) NSString *label;
+@property (nonatomic, strong) NSString *counter;
 @property (nonatomic, strong) NSString *icon;
 @property (nonatomic, strong) NSString *state;
 @property (nonatomic, strong) NSString *variant;

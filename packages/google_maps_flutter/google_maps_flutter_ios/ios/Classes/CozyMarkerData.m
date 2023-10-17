@@ -10,34 +10,37 @@
 
 @implementation CozyMarkerData
 - (instancetype)initWithLabel:(NSString *)label
+                      counter:(NSString *)counter
                          icon:(NSString *)icon
-                  hasPointer:(BOOL)hasPointer
+                   hasPointer:(BOOL)hasPointer
                    isSelected:(BOOL)isSelected
-                   isVisualized:(BOOL)isVisualized
+                 isVisualized:(BOOL)isVisualized
                         state:(NSString *)state
                       variant:(NSString *)variant
                          size:(NSString *)size
                    isAnimated:(BOOL)isAnimated
-                          {
-  self = [super init];
-  if (self) {
-    _label = label;
-    _icon = icon;
-    _hasPointer = hasPointer;
-    _isSelected = isSelected;
-    _isVisualized = isVisualized;
-    _state = state;
-    _variant = variant;
-    _size = size;
-    _isAnimated = isAnimated;
-  }
-  return self;
+{
+    self = [super init];
+    if (self) {
+        _label = label;
+        _counter = counter;
+        _icon = icon;
+        _hasPointer = hasPointer;
+        _isSelected = isSelected;
+        _isVisualized = isVisualized;
+        _state = state;
+        _variant = variant;
+        _size = size;
+        _isAnimated = isAnimated;
+    }
+    return self;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ %d %@ %@ %@ %@ %@ %@ %@",
+    return [NSString stringWithFormat:@"%@ %@ %lu %@ %@ %@ %@ %@ %@ %@",
             self.label,
-            [self.icon hash],
+            self.counter,
+            (unsigned long)[self.icon hash],
             self.state,
             self.variant,
             self.size,
@@ -45,7 +48,7 @@
             self.isSelected ? @"YES" : @"NO",
             self.isVisualized ? @"YES" : @"NO",
             self.isAnimated ? @"YES" : @"NO"
-            ];
+    ];
 }
 
 - (BOOL)isEqual:(CozyMarkerData *)other {

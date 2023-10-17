@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart'
-    show immutable;
-import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
+import 'package:flutter/foundation.dart' show immutable;
 
 /// CozyMarkerData is the payload necessary to describe all attributes of a CozyMarker.
 /// It follows the same properties described on cozy MapPin component.
@@ -9,6 +7,7 @@ class CozyMarkerData {
   /// Creates CozyMarkerData payload.
   const CozyMarkerData({
     required this.label,
+    this.counter,
     this.icon,
     this.isVisualized = false,
     this.isSelected = false,
@@ -24,6 +23,9 @@ class CozyMarkerData {
 
   /// Icon of the marker in svg format.
   final String? icon;
+
+  /// Counter label of the marker.
+  final String? counter;
 
   /// Wether marker is in selected state or not.
   final bool isSelected;
@@ -65,8 +67,9 @@ class CozyMarkerData {
     addIfPresent('variant', variant.name);
     addIfPresent('size', size.name);
     addIfPresent('icon', icon);
+    addIfPresent('counter', counter);
     addIfPresent('isAnimated', isAnimated);
-  
+
     return json;
   }
 
@@ -87,25 +90,17 @@ class CozyMarkerData {
         variant == other.variant &&
         size == other.size &&
         icon == other.icon &&
+        counter == other.counter &&
         isAnimated == other.isAnimated;
   }
 
   @override
-  int get hashCode => Object.hash(
-        label,
-        isSelected,
-        isVisualized,
-        hasPointer,
-        state,
-        variant,
-        size,
-        icon,
-        isAnimated
-      );
+  int get hashCode => Object.hash(label, isSelected, isVisualized, hasPointer,
+      state, variant, size, icon, counter, isAnimated);
 
   @override
   String toString() {
-    return 'CozyMarkerData{ label: $label, isSelected: $isSelected, isVisualized: $isVisualized, hasPointer: $hasPointer, state: ${state.name}, variant: ${variant.name}, size: ${size.name}, icon: $icon, isAnimated: $isAnimated }';
+    return 'CozyMarkerData{ label: $label, isSelected: $isSelected, isVisualized: $isVisualized, hasPointer: $hasPointer, state: ${state.name}, variant: ${variant.name}, size: ${size.name}, icon: $icon, isAnimated: $isAnimated, counter: $counter }';
   }
 }
 

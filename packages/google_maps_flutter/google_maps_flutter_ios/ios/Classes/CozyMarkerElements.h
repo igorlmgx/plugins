@@ -21,8 +21,9 @@
 @property CozyMarkerElement *canvas;
 @property CozyMarkerElement *bubble;
 @property CozyMarkerElement *icon;
+@property CozyMarkerElement *counter;
 @property CozyMarkerElement *iconCircle;
 @property CozyMarkerElement *pointer;
 @property NSArray<CozyMarkerElement *> *labels;
-- (instancetype)initWithCanvas:(CozyMarkerElement *)canvas bubble:(CozyMarkerElement *)bubble labels:(NSArray<CozyMarkerElement *> *)labels icon:(CozyMarkerElement *)icon iconCircle:(CozyMarkerElement *)iconCircle pointer:(CozyMarkerElement *)pointer;
+- (instancetype)initWithCanvas:(CozyMarkerElement *)canvas bubble:(CozyMarkerElement *)bubble labels:(NSArray<CozyMarkerElement *> *)labels counter:(CozyMarkerElement *)counter icon:(CozyMarkerElement *)icon iconCircle:(CozyMarkerElement *)iconCircle pointer:(CozyMarkerElement *)pointer;
 @end
