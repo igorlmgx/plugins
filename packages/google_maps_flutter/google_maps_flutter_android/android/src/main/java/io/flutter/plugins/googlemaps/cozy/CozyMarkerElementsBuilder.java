@@ -102,7 +102,7 @@ class CozyMarkerElementsBuilder {
         final int defaultIconCircleColor = Color.rgb(248, 249, 245);
         final int defaultIconColor = Color.BLACK;
 
-        final int defaultCounterBubbleColor = Color.rgb(248, 249, 245);
+        final int defaultCounterBubbleColor = Color.rgb(235, 237, 230);
 
         final int selectedMarkerColor = Color.rgb(57, 87, 189);
         final int selectedTextColor = Color.WHITE;

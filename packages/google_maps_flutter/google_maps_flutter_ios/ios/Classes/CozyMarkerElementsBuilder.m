@@ -45,12 +45,12 @@
                                                                    255.0f) blue:(
                                                                                  245.0f /
                                                                                  255.0f)                                 alpha:1];
-    
+
     UIColor *const counterBubbleColor = [UIColor colorWithRed:(
-                                                               248.0f / 255.0f)
-                                                        green:(249.f /
+                                                               235.0f / 255.0f)
+                                                        green:(237.f /
                                                                255.0f) blue:(
-                                                                             245.0f /
+                                                                             230.0f /
                                                                              255.0f)                             alpha:1];
     
     UIColor *const defaultIconColor = UIColor.blackColor;
