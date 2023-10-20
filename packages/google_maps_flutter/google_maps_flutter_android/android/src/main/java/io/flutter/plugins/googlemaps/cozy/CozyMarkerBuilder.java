@@ -12,12 +12,16 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+
 import com.caverock.androidsvg.SVG;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+
 import android.util.Log;
 
 import androidx.core.content.res.ResourcesCompat;
+
 import io.flutter.plugins.googlemaps.MarkerCache;
 import io.flutter.plugins.googlemaps.R;
 
@@ -49,27 +53,29 @@ public class CozyMarkerBuilder {
         return paint;
     }
 
-    private Bitmap getMarkerBitmapFromElements(CozyMarkerElements cozyElements){
+    private Bitmap getMarkerBitmapFromElements(CozyMarkerElements cozyElements) {
         final CozyMarkerElement canvasObject = cozyElements.canvas;
-        final CozyMarkerElement bubble = cozyElements.bubble;
         final CozyMarkerElement[] labels = cozyElements.labels;
         final CozyMarkerElement[] icons = cozyElements.icons;
         final CozyMarkerElement iconCircle = cozyElements.iconCircle;
         final CozyMarkerElement pointer = cozyElements.pointer;
-        
+        final CozyMarkerElement markerBubble = cozyElements.bubble;
+        final CozyMarkerElement counterBubble = cozyElements.counterBubble;
+
         /* start of drawing */
         // creates the marker bitmap
-        Bitmap marker = Bitmap.createBitmap((int) Math.ceil(canvasObject.bounds.width()), (int) Math.round(canvasObject.bounds.height()), Bitmap.Config.ARGB_8888);
-        
-        // create the bubble shape
-        RectF bubbleShape = bubble.bounds;
+        Bitmap marker = Bitmap.createBitmap((int) Math.ceil(canvasObject.bounds.width()),
+                (int) Math.round(canvasObject.bounds.height()), Bitmap.Config.ARGB_8888);
+
+        // create the marker bubble shape
+        RectF bubbleShape = markerBubble.bounds;
         final int shapeBorderRadius = Math.round(1000);
 
         Path bubblePath = new Path();
         bubblePath.addRoundRect(bubbleShape, shapeBorderRadius, shapeBorderRadius, Path.Direction.CW);
 
         // create the pointer shape
-        if(pointer.bounds.height() > 0){
+        if (pointer.bounds.height() > 0) {
             Path pointerPath = new Path();
             pointerPath.setFillType(Path.FillType.EVEN_ODD);
 
@@ -84,12 +90,12 @@ public class CozyMarkerBuilder {
         Paint fillPaint = new Paint();
         fillPaint.setAntiAlias(true);
         fillPaint.setStyle(Paint.Style.FILL);
-        fillPaint.setColor(bubble.fillColor);
+        fillPaint.setColor(markerBubble.fillColor);
 
         Paint strokePaint = new Paint();
         strokePaint.setAntiAlias(true);
         strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setColor(bubble.strokeColor);
+        strokePaint.setColor(markerBubble.strokeColor);
         strokePaint.setStrokeWidth(strokeSize);
         strokePaint.setStrokeCap(Paint.Cap.ROUND);
 
@@ -98,17 +104,30 @@ public class CozyMarkerBuilder {
         canvas.drawPath(bubblePath, fillPaint);
         canvas.drawPath(bubblePath, strokePaint);
 
-       
-        // draws the text
-        for (CozyMarkerElement label : labels){
-            String text = (String) label.data;
+        // draws the counter bubble
+        if (counterBubble.bounds != null) {
+            Path path = new Path();
+            path.addRoundRect(counterBubble.bounds, shapeBorderRadius,
+                    shapeBorderRadius, Path.Direction.CW);
 
-            Paint priceMarkerTextStyle = getTextPaint(label.bounds.height(), label.fillColor, label.alpha);
-            canvas.drawText(text, label.bounds.left, label.bounds.top, priceMarkerTextStyle);
+            fillPaint.setColor(counterBubble.fillColor);
+            canvas.drawPath(path, fillPaint);
+        }
+
+        // draws the text
+        for (CozyMarkerElement label : labels) {
+            if (label.data instanceof String
+                    && !label.data.toString().isEmpty()) {
+                String text = (String) label.data;
+
+                Paint priceMarkerTextStyle = getTextPaint(label.bounds.height(),
+                        label.fillColor, label.alpha);
+                canvas.drawText(text, label.bounds.left, label.bounds.top, priceMarkerTextStyle);
+            }
         }
 
         // Draw the bigger circle of icon
-        if(iconCircle.alpha > 0){
+        if (iconCircle.alpha > 0) {
             Paint circlePaint = new Paint();
             circlePaint.setAntiAlias(true);
             circlePaint.setStyle(Paint.Style.FILL);
@@ -117,20 +136,20 @@ public class CozyMarkerBuilder {
 
             float circleX = iconCircle.bounds.centerX();
             float circleY = iconCircle.bounds.centerY();
-            float circleRadius = iconCircle.bounds.width()/2;
+            float circleRadius = iconCircle.bounds.width() / 2;
             canvas.drawCircle(circleX, circleY, circleRadius, circlePaint);
         }
-        
+
         // draws the icon if exists
-        for (CozyMarkerElement iconElement : cozyElements.icons){
-            if(iconElement.alpha > 0 && iconElement.data != null){
+        for (CozyMarkerElement iconElement : cozyElements.icons) {
+            if (iconElement.alpha > 0 && iconElement.data != null) {
                 Bitmap iconBitmap = (Bitmap) iconElement.data;
                 Paint iconPaint = new Paint();
                 iconPaint.setAlpha((int) (iconElement.alpha * 255));
 
                 canvas.drawBitmap(iconBitmap, iconElement.bounds.left, iconElement.bounds.top, iconPaint);
             }
-           
+
         }
 
         return marker;
@@ -140,11 +159,11 @@ public class CozyMarkerBuilder {
         CozyMarkerElements cozyMarkerElements = cozyMarkerElementsBuilder.cozyElementsFromData(cozyMarkerData);
         return getMarkerBitmapFromElements(cozyMarkerElements);
     }
-    
-    private Bitmap getInterpolatedMarkerBitmap(CozyMarkerData startMarkerData, CozyMarkerData endMarkerData, float step){
+
+    private Bitmap getInterpolatedMarkerBitmap(CozyMarkerData startMarkerData, CozyMarkerData endMarkerData, float step) {
         CozyMarkerElements startCozyMarkerElements = cozyMarkerElementsBuilder.cozyElementsFromData(startMarkerData);
         CozyMarkerElements endCozyMarkerElements = cozyMarkerElementsBuilder.cozyElementsFromData(endMarkerData);
-        
+
         final CozyMarkerElements cozyMarkerInterpolatedObjects = cozyMarkerInterpolator.getInterpolatedMarkerObjects(startCozyMarkerElements, endCozyMarkerElements, step);
         return getMarkerBitmapFromElements(cozyMarkerInterpolatedObjects);
     }

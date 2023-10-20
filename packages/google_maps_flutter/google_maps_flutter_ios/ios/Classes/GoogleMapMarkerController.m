@@ -26,10 +26,10 @@
 - (instancetype)initMarkerWithPosition:(CLLocationCoordinate2D)position
                             identifier:(NSString *)identifier
                                mapView:(GMSMapView *)mapView
-                            cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy
-                            markersAnimationEnabled:(BOOL)markersAnimationEnabled {
+                     cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy
+               markersAnimationEnabled:(BOOL)markersAnimationEnabled {
     self = [super init];
-    if (self) { 
+    if (self) {
         _cozy = cozy;
         _marker = [GMSMarker markerWithPosition:position];
         _mapView = mapView;
@@ -40,13 +40,13 @@
     if(markersAnimationEnabled){
         float durationInMillis = _markersAnimationDuration;
         float durationInSeconds = durationInMillis/1000;
-
+        
         CABasicAnimation *fadeIn = [CABasicAnimation animationWithKeyPath:@"opacity"];
         fadeIn.fromValue = [NSNumber numberWithFloat:0.0];
         fadeIn.toValue = [NSNumber numberWithFloat:1.0];
         fadeIn.duration = durationInSeconds;
         fadeIn.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.5: 1: 0.89: 1];
-
+        
         [_marker.layer addAnimation:fadeIn forKey:@"fadeInAnimation"];
     }
     return self;
@@ -73,18 +73,18 @@
             CABasicAnimation *fadeOut = [CABasicAnimation animationWithKeyPath:@"opacity"];
             fadeOut.fromValue = [NSNumber numberWithFloat:1.0];
             fadeOut.toValue = [NSNumber numberWithFloat:0.0];
-
+            
             float durationInMillis = self.markersAnimationDuration;
             fadeOut.duration = durationInMillis/1000;
             fadeOut.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.11: 0: 0.5: 0];
             
             fadeOut.fillMode = kCAFillModeForwards;
             fadeOut.removedOnCompletion = NO;
-
+            
             [CATransaction setCompletionBlock:^{
                 self.marker.map = nil;
             }];
-
+            
             [self.marker.layer addAnimation:fadeOut forKey:@"fadeOutAnimation"];
             [CATransaction commit];
         });
@@ -144,14 +144,14 @@
 
 - (void)interpretMarkerOptions:(NSDictionary *)data
                      registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
-
+    
     [self interpretMarkerOptionsWithoutIcon:data];
-
+    
     NSDictionary *cozyMarkerDataDict = data[@"cozyMarkerData"];
     if (cozyMarkerDataDict && cozyMarkerDataDict != (id)[NSNull null]) {
         CozyMarkerData *cozyMarkerData = [self interpretCozyMarkerData:data];
         self.cozyMarkerData = cozyMarkerData;
-
+        
         UIImage *image = [[self cozy] buildMarkerWithData:cozyMarkerData];
         [self setIcon:image];
     }else{
@@ -176,7 +176,7 @@
     if (draggable && draggable != (id)[NSNull null]) {
         [self setDraggable:[draggable boolValue]];
     }
-
+    
     NSNumber *flat = data[@"flat"];
     if (flat && flat != (id)[NSNull null]) {
         [self setFlat:[flat boolValue]];
@@ -185,9 +185,9 @@
     if (consumeTapEvents && consumeTapEvents != (id)[NSNull null]) {
         [self setConsumeTapEvents:[consumeTapEvents boolValue]];
     }
-
+    
     [self interpretInfoWindow:data];
-
+    
     NSArray *position = data[@"position"];
     if (position && position != (id)[NSNull null]) {
         [self setPosition:[FLTGoogleMapJSONConversions locationFromLatLong:position]];
@@ -223,14 +223,15 @@
 
 - (CozyMarkerData *)interpretCozyMarkerData:(NSDictionary *)data {
     NSDictionary *cozyMarkerDataDict = data[@"cozyMarkerData"];
-    CozyMarkerData *cozyMarkerData = [[CozyMarkerData alloc] initWithLabel:cozyMarkerDataDict[@"label"] 
-                                                                icon:cozyMarkerDataDict[@"icon"]
+    CozyMarkerData *cozyMarkerData = [[CozyMarkerData alloc] initWithLabel:cozyMarkerDataDict[@"label"]
+                                                                   counter:cozyMarkerDataDict[@"counter"]
+                                                                      icon:cozyMarkerDataDict[@"icon"]
                                                                 hasPointer: [cozyMarkerDataDict[@"hasPointer"] boolValue]
                                                                 isSelected: [cozyMarkerDataDict[@"isSelected"] boolValue]
-                                                                isVisualized: [cozyMarkerDataDict[@"isVisualized"] boolValue]
-                                                                state: cozyMarkerDataDict[@"state"]
-                                                                variant: cozyMarkerDataDict[@"variant"]
-                                                                size: cozyMarkerDataDict[@"size"]
+                                                              isVisualized: [cozyMarkerDataDict[@"isVisualized"] boolValue]
+                                                                     state: cozyMarkerDataDict[@"state"]
+                                                                   variant: cozyMarkerDataDict[@"variant"]
+                                                                      size: cozyMarkerDataDict[@"size"]
                                                                 isAnimated: [cozyMarkerDataDict[@"isAnimated"] boolValue]];
     return cozyMarkerData;
 }
@@ -322,8 +323,8 @@
 - (instancetype)initWithMethodChannel:(FlutterMethodChannel *)methodChannel
                               mapView:(GMSMapView *)mapView
                             registrar:(NSObject<FlutterPluginRegistrar> *)registrar
-                            cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy
-                            markersAnimationEnabled:(BOOL)markersAnimationEnabled {
+                    cozyMarkerBuilder:(nonnull CozyMarkerBuilder *)cozy
+              markersAnimationEnabled:(BOOL)markersAnimationEnabled {
     self = [super init];
     if (self) {
         _methodChannel = methodChannel;
@@ -346,8 +347,8 @@
         [[FLTGoogleMapMarkerController alloc] initMarkerWithPosition:position
                                                           identifier:identifier
                                                              mapView:self.mapView
-                                                    cozyMarkerBuilder:self.cozy
-                                                    markersAnimationEnabled: self.markersAnimationEnabled];
+                                                   cozyMarkerBuilder:self.cozy
+                                             markersAnimationEnabled: self.markersAnimationEnabled];
         [controller interpretMarkerOptions:marker registrar:self.registrar];
         self.markerIdentifierToController[identifier] = controller;
     }
@@ -360,7 +361,7 @@
         if (!controller) {
             continue;
         }
-
+        
         CozyMarkerData *startCozyMarkerData = controller.cozyMarkerData;
         CozyMarkerData *endCozyMarkerData = [controller interpretCozyMarkerData:marker];
         if(startCozyMarkerData != nil && endCozyMarkerData != nil && ![startCozyMarkerData isEqual:endCozyMarkerData] && endCozyMarkerData.isAnimated){
@@ -374,19 +375,19 @@
 
 - (void) animateMarker:(FLTGoogleMapMarkerController *)controller withStartCozyMarkerData:(CozyMarkerData *)startCozyMarkerData withEndCozyMarkerData:(CozyMarkerData *)endCozyMarkerData {
     NSMutableArray *animationImages = [NSMutableArray array];
-
+    
     CGFloat maxWidth = 0.0;
     CGFloat maxHeight = 0.0;
     int numberOfFrames = [UIScreen mainScreen].maximumFramesPerSecond * self.markersTransitionAnimationDuration / 1000;
     
     for (int i = 0; i <= numberOfFrames; i++) {
         CGFloat linearStep = i * 1.0 / numberOfFrames;
-        // Ease-out interpolation: https://easings.net/#easeOutCubic 
+        // Ease-out interpolation: https://easings.net/#easeOutCubic
         CGFloat easeOutStep = 1 - pow(1 - linearStep, 3.0);
-
+        
         UIImage *frameImage = [[self cozy] buildInterpolatedMarkerWithData:startCozyMarkerData endMarkerData:endCozyMarkerData step: easeOutStep];
         [animationImages addObject:frameImage];
-
+        
         if(frameImage.size.width > maxWidth){
             maxWidth = frameImage.size.width;
         }
@@ -394,7 +395,7 @@
             maxHeight = frameImage.size.height;
         }
     }
-
+    
     UIImageView *animatedImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, maxWidth, maxHeight)];
     animatedImageView.contentMode = UIViewContentModeCenter;
     animatedImageView.animationImages = animationImages;
@@ -402,7 +403,7 @@
     animatedImageView.animationDuration = self.markersTransitionAnimationDuration / 1000.0;
     animatedImageView.image = [animationImages lastObject];
     controller.cozyMarkerData = endCozyMarkerData;
-
+    
     [controller setIconView:animatedImageView];
     [animatedImageView startAnimating];
 }
@@ -518,7 +519,7 @@
 }
 
 - (void)setMarkersAnimationEnabled:(BOOL)enabled {
-  _markersAnimationEnabled = enabled;
+    _markersAnimationEnabled = enabled;
 }
 
 + (CLLocationCoordinate2D)getPosition:(NSDictionary *)marker {

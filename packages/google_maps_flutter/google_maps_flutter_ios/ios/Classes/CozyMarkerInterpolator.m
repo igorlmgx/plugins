@@ -17,26 +17,27 @@
     CozyMarkerElement *interpolatedIcon = [self interpolateCozyMarkerElementWithStart:start.icon end:end.icon step:step];
     CozyMarkerElement *interpolatedIconCircle = [self interpolateCozyMarkerElementWithStart:start.iconCircle end:end.iconCircle step:step];
     CozyMarkerElement *interpolatedPointer = [self interpolateCozyMarkerElementWithStart:start.pointer end:end.pointer step:step];
-
+    CozyMarkerElement *interpolatedCounter = [self interpolateCozyMarkerElementWithStart:start.counter end:end.counter step:step];
+    
     CozyMarkerElement *interpolatedLabel = [self interpolateCozyMarkerElementWithStart:start.labels[0] end:end.labels[0] step:step];
     NSArray<CozyMarkerElement *> *interpolatedLabels = [self interpolateLabelWithInterpolatedLabel:interpolatedLabel startText:start.labels[0].data endText:end.labels[0].data step:step];
     interpolatedIcon.data = [self interpolateIconsWithStart:start.icon.data end:end.icon.data step:step];
-
-    return [[CozyMarkerElements alloc] initWithCanvas:interpolatedCanvas bubble:interpolatedBubble labels:interpolatedLabels icon:interpolatedIcon iconCircle:interpolatedIconCircle pointer:interpolatedPointer];
+    
+    return [[CozyMarkerElements alloc] initWithCanvas:interpolatedCanvas bubble:interpolatedBubble labels:interpolatedLabels counter:interpolatedCounter icon:interpolatedIcon  iconCircle:interpolatedIconCircle pointer:interpolatedPointer];
 }
 
 - (CozyMarkerElement *)interpolateCozyMarkerElementWithStart:(CozyMarkerElement *)start end:(CozyMarkerElement *)end step:(CGFloat)step {
     CGRect interpolatedBounds = CGRectMake(
-        [self interpolate:start.bounds.origin.x end:end.bounds.origin.x step:step],
-        [self interpolate:start.bounds.origin.y end:end.bounds.origin.y step:step],
-        [self interpolate:start.bounds.size.width end:end.bounds.size.width step:step],
-        [self interpolate:start.bounds.size.height end:end.bounds.size.height step:step]
-    );
-
+                                           [self interpolate:start.bounds.origin.x end:end.bounds.origin.x step:step],
+                                           [self interpolate:start.bounds.origin.y end:end.bounds.origin.y step:step],
+                                           [self interpolate:start.bounds.size.width end:end.bounds.size.width step:step],
+                                           [self interpolate:start.bounds.size.height end:end.bounds.size.height step:step]
+                                           );
+    
     UIColor *interpolatedFillColor = [self interpolateColorWithStart:start.fillColor end:end.fillColor step:step];
     UIColor *interpolatedStrokeColor = [self interpolateColorWithStart:start.strokeColor end:end.strokeColor step:step];
     CGFloat interpolatedAlpha = [self interpolate:start.alpha end:end.alpha step:step];
-
+    
     return [[CozyMarkerElement alloc] initWithBounds:interpolatedBounds fillColor:interpolatedFillColor strokeColor:interpolatedStrokeColor alpha:interpolatedAlpha data:nil];
 }
 
