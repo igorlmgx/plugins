@@ -256,18 +256,17 @@ class CozyMarkerElementsBuilder {
                         new RectF(0, 0, markerWidth, markerHeight + pointerSize)
                 ),
                 // Bubbles
-                new CozyMarkerElement[]{
-                        new CozyMarkerElement(
-                                new RectF(bubbleShapeX, bubbleShapeY, bubbleShapeX + bubbleShapeWidth, bubbleShapeY + bubbleShapeHeight),
-                                markerColor,
-                                strokeColor
-                        ),
-                        new CozyMarkerElement(
-                                hasCounter ? new RectF(counterBubbleShapeX, counterBubbleShapeY, counterBubbleShapeX + counterSummaryWidth, counterBubbleShapeY + counterBubbleShapeHeight) : null,
-                                defaultCounterBubbleColor,
-                                defaultStrokeColor
-                        ),
-                },
+                new CozyMarkerElement(
+                        new RectF(bubbleShapeX, bubbleShapeY, bubbleShapeX + bubbleShapeWidth, bubbleShapeY + bubbleShapeHeight),
+                        markerColor,
+                        strokeColor
+                ),
+                // Counter bubble
+                new CozyMarkerElement(
+                        hasCounter ? new RectF(counterBubbleShapeX, counterBubbleShapeY, counterBubbleShapeX + counterSummaryWidth, counterBubbleShapeY + counterBubbleShapeHeight) : null,
+                        defaultCounterBubbleColor,
+                        defaultStrokeColor
+                ),
                 // Labels
                 new CozyMarkerElement[]{
                         new CozyMarkerElement(

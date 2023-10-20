@@ -2,15 +2,17 @@ package io.flutter.plugins.googlemaps.cozy;
 
 public class CozyMarkerElements {
     public final CozyMarkerElement canvas;
-    public final CozyMarkerElement[] bubbles;
+    public final CozyMarkerElement bubble;
     public final CozyMarkerElement[] labels;
     public final CozyMarkerElement[] icons;
     public final CozyMarkerElement iconCircle;
     public final CozyMarkerElement pointer;
+    public final CozyMarkerElement counterBubble;
 
-    public CozyMarkerElements(CozyMarkerElement canvas, CozyMarkerElement[] bubbles, CozyMarkerElement[] labels, CozyMarkerElement[] icons, CozyMarkerElement iconCircle, CozyMarkerElement pointer) {
+    public CozyMarkerElements(CozyMarkerElement canvas, CozyMarkerElement bubble, CozyMarkerElement counterBubble, CozyMarkerElement[] labels, CozyMarkerElement[] icons, CozyMarkerElement iconCircle, CozyMarkerElement pointer) {
         this.canvas = canvas;
-        this.bubbles = bubbles;
+        this.bubble = bubble;
+        this.counterBubble = counterBubble;
         this.labels = labels;
         this.icons = icons;
         this.iconCircle = iconCircle;
@@ -19,6 +21,6 @@ public class CozyMarkerElements {
 
     @Override
     public String toString() {
-        return canvas.toString() + bubbles.toString() + labels.toString() + icons.toString() + iconCircle.toString() + pointer.toString();
+        return canvas.toString() + bubble.toString() + counterBubble.toString() + labels.toString() + icons.toString() + iconCircle.toString() + pointer.toString();
     }
 }

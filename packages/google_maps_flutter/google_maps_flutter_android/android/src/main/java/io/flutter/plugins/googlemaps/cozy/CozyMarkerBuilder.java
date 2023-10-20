@@ -55,12 +55,12 @@ public class CozyMarkerBuilder {
 
     private Bitmap getMarkerBitmapFromElements(CozyMarkerElements cozyElements) {
         final CozyMarkerElement canvasObject = cozyElements.canvas;
-        final CozyMarkerElement[] bubbles = cozyElements.bubbles;
         final CozyMarkerElement[] labels = cozyElements.labels;
         final CozyMarkerElement[] icons = cozyElements.icons;
         final CozyMarkerElement iconCircle = cozyElements.iconCircle;
         final CozyMarkerElement pointer = cozyElements.pointer;
-        final CozyMarkerElement markerBubble = bubbles[0];
+        final CozyMarkerElement markerBubble = cozyElements.bubble;
+        final CozyMarkerElement counterBubble = cozyElements.counterBubble;
 
         /* start of drawing */
         // creates the marker bitmap
@@ -104,22 +104,14 @@ public class CozyMarkerBuilder {
         canvas.drawPath(bubblePath, fillPaint);
         canvas.drawPath(bubblePath, strokePaint);
 
-        // draws the bubbles apart from the marker one
-        if (bubbles.length > 1) {
-            for (int i = 1; i < bubbles.length; i++) {
-                CozyMarkerElement bubble = bubbles[i];
+        // draws the counter bubble
+        if (counterBubble.bounds != null) {
+            Path path = new Path();
+            path.addRoundRect(counterBubble.bounds, shapeBorderRadius,
+                    shapeBorderRadius, Path.Direction.CW);
 
-                if (bubble.bounds == null) continue;
-
-                RectF bubbleBounds = bubble.bounds;
-
-                Path path = new Path();
-                path.addRoundRect(bubbleBounds, shapeBorderRadius,
-                        shapeBorderRadius, Path.Direction.CW);
-
-                fillPaint.setColor(bubble.fillColor);
-                canvas.drawPath(path, fillPaint);
-            }
+            fillPaint.setColor(counterBubble.fillColor);
+            canvas.drawPath(path, fillPaint);
         }
 
         // draws the text
