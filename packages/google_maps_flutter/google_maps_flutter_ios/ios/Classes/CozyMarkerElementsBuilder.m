@@ -46,7 +46,7 @@
                                                                                  245.0f /
                                                                                  255.0f)                                 alpha:1];
 
-    UIColor *const counterBubbleColor = [UIColor colorWithRed:(
+    UIColor *const defaultCounterBubbleColor = [UIColor colorWithRed:(
                                                                235.0f / 255.0f)
                                                         green:(237.f /
                                                                255.0f) blue:(
@@ -60,6 +60,12 @@
                                                                                                      189.0f / 255.0f) alpha:1];
     UIColor *const selectedTextColor = UIColor.whiteColor;
     UIColor *const selectedIconCircleColor = UIColor.whiteColor;
+    UIColor *const selectedCounterBubbleColor = [UIColor colorWithRed:(
+                    248.0f / 255.0f)
+                                                            green:(249.f /
+                                                                   255.0f) blue:(
+                    245.0f /
+                    255.0f)                                 alpha:1];
     
     UIColor *const visualizedMarkerColor = [UIColor colorWithRed:(217.0f / 255.0f) green:(219.0f /
                                                                                           255.0f) blue:(
@@ -67,6 +73,12 @@
     UIColor *const visualizedTextColor = UIColor.blackColor;
     UIColor *const visualizedStrokeColor = [UIColor colorWithRed:(197.0f / 255.0f) green:(201.0f / 255.0f) blue:(186.0f / 255.0f) alpha:1];
     UIColor *const visualizedIconCircleColor = UIColor.whiteColor;
+    UIColor *const visualizedCounterBubbleColor = [UIColor colorWithRed:(
+                    248.0f / 255.0f)
+                                                                green:(249.f /
+                                                                       255.0f) blue:(
+                    245.0f /
+                    255.0f)                                 alpha:1];
     
     UIColor *const specialIconCircleColor = [UIColor colorWithRed:(240.0f / 255.0f) green:(243.0f /
                                                                                            255.0f) blue:(
@@ -80,18 +92,21 @@
     UIColor *iconCircleColor = defaultIconCircleColor;
     UIColor *iconColor = defaultIconColor;
     UIColor *strokeColor = defaultStrokeColor;
+    UIColor *counterBubbleColor = defaultCounterBubbleColor;
     
     if (cozyMarkerData.isVisualized) {
         markerColor = visualizedMarkerColor;
         textColor = visualizedTextColor;
         strokeColor = visualizedStrokeColor;
         iconCircleColor = visualizedIconCircleColor;
+        counterBubbleColor = visualizedCounterBubbleColor;
     }
     if (cozyMarkerData.isSelected) {
         markerColor = selectedMarkerColor;
         textColor = selectedTextColor;
         strokeColor = defaultStrokeColor;
         iconCircleColor = selectedIconCircleColor;
+        counterBubbleColor = selectedCounterBubbleColor;
     }
     if ([cozyMarkerData.variant isEqualToString:@"special"] &&
         (!cozyMarkerData.isVisualized || cozyMarkerData.isSelected)) {
