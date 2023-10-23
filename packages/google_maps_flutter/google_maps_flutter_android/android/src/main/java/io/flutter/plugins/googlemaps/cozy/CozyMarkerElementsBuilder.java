@@ -107,11 +107,13 @@ class CozyMarkerElementsBuilder {
         final int selectedMarkerColor = Color.rgb(57, 87, 189);
         final int selectedTextColor = Color.WHITE;
         final int selectedIconCircleColor = Color.WHITE;
+        final int selectedCounterBubbleColor = Color.rgb(248, 249, 245);
 
         final int visualizedMarkerColor = Color.rgb(217, 219, 208);
         final int visualizedTextColor = Color.BLACK;
         final int visualizedStrokeColor = Color.rgb(197, 201, 186);
         final int visualizedIconCircleColor = Color.WHITE;
+        final int visualizedCounterBubbleColor = Color.rgb(248, 249, 245);
 
         final int specialIconCircleColor = Color.rgb(240, 243, 255);
         final int specialIconColor = Color.rgb(57, 87, 189);
@@ -122,18 +124,21 @@ class CozyMarkerElementsBuilder {
         int strokeColor = defaultStrokeColor;
         int iconCircleColor = defaultIconCircleColor;
         int iconColor = defaultIconColor;
+        int counterBubbleColor = defaultCounterBubbleColor;
 
         if (markerData.isVisualized) {
             markerColor = visualizedMarkerColor;
             textColor = visualizedTextColor;
             strokeColor = visualizedStrokeColor;
             iconCircleColor = visualizedIconCircleColor;
+            counterBubbleColor = visualizedCounterBubbleColor;
         }
         if (markerData.isSelected) {
             markerColor = selectedMarkerColor;
             textColor = selectedTextColor;
             strokeColor = defaultStrokeColor;
             iconCircleColor = selectedIconCircleColor;
+            counterBubbleColor = selectedCounterBubbleColor;
         }
         if (markerData.variant.equals("special") &&
                 (!markerData.isVisualized || markerData.isSelected)) {
@@ -264,7 +269,7 @@ class CozyMarkerElementsBuilder {
                 // Counter bubble
                 new CozyMarkerElement(
                         hasCounter ? new RectF(counterBubbleShapeX, counterBubbleShapeY, counterBubbleShapeX + counterSummaryWidth, counterBubbleShapeY + counterBubbleShapeHeight) : null,
-                        defaultCounterBubbleColor,
+                        counterBubbleColor,
                         defaultStrokeColor
                 ),
                 // Labels
