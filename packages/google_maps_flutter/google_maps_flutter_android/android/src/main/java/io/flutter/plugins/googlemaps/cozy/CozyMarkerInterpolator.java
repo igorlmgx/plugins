@@ -32,7 +32,7 @@ class CozyMarkerInterpolator {
     }
 
     private CozyMarkerElement[] interpolateLabel(CozyMarkerElement interpolatedLabel, String startText, String endText, float step) {
-        if (startText.equals(endText)) {
+        if (startText == null || endText == null || startText.equals(endText)) {
             return new CozyMarkerElement[]{
                     new CozyMarkerElement(
                             interpolatedLabel.bounds,
@@ -134,6 +134,10 @@ class CozyMarkerInterpolator {
     }
 
     private CozyMarkerElement interpolateCozyMarkerElement(CozyMarkerElement startCozyMarkerElement, CozyMarkerElement endCozyMarkerElement, float step) {
+        if (startCozyMarkerElement == null || endCozyMarkerElement == null || startCozyMarkerElement.bounds == null || endCozyMarkerElement.bounds == null) {
+            return null;
+        }
+
         RectF interpolatedBounds = new RectF();
         interpolatedBounds.left = interpolate(startCozyMarkerElement.bounds.left, endCozyMarkerElement.bounds.left, step);
         interpolatedBounds.top = interpolate(startCozyMarkerElement.bounds.top, endCozyMarkerElement.bounds.top, step);

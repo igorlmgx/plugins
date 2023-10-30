@@ -105,7 +105,7 @@ public class CozyMarkerBuilder {
         canvas.drawPath(bubblePath, strokePaint);
 
         // draws the counter bubble
-        if (counterBubble.bounds != null) {
+        if (counterBubble != null && counterBubble.bounds != null) {
             Path path = new Path();
             path.addRoundRect(counterBubble.bounds, shapeBorderRadius,
                     shapeBorderRadius, Path.Direction.CW);
