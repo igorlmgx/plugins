@@ -236,16 +236,12 @@ class MarkersController {
     String markerId = getMarkerId(newMarker);
     MarkerController markerController = markerIdToController.get(markerId);
     if (markerController != null) {
-      final CozyMarkerData startCozyMarkerData = markerController.currentCozyMarkerData;
-      final CozyMarkerData endCozyMarkerData = Convert.toCozyMarkerData(newMarker);
-      final boolean isTheSameMarker = Objects.equals(startCozyMarkerData, endCozyMarkerData);
+      final CozyMarkerData targetCozyMarkerData = Convert.toCozyMarkerData(newMarker);
 
-      if(startCozyMarkerData != null && 
-         endCozyMarkerData != null &&
-         endCozyMarkerData.isAnimated && 
-         !isTheSameMarker){
-        cozyMarkerAnimator.animateMarkerTransition(markerController, newMarker, startCozyMarkerData, endCozyMarkerData);
-      }else{
+      if (targetCozyMarkerData != null && targetCozyMarkerData.isAnimated) {
+        cozyMarkerAnimator.animateMarkerTransition(markerController, newMarker, targetCozyMarkerData);
+      } else {
+        System.out.println(markerId + " SOMETHING WRONG");
         Convert.interpretMarkerOptions(newMarker, markerController, cozyMarkerBuilder);
       }
     }
