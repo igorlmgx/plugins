@@ -39,7 +39,8 @@ public class CozyMarkerAnimator {
     private final int totalNumberOfSimultaneousMarkers = 3;
     private final int markersTransitionAnimationDuration = 400;
     private final float deltaZIndex = 0.9f;
-    private final HashMap<String, ValueAnimator> markerAnimationMap = new HashMap<>();
+    private final HashMap<String, ValueAnimator> markerAnimationMap = new HashMap<String, ValueAnimator>();
+    private final HashMap<String, Deque<Marker>> markerQueueMap = new HashMap<String, Deque<Marker>>();
 
     private GoogleMap googleMap;
     private Map<String, String> googleMapsMarkerIdToDartMarkerId;
@@ -153,9 +154,11 @@ public class CozyMarkerAnimator {
         MarkerBuilder templateMarkerBuilder = new MarkerBuilder();
         String markerId = Convert.interpretMarkerOptionsWithoutIcon(newMarker, templateMarkerBuilder);
         MarkerOptions templateMarkerOptions = templateMarkerBuilder.build();
-        markersQueue.add(markerController.marker);
 
         endAnimationIfExists(markerId);
+
+        markersQueue.add(markerController.marker);
+        markerQueueMap.put(markerId, markersQueue);
 
         final CozyMarkerData startMarkerData = markerController.currentCozyMarkerData;
 
@@ -163,6 +166,7 @@ public class CozyMarkerAnimator {
         float markerInitialBitmapArea = 0;
         float markerFinalBitmapArea = 0;
 
+        // Igor: debugged bitmap generation and it's working fine
         for (int i = 1; i <= framesNumber; i++) {
             float step = (float) i / framesNumber;
             // Ease-out interpolation: https://easings.net/#easeOutCubic
@@ -213,6 +217,8 @@ public class CozyMarkerAnimator {
         transitionAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
+                // Igor: for some reason it triggers twice for animatedValue 0
+                // and once directly with animatedValue 1, skipping all steps on debug
                 final float animatedValue = (float) animation.getAnimatedValue();
                 int animationIndex = (int) (animatedValue * framesNumber);
 
@@ -220,6 +226,8 @@ public class CozyMarkerAnimator {
                     return;
                 }
 
+                // updates currentCozyMarkerData when animation starts
+                // so new animations know the correct start point to animate from
                 if (animatedValue == 0f) {
                     markerController.currentCozyMarkerData = endMarkerData;
                 }
@@ -267,6 +275,8 @@ public class CozyMarkerAnimator {
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
+                                // Igor: this is throwing a NoSuchElement exception
+                                // due to some racing condition accessing the queue
                                 while (markersQueue.size() > 1) {
                                     animatorManager.removeLatestFrameBelow();
                                 }
@@ -281,28 +291,33 @@ public class CozyMarkerAnimator {
             }
         });
 
-        startAnimation(markerId, endMarkerData.label, transitionAnimator);
-    }
-
-    private void startAnimation(String markerId, String markerLabel, ValueAnimator animation) {
-        markerAnimationMap.put(markerId, animation);
-
-        final Handler handler = new Handler(Looper.getMainLooper());
-
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                animation.start();
-            }
-        }, 150);
+        markerAnimationMap.put(markerId, transitionAnimator);
+        animation.start();
     }
 
     private void endAnimationIfExists(String markerId) {
         if (markerAnimationMap.containsKey(markerId)) {
             final ValueAnimator animation = markerAnimationMap.get(markerId);
-            animation.end();
+
+            // completely interrupts the animation
+            if (animation.isRunning()) {
+                animation.removeAllListeners();
+                animation.cancel();
+            }
 
             markerAnimationMap.remove(markerId);
+        }
+
+        if (markerQueueMap.containsKey(markerId)) {
+            final Deque<Marker> markersQueue = markerQueueMap.get(markerId);
+
+            // deplets marker queue so there are no leftovers on the map
+            while (markersQueue.size() > 0) {
+                final Marker markerToRemove = markersQueue.remove();
+                markerToRemove.remove();
+            }
+
+            markerQueueMap.remove(markerId);
         }
     }
 
