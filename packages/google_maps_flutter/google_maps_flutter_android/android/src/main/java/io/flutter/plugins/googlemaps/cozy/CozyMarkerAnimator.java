@@ -292,7 +292,7 @@ public class CozyMarkerAnimator {
         });
 
         markerAnimationMap.put(markerId, transitionAnimator);
-        animation.start();
+        transitionAnimator.start();
     }
 
     private void endAnimationIfExists(String markerId) {
